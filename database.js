@@ -1,78 +1,30 @@
-// Diyarbakır Altyapı Bildirim Sistemi - Database
-const AltyapiDatabase = {
+// Doğu & Güneydoğu Altyapı Bildirim Sistemi - Database
+const DoguGuneydoguDatabase = {
     // Database anahtarları
     STORAGE_KEYS: {
-        REPORTS: 'diyarbakir_altyapi_reports',
-        SETTINGS: 'diyarbakir_altyapi_settings'
+        REPORTS: 'dogu_guneydogu_altyapi_reports_v2',
+        SETTINGS: 'dogu_guneydogu_altyapi_settings_v2'
     },
 
     // Database'i başlat
     init() {
-        console.log('Altyapı Database başlatılıyor...');
+        console.log('Doğu & Güneydoğu Database başlatılıyor...');
         
         // Eğer reports yoksa, boş array oluştur
         if (!this.getAllReports()) {
             localStorage.setItem(this.STORAGE_KEYS.REPORTS, JSON.stringify([]));
         }
         
-        // Örnek veriler (test için)
-        this.initializeSampleData();
+        // Settings yoksa oluştur
+        if (!this.getSettings()) {
+            this.saveSettings({
+                version: '2.0.0',
+                lastBackup: null,
+                totalReports: 0
+            });
+        }
         
         return this;
-    },
-
-    // Örnek veriler ekle (sadece boşsa)
-    initializeSampleData() {
-        const reports = this.getAllReports();
-        if (reports.length === 0) {
-            const sampleReports = [
-                {
-                    id: 'DB-20240001',
-                    ilce: 'Bağlar',
-                    mahalle: 'Kaynartepe',
-                    sokak: '293. Sokak',
-                    problemTipi: 'Yol Bozukluğu',
-                    oncelik: 'high',
-                    aciklama: 'Yolda derin çukur oluşmuş, araçların geçişini engelliyor.',
-                    isim: 'Ahmet Yılmaz',
-                    telefon: '0532 123 4567',
-                    tarih: '01.01.2024 10:30',
-                    durum: 'approved',
-                    adminNot: 'Yol bakım ekibi yönlendirildi.'
-                },
-                {
-                    id: 'DB-20240002',
-                    ilce: 'Kayapınar',
-                    mahalle: 'Yenimahalle',
-                    sokak: 'Atatürk Caddesi',
-                    problemTipi: 'Aydınlatma',
-                    oncelik: 'medium',
-                    aciklama: 'Cadde aydınlatması çalışmıyor, gece karanlık kalıyor.',
-                    isim: 'Mehmet Demir',
-                    telefon: '0533 234 5678',
-                    tarih: '02.01.2024 14:15',
-                    durum: 'pending',
-                    adminNot: ''
-                },
-                {
-                    id: 'DB-20240003',
-                    ilce: 'Sur',
-                    mahalle: 'Alipaşa',
-                    sokak: 'Dicle Sokak',
-                    problemTipi: 'Su Baskını',
-                    oncelik: 'high',
-                    aciklama: 'Su şebekesi patlamış, sokak sular altında kaldı.',
-                    isim: 'Ayşe Kaya',
-                    telefon: '0534 345 6789',
-                    tarih: '03.01.2024 09:45',
-                    durum: 'completed',
-                    adminNot: 'Su ekipleri müdahale etti, sorun çözüldü.'
-                }
-            ];
-            
-            localStorage.setItem(this.STORAGE_KEYS.REPORTS, JSON.stringify(sampleReports));
-            console.log('Örnek veriler eklendi.');
-        }
     },
 
     // Tüm raporları getir
@@ -112,11 +64,45 @@ const AltyapiDatabase = {
                 reportData.durum = 'pending';
             }
             
+            // Koordinat ekle (eğer yoksa rastgele)
+            if (!reportData.koordinat) {
+                const illerKoordinat = {
+                    'Diyarbakır': [37.9144, 40.2306],
+                    'Şanlıurfa': [37.1591, 38.7969],
+                    'Gaziantep': [37.0662, 37.3833],
+                    'Mardin': [37.3122, 40.7356],
+                    'Batman': [37.8812, 41.1351],
+                    'Siirt': [37.9443, 41.9329],
+                    'Şırnak': [37.5184, 42.4549],
+                    'Hakkari': [37.5744, 43.7408],
+                    'Van': [38.5011, 43.3730],
+                    'Muş': [38.9462, 41.7539],
+                    'Bitlis': [38.3938, 42.1232],
+                    'Bingöl': [38.8853, 40.4986],
+                    'Tunceli': [39.1061, 39.5482],
+                    'Elazığ': [38.6810, 39.2264],
+                    'Malatya': [38.3552, 38.3095],
+                    'Adıyaman': [37.7648, 38.2786],
+                    'Kilis': [36.7184, 37.1212],
+                    'Osmaniye': [37.0746, 36.2464],
+                    'Hatay': [36.4018, 36.3498]
+                };
+                
+                const ilKoordinat = illerKoordinat[reportData.il] || [38.9637, 35.2433];
+                reportData.koordinat = {
+                    lat: ilKoordinat[0] + (Math.random() - 0.5) * 0.1,
+                    lng: ilKoordinat[1] + (Math.random() - 0.5) * 0.1
+                };
+            }
+            
             // Raporu ekle
-            reports.unshift(reportData); // En üste ekle
+            reports.unshift(reportData);
             
             // Kaydet
             localStorage.setItem(this.STORAGE_KEYS.REPORTS, JSON.stringify(reports));
+            
+            // İstatistikleri güncelle
+            this.updateStatistics();
             
             console.log('Rapor kaydedildi:', reportData.id);
             return true;
@@ -181,27 +167,22 @@ const AltyapiDatabase = {
     getFilteredReports(filters = {}) {
         let reports = this.getAllReports();
         
-        // Durum filtreleme
+        // Tüm filtreler
         if (filters.durum) {
             reports = reports.filter(r => r.durum === filters.durum);
         }
-        
-        // İlçe filtreleme
+        if (filters.il) {
+            reports = reports.filter(r => r.il === filters.il);
+        }
         if (filters.ilce) {
             reports = reports.filter(r => r.ilce === filters.ilce);
         }
-        
-        // Mahalle filtreleme
-        if (filters.mahalle) {
-            reports = reports.filter(r => r.mahalle === filters.mahalle);
-        }
-        
-        // Öncelik filtreleme
         if (filters.oncelik) {
             reports = reports.filter(r => r.oncelik === filters.oncelik);
         }
-        
-        // Tarih aralığı filtreleme
+        if (filters.problemTipi) {
+            reports = reports.filter(r => r.problemTipi === filters.problemTipi);
+        }
         if (filters.baslangicTarihi && filters.bitisTarihi) {
             reports = reports.filter(r => {
                 const reportDate = new Date(r.tarih.split(' ')[0].split('.').reverse().join('-'));
@@ -227,8 +208,14 @@ const AltyapiDatabase = {
             tamamlanan: reports.filter(r => r.durum === 'completed').length,
             bugunku: reports.filter(r => r.tarih.includes(today.split(' ')[0])).length,
             
+            ilBazinda: reports.reduce((acc, report) => {
+                acc[report.il] = (acc[report.il] || 0) + 1;
+                return acc;
+            }, {}),
+            
             ilceBazinda: reports.reduce((acc, report) => {
-                acc[report.ilce] = (acc[report.ilce] || 0) + 1;
+                const key = `${report.il} - ${report.ilce}`;
+                acc[key] = (acc[key] || 0) + 1;
                 return acc;
             }, {}),
             
@@ -240,15 +227,36 @@ const AltyapiDatabase = {
             oncelikBazinda: reports.reduce((acc, report) => {
                 acc[report.oncelik] = (acc[report.oncelik] || 0) + 1;
                 return acc;
+            }, {}),
+            
+            gunlukTrend: reports.reduce((acc, report) => {
+                const date = report.tarih.split(' ')[0];
+                acc[date] = (acc[date] || 0) + 1;
+                return acc;
             }, {})
         };
+    },
+
+    // İstatistikleri güncelle
+    updateStatistics() {
+        const reports = this.getAllReports();
+        const settings = this.getSettings();
+        
+        settings.totalReports = reports.length;
+        settings.lastUpdate = new Date().toISOString();
+        
+        this.saveSettings(settings);
     },
 
     // Database'i temizle (tüm verileri sil)
     clearDatabase() {
         try {
-            localStorage.removeItem(this.STORAGE_KEYS.REPORTS);
-            localStorage.removeItem(this.STORAGE_KEYS.SETTINGS);
+            localStorage.setItem(this.STORAGE_KEYS.REPORTS, JSON.stringify([]));
+            
+            const settings = this.getSettings();
+            settings.totalReports = 0;
+            this.saveSettings(settings);
+            
             console.log('Database temizlendi.');
             return true;
         } catch (error) {
@@ -262,19 +270,26 @@ const AltyapiDatabase = {
         try {
             const data = {
                 reports: this.getAllReports(),
+                settings: this.getSettings(),
                 timestamp: new Date().toISOString(),
-                version: '1.0.0'
+                version: '2.0.0',
+                totalReports: this.getAllReports().length
             };
             
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `diyarbakir-altyapi-backup-${new Date().toISOString().slice(0,10)}.json`;
+            a.download = `dogu-guneydogu-altyapi-backup-${new Date().toISOString().slice(0,10)}.json`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
+            
+            // Backup tarihini kaydet
+            const settings = this.getSettings();
+            settings.lastBackup = new Date().toISOString();
+            this.saveSettings(settings);
             
             return true;
         } catch (error) {
@@ -290,6 +305,11 @@ const AltyapiDatabase = {
             
             if (data.reports && Array.isArray(data.reports)) {
                 localStorage.setItem(this.STORAGE_KEYS.REPORTS, JSON.stringify(data.reports));
+                
+                if (data.settings) {
+                    this.saveSettings(data.settings);
+                }
+                
                 console.log('Database geri yüklendi.');
                 return true;
             }
@@ -321,18 +341,90 @@ const AltyapiDatabase = {
             console.error('Ayarlar yüklenirken hata:', error);
             return {};
         }
+    },
+
+    // Raporları coğrafi olarak filtrele
+    getReportsByLocation(lat, lng, radiusKm = 10) {
+        const reports = this.getAllReports();
+        
+        return reports.filter(report => {
+            if (!report.koordinat || !report.koordinat.lat || !report.koordinat.lng) {
+                return false;
+            }
+            
+            const distance = this.calculateDistance(
+                lat, lng,
+                report.koordinat.lat, report.koordinat.lng
+            );
+            
+            return distance <= radiusKm;
+        });
+    },
+
+    // İki koordinat arasındaki mesafeyi hesapla (km)
+    calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; // Earth's radius in km
+        const dLat = this.deg2rad(lat2 - lat1);
+        const dLon = this.deg2rad(lon2 - lon1);
+        const a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) * 
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+    },
+
+    // Dereceyi radyana çevir
+    deg2rad(deg) {
+        return deg * (Math.PI/180);
+    },
+
+    // Harita için marker verilerini getir
+    getMapMarkers() {
+        const reports = this.getAllReports();
+        
+        return reports.map(report => {
+            if (!report.koordinat) return null;
+            
+            let color;
+            switch(report.durum) {
+                case 'pending': color = '#ffc107'; break; // Sarı
+                case 'approved': color = '#17a2b8'; break; // Mavi
+                case 'completed': color = '#28a745'; break; // Yeşil
+                case 'rejected': color = '#dc3545'; break; // Kırmızı
+                default: color = '#6c757d'; // Gri
+            }
+            
+            return {
+                id: report.id,
+                lat: report.koordinat.lat,
+                lng: report.koordinat.lng,
+                color: color,
+                title: `${report.il} - ${report.ilce}`,
+                content: `
+                    <strong>${report.il} - ${report.ilce}</strong><br>
+                    ${report.mahalle} ${report.sokak}<br>
+                    <strong>Problem:</strong> ${report.problemTipi}<br>
+                    <strong>Durum:</strong> ${report.durum === 'pending' ? 'Bekliyor' : 
+                                             report.durum === 'approved' ? 'Onaylandı' : 
+                                             report.durum === 'completed' ? 'Tamamlandı' : 'Reddedildi'}<br>
+                    <strong>Tarih:</strong> ${report.tarih}
+                `
+            };
+        }).filter(marker => marker !== null);
     }
 };
 
 // Database'i başlat ve global yap
-window.database = AltyapiDatabase.init();
+window.database = DoguGuneydoguDatabase.init();
 
 // Kullanım örnekleri:
 console.log(`
-KULLANIM ÖRNEKLERİ:
+DOĞU & GÜNEYDOĞU ALTYAPI DATABASE KULLANIMI:
 
 1. Yeni bildirim ekle:
    window.database.saveReport({
+       il: "Diyarbakır",
        ilce: "Bağlar",
        mahalle: "Kaynartepe",
        sokak: "293. Sokak",
@@ -340,19 +432,27 @@ KULLANIM ÖRNEKLERİ:
        oncelik: "high",
        aciklama: "Yolda çukur var",
        isim: "Ahmet Yılmaz",
-       telefon: "0532 123 4567"
+       telefon: "0532 123 4567",
+       koordinat: { lat: 37.9144, lng: 40.2306 }
    });
 
 2. Tüm bildirimleri getir:
    window.database.getAllReports();
 
-3. Bildirim durumunu güncelle:
-   window.database.updateReportStatus("DB-20240001", "approved", "Admin onayı");
+3. Filtreli arama:
+   window.database.getFilteredReports({
+       il: "Diyarbakır",
+       durum: "pending",
+       oncelik: "high"
+   });
 
 4. İstatistikleri getir:
    window.database.getStatistics();
 
-5. Database'i yedekle:
+5. Harita marker'ları:
+   window.database.getMapMarkers();
+
+6. Database yedekle:
    window.database.backupDatabase();
 `);
 
