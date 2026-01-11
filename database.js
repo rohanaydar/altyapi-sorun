@@ -1,509 +1,933 @@
-// Anlaşmalı Mahalleler Altyapı Bildirim Sistemi - Database
-const DoguGuneydoguDatabase = {
-    // Database anahtarları
-    STORAGE_KEYS: {
-        REPORTS: 'dogu_guneydogu_altyapi_reports_v2',
-        SETTINGS: 'dogu_guneydogu_altyapi_settings_v2'
-    },
-        // Admin kullanıcı bilgileri
-        const ADMIN_CREDENTIALS = {
-            username: 'mardinli',
-            password: 'amed2147'
-        };
+/**
+ * ANLAŞMALI MAHALLELER ALTYAPI SİSTEMİ
+ * Local Storage Veritabanı Yönetimi
+ * 
+ * @description: Tüm bildirim verileri tarayıcının Local Storage'ında saklanır.
+ * Veri yapısı: JSON formatında şifrelenmemiş
+ * Yedekleme: JSON dosyası olarak indirilebilir/geri yüklenebilir
+ */
 
-        // Gizli admin butonu
-        document.getElementById('secretAdminBtn').addEventListener('click', function() {
-            document.getElementById('passwordModal').classList.add('active');
-        });
-
-        // Admin login formu
-        document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const username = document.getElementById('adminUsername').value;
-            const password = document.getElementById('adminPassword').value;
-            
-            if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
-                // Giriş başarılı
-                closePasswordModal();
-                toggleAdminPanel();
-            } else {
-                // Giriş başarısız
-                document.getElementById('loginError').style.display = 'block';
-                document.getElementById('adminPassword').value = '';
-                document.getElementById('adminPassword').focus();
-                
-                // 3 saniye sonra hata mesajını gizle
-                setTimeout(() => {
-                    document.getElementById('loginError').style.display = 'none';
-                }, 3000);
-            }
-        });
-
-        // Password modal'ı kapat
-        function closePasswordModal() {
-            document.getElementById('passwordModal').classList.remove('active');
-            document.getElementById('adminLoginForm').reset();
-            document.getElementById('loginError').style.display = 'none';
-        }
-
-        // Admin panelini aç/kapa
-        function toggleAdminPanel() {
-            const panel = document.getElementById('adminPanel');
-            panel.classList.toggle('active');
-            
-            if (panel.classList.contains('active')) {
-                loadAdminReports();
-            }
-        }
-    // Database'i başlat
-    init() {
-        console.log('Doğu & Güneydoğu Database başlatılıyor...');
-        
-        // Eğer reports yoksa, boş array oluştur
-        if (!this.getAllReports()) {
-            localStorage.setItem(this.STORAGE_KEYS.REPORTS, JSON.stringify([]));
-        }
-        
-        // Settings yoksa oluştur
-        if (!this.getSettings()) {
-            this.saveSettings({
-                version: '2.0.0',
-                lastBackup: null,
-                totalReports: 0
-            });
-        }
-        
-        return this;
+const Database = {
+    // VERİTABANI ANAHTARLARI
+    DB_KEYS: {
+        BILDIRIMLER: 'altyapi-bildirimler',
+        SAYACLAR: 'altyapi-sayaclar',
+        ARSIV: 'altyapi-arsiv',
+        AYARLAR: 'altyapi-ayarlar'
     },
 
-    // Tüm raporları getir
-    getAllReports() {
+    // BİLDİRİM DURUMLARI
+    DURUMLAR: {
+        BEKLIYOR: 'pending',
+        ONAYLANDI: 'approved',
+        DEVAM_EDIYOR: 'in_progress',
+        TAMAMLANDI: 'completed',
+        REDDEDILDI: 'rejected'
+    },
+
+    // İLİŞKİLİ ŞEHİR KISALTMALARI
+    SEHIR_KISALTMALARI: {
+        'Diyarbakır': 'DB',
+        'Erzurum': 'ERZ',
+        'Şanlıurfa': 'URFA',
+        'Gaziantep': 'GAZ',
+        'Mardin': 'MRD',
+        'Batman': 'BTM',
+        'Siirt': 'Sİİ',
+        'Şırnak': 'SİR',
+        'Hakkari': 'HAK',
+        'Van': 'VAN',
+        'Muş': 'MUŞ',
+        'Bitlis': 'BİT',
+        'Bingöl': 'BİN',
+        'Tunceli': 'TUN',
+        'Elazığ': 'ELZ',
+        'Malatya': 'MAL',
+        'Adıyaman': 'ADY',
+        'Kilis': 'KİL',
+        'Osmaniye': 'OSM',
+        'Hatay': 'HAT'
+    },
+
+    /**
+     * YENİ BİLDİRİM EKLE
+     * @param {Object} bildirimData - Bildirim verisi
+     * @returns {Object} - Eklenen bildirim veya hata
+     */
+    bildirimEkle: function(bildirimData) {
         try {
-            const data = localStorage.getItem(this.STORAGE_KEYS.REPORTS);
-            return data ? JSON.parse(data) : [];
+            // 1. ZORUNLU ALAN KONTROLÜ
+            const zorunluAlanlar = ['il', 'ilce', 'mahalle', 'sokak', 'problemTipi'];
+            for (const alan of zorunluAlanlar) {
+                if (!bildirimData[alan] || bildirimData[alan].trim() === '') {
+                    return {
+                        success: false,
+                        error: `Zorunlu alan eksik: ${alan}`,
+                        code: 'MISSING_REQUIRED_FIELD'
+                    };
+                }
+            }
+
+            // 2. BİLDİRİM ID'Sİ OLUŞTUR (Şehir-YılAyGün-SıraNo)
+            const tarih = new Date();
+            const tarihStr = tarih.toISOString().split('T')[0].replace(/-/g, '');
+            const sehirKodu = this.SEHIR_KISALTMALARI[bildirimData.il] || 'GEN';
+            
+            // Sıra numarasını al/güncelle
+            const sayac = this._siraNoAl(sehirKodu, tarihStr);
+            const bildirimId = `${sehirKodu}-${tarihStr}-${sayac.toString().padStart(3, '0')}`;
+
+            // 3. TAM BİLDİRİM OBJESİ OLUŞTUR
+            const yeniBildirim = {
+                // Sistem alanları
+                id: bildirimId,
+                takipKodu: bildirimId, // ID ile aynı
+                olusturmaTarihi: tarih.toISOString(),
+                sonGuncelleme: tarih.toISOString(),
+                
+                // Konum bilgileri
+                il: bildirimData.il,
+                ilce: bildirimData.ilce,
+                mahalle: bildirimData.mahalle,
+                sokak: bildirimData.sokak,
+                sokakDetayi: bildirimData.sokakDetayi || '',
+                
+                // Problem bilgileri
+                problemTipi: bildirimData.problemTipi,
+                problemEmoji: bildirimData.problemEmoji || '⚠️',
+                aciklama: bildirimData.aciklama || '',
+                oncelik: bildirimData.oncelik || 'Orta',
+                
+                // İletişim ve medya
+                fotograf: bildirimData.fotograf || '', // Base64 string
+                fotografBoyut: bildirimData.fotograf ? Math.round(bildirimData.fotograf.length * 3 / 4) : 0,
+                iletisimBilgisi: bildirimData.iletisimBilgisi || '',
+                eposta: bildirimData.eposta || '',
+                
+                // Durum ve takip
+                durum: this.DURUMLAR.BEKLIYOR,
+                durumGecmisi: [{
+                    durum: this.DURUMLAR.BEKLIYOR,
+                    tarih: tarih.toISOString(),
+                    aciklama: 'Bildirim oluşturuldu'
+                }],
+                
+                // Koordinatlar (varsa)
+                koordinatlar: bildirimData.koordinatlar || null,
+                adres: bildirimData.adres || '',
+                
+                // Sistem metadata
+                goruntulenmeSayisi: 0,
+                sonGoruntulenme: null,
+                etiketler: bildirimData.etiketler || []
+            };
+
+            // 4. FOTOĞRAF BOYUT KONTROLÜ (max 2MB Base64)
+            if (yeniBildirim.fotografBoyut > 2 * 1024 * 1024) {
+                return {
+                    success: false,
+                    error: 'Fotoğraf boyutu 2MB sınırını aşıyor',
+                    code: 'PHOTO_TOO_LARGE'
+                };
+            }
+
+            // 5. LOCAL STORAGE'A KAYDET
+            const tumBildirimler = this.tumBildirimleriGetir();
+            tumBildirimler.push(yeniBildirim);
+            localStorage.setItem(this.DB_KEYS.BILDIRIMLER, JSON.stringify(tumBildirimler));
+
+            // 6. SAYACI GÜNCELLE
+            this._siraNoGuncelle(sehirKodu, tarihStr, sayac + 1);
+
+            console.log(`✅ Yeni bildirim eklendi: ${bildirimId}`);
+            
+            return {
+                success: true,
+                data: yeniBildirim,
+                message: 'Bildirim başarıyla kaydedildi'
+            };
+
         } catch (error) {
-            console.error('Raporlar yüklenirken hata:', error);
+            console.error('Bildirim eklenirken hata:', error);
+            return {
+                success: false,
+                error: 'Sistem hatası: ' + error.message,
+                code: 'SYSTEM_ERROR'
+            };
+        }
+    },
+
+    /**
+     * TÜM BİLDİRİMLERİ GETİR (Arşiv hariç)
+     * @returns {Array} - Tüm aktif bildirimler
+     */
+    tumBildirimleriGetir: function() {
+        try {
+            const bildirimler = localStorage.getItem(this.DB_KEYS.BILDIRIMLER);
+            if (!bildirimler) return [];
+            
+            return JSON.parse(bildirimler);
+        } catch (error) {
+            console.error('Bildirimler getirilirken hata:', error);
             return [];
         }
     },
 
-    // ID'ye göre rapor getir
-    getReport(id) {
-        const reports = this.getAllReports();
-        return reports.find(report => report.id === id);
-    },
-
-    // Yeni rapor kaydet
-    saveReport(reportData) {
+    /**
+     * FİLTRELİ BİLDİRİM GETİR
+     * @param {Object} filtreler - Filtreleme kriterleri
+     * @returns {Array} - Filtrelenmiş bildirimler
+     */
+    filtreliBildirimGetir: function(filtreler = {}) {
         try {
-            const reports = this.getAllReports();
+            let bildirimler = this.tumBildirimleriGetir();
             
-            // Rapor ID kontrolü (eğer yoksa oluştur)
-            if (!reportData.id) {
-                reportData.id = 'DB-' + Date.now().toString().slice(-8);
+            // İl filtreleme
+            if (filtreler.il) {
+                bildirimler = bildirimler.filter(b => b.il === filtreler.il);
             }
             
-            // Tarih ekle (eğer yoksa)
-            if (!reportData.tarih) {
-                reportData.tarih = new Date().toLocaleString('tr-TR');
+            // İlçe filtreleme
+            if (filtreler.ilce) {
+                bildirimler = bildirimler.filter(b => b.ilce === filtreler.ilce);
             }
             
-            // Durum ekle (eğer yoksa)
-            if (!reportData.durum) {
-                reportData.durum = 'pending';
+            // Mahalle filtreleme
+            if (filtreler.mahalle) {
+                bildirimler = bildirimler.filter(b => b.mahalle === filtreler.mahalle);
             }
             
-            // Koordinat ekle (eğer yoksa rastgele)
-            if (!reportData.koordinat) {
-                const illerKoordinat = {
-                    'Diyarbakır': [37.9144, 40.2306],
-                    'Şanlıurfa': [37.1591, 38.7969],
-                    'Gaziantep': [37.0662, 37.3833],
-                    'Mardin': [37.3122, 40.7356],
-                    'Batman': [37.8812, 41.1351],
-                    'Siirt': [37.9443, 41.9329],
-                    'Şırnak': [37.5184, 42.4549],
-                    'Hakkari': [37.5744, 43.7408],
-                    'Van': [38.5011, 43.3730],
-                    'Muş': [38.9462, 41.7539],
-                    'Bitlis': [38.3938, 42.1232],
-                    'Bingöl': [38.8853, 40.4986],
-                    'Tunceli': [39.1061, 39.5482],
-                    'Elazığ': [38.6810, 39.2264],
-                    'Malatya': [38.3552, 38.3095],
-                    'Adıyaman': [37.7648, 38.2786],
-                    'Kilis': [36.7184, 37.1212],
-                    'Osmaniye': [37.0746, 36.2464],
-                    'Hatay': [36.4018, 36.3498]
-                };
-                
-                const ilKoordinat = illerKoordinat[reportData.il] || [38.9637, 35.2433];
-                reportData.koordinat = {
-                    lat: ilKoordinat[0] + (Math.random() - 0.5) * 0.1,
-                    lng: ilKoordinat[1] + (Math.random() - 0.5) * 0.1
-                };
+            // Durum filtreleme
+            if (filtreler.durum) {
+                bildirimler = bildirimler.filter(b => b.durum === filtreler.durum);
             }
             
-            // Raporu ekle
-            reports.unshift(reportData);
+            // Problem tipi filtreleme
+            if (filtreler.problemTipi) {
+                bildirimler = bildirimler.filter(b => b.problemTipi === filtreler.problemTipi);
+            }
             
-            // Kaydet
-            localStorage.setItem(this.STORAGE_KEYS.REPORTS, JSON.stringify(reports));
+            // Öncelik filtreleme
+            if (filtreler.oncelik) {
+                bildirimler = bildirimler.filter(b => b.oncelik === filtreler.oncelik);
+            }
             
-            // İstatistikleri güncelle
-            this.updateStatistics();
+            // Tarih aralığı filtreleme
+            if (filtreler.baslangicTarihi) {
+                const baslangic = new Date(filtreler.baslangicTarihi);
+                bildirimler = bildirimler.filter(b => new Date(b.olusturmaTarihi) >= baslangic);
+            }
             
-            console.log('Rapor kaydedildi:', reportData.id);
-            return true;
+            if (filtreler.bitisTarihi) {
+                const bitis = new Date(filtreler.bitisTarihi);
+                bildirimler = bildirimler.filter(b => new Date(b.olusturmaTarihi) <= bitis);
+            }
             
-        } catch (error) {
-            console.error('Rapor kaydedilirken hata:', error);
-            return false;
-        }
-    },
-
-    // Rapor durumunu güncelle
-    updateReportStatus(reportId, newStatus, adminNote = '') {
-        try {
-            const reports = this.getAllReports();
-            const reportIndex = reports.findIndex(r => r.id === reportId);
-            
-            if (reportIndex !== -1) {
-                reports[reportIndex].durum = newStatus;
-                
-                // Admin notu ekle
-                if (adminNote) {
-                    reports[reportIndex].adminNot = adminNote;
+            // Sıralama
+            if (filtreler.sirala) {
+                switch (filtreler.sirala) {
+                    case 'tarih_azalan':
+                        bildirimler.sort((a, b) => new Date(b.olusturmaTarihi) - new Date(a.olusturmaTarihi));
+                        break;
+                    case 'tarih_artan':
+                        bildirimler.sort((a, b) => new Date(a.olusturmaTarihi) - new Date(b.olusturmaTarihi));
+                        break;
+                    case 'oncelik':
+                        const oncelikSiralama = { 'Acil': 4, 'Yüksek': 3, 'Orta': 2, 'Düşük': 1 };
+                        bildirimler.sort((a, b) => oncelikSiralama[b.oncelik] - oncelikSiralama[a.oncelik]);
+                        break;
                 }
-                
-                // Güncelleme tarihi ekle
-                reports[reportIndex].guncellemeTarihi = new Date().toLocaleString('tr-TR');
-                
-                // Kaydet
-                localStorage.setItem(this.STORAGE_KEYS.REPORTS, JSON.stringify(reports));
-                
-                console.log(`Rapor ${reportId} durumu güncellendi: ${newStatus}`);
-                return true;
             }
             
-            console.warn('Rapor bulunamadı:', reportId);
-            return false;
+            return bildirimler;
             
         } catch (error) {
-            console.error('Rapor güncellenirken hata:', error);
-            return false;
+            console.error('Filtreli bildirim getirilirken hata:', error);
+            return [];
         }
     },
 
-    // Rapor sil
-    deleteReport(reportId) {
+    /**
+     * BİLDİRİM DURUMU GÜNCELLE
+     * @param {string} bildirimId - Bildirim ID
+     * @param {string} yeniDurum - Yeni durum
+     * @param {string} aciklama - Durum değişikliği açıklaması
+     * @returns {Object} - Güncelleme sonucu
+     */
+    durumGuncelle: function(bildirimId, yeniDurum, aciklama = '') {
         try {
-            const reports = this.getAllReports();
-            const filteredReports = reports.filter(r => r.id !== reportId);
+            const bildirimler = this.tumBildirimleriGetir();
+            const index = bildirimler.findIndex(b => b.id === bildirimId);
             
-            localStorage.setItem(this.STORAGE_KEYS.REPORTS, JSON.stringify(filteredReports));
+            if (index === -1) {
+                return {
+                    success: false,
+                    error: 'Bildirim bulunamadı',
+                    code: 'NOT_FOUND'
+                };
+            }
             
-            console.log('Rapor silindi:', reportId);
-            return true;
+            // Eski durumu kaydet
+            const eskiDurum = bildirimler[index].durum;
             
-        } catch (error) {
-            console.error('Rapor silinirken hata:', error);
-            return false;
-        }
-    },
-
-    // Filtrelenmiş raporları getir
-    getFilteredReports(filters = {}) {
-        let reports = this.getAllReports();
-        
-        // Tüm filtreler
-        if (filters.durum) {
-            reports = reports.filter(r => r.durum === filters.durum);
-        }
-        if (filters.il) {
-            reports = reports.filter(r => r.il === filters.il);
-        }
-        if (filters.ilce) {
-            reports = reports.filter(r => r.ilce === filters.ilce);
-        }
-        if (filters.oncelik) {
-            reports = reports.filter(r => r.oncelik === filters.oncelik);
-        }
-        if (filters.problemTipi) {
-            reports = reports.filter(r => r.problemTipi === filters.problemTipi);
-        }
-        if (filters.baslangicTarihi && filters.bitisTarihi) {
-            reports = reports.filter(r => {
-                const reportDate = new Date(r.tarih.split(' ')[0].split('.').reverse().join('-'));
-                const startDate = new Date(filters.baslangicTarihi);
-                const endDate = new Date(filters.bitisTarihi);
-                return reportDate >= startDate && reportDate <= endDate;
+            // Durumu güncelle
+            bildirimler[index].durum = yeniDurum;
+            bildirimler[index].sonGuncelleme = new Date().toISOString();
+            
+            // Durum geçmişine ekle
+            bildirimler[index].durumGecmisi.push({
+                durum: yeniDurum,
+                tarih: new Date().toISOString(),
+                aciklama: aciklama || `${eskiDurum} → ${yeniDurum}`
             });
-        }
-        
-        return reports;
-    },
-
-    // İstatistikleri getir
-    getStatistics() {
-        const reports = this.getAllReports();
-        const today = new Date().toLocaleDateString('tr-TR');
-        
-        return {
-            toplam: reports.length,
-            bekleyen: reports.filter(r => r.durum === 'pending').length,
-            onaylanan: reports.filter(r => r.durum === 'approved').length,
-            reddedilen: reports.filter(r => r.durum === 'rejected').length,
-            tamamlanan: reports.filter(r => r.durum === 'completed').length,
-            bugunku: reports.filter(r => r.tarih.includes(today.split(' ')[0])).length,
             
-            ilBazinda: reports.reduce((acc, report) => {
-                acc[report.il] = (acc[report.il] || 0) + 1;
-                return acc;
-            }, {}),
+            // Tamamlandıysa tamamlama tarihini ekle
+            if (yeniDurum === this.DURUMLAR.TAMAMLANDI) {
+                bildirimler[index].tamamlamaTarihi = new Date().toISOString();
+            }
             
-            ilceBazinda: reports.reduce((acc, report) => {
-                const key = `${report.il} - ${report.ilce}`;
-                acc[key] = (acc[key] || 0) + 1;
-                return acc;
-            }, {}),
+            // Local Storage'a kaydet
+            localStorage.setItem(this.DB_KEYS.BILDIRIMLER, JSON.stringify(bildirimler));
             
-            problemBazinda: reports.reduce((acc, report) => {
-                acc[report.problemTipi] = (acc[report.problemTipi] || 0) + 1;
-                return acc;
-            }, {}),
+            // 1 yıldan eski tamamlanmış bildirimleri arşivle
+            if (yeniDurum === this.DURUMLAR.TAMAMLANDI) {
+                this._eskiBildirimleriArsivle();
+            }
             
-            oncelikBazinda: reports.reduce((acc, report) => {
-                acc[report.oncelik] = (acc[report.oncelik] || 0) + 1;
-                return acc;
-            }, {}),
+            console.log(`✅ Bildirim durumu güncellendi: ${bildirimId} -> ${yeniDurum}`);
             
-            gunlukTrend: reports.reduce((acc, report) => {
-                const date = report.tarih.split(' ')[0];
-                acc[date] = (acc[date] || 0) + 1;
-                return acc;
-            }, {})
-        };
-    },
-
-    // İstatistikleri güncelle
-    updateStatistics() {
-        const reports = this.getAllReports();
-        const settings = this.getSettings();
-        
-        settings.totalReports = reports.length;
-        settings.lastUpdate = new Date().toISOString();
-        
-        this.saveSettings(settings);
-    },
-
-    // Database'i temizle (tüm verileri sil)
-    clearDatabase() {
-        try {
-            localStorage.setItem(this.STORAGE_KEYS.REPORTS, JSON.stringify([]));
-            
-            const settings = this.getSettings();
-            settings.totalReports = 0;
-            this.saveSettings(settings);
-            
-            console.log('Database temizlendi.');
-            return true;
-        } catch (error) {
-            console.error('Database temizlenirken hata:', error);
-            return false;
-        }
-    },
-
-    // Database'i yedekle (indir)
-    backupDatabase() {
-        try {
-            const data = {
-                reports: this.getAllReports(),
-                settings: this.getSettings(),
-                timestamp: new Date().toISOString(),
-                version: '2.0.0',
-                totalReports: this.getAllReports().length
+            return {
+                success: true,
+                data: bildirimler[index],
+                message: 'Durum başarıyla güncellendi'
             };
             
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `dogu-guneydogu-altyapi-backup-${new Date().toISOString().slice(0,10)}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            // Backup tarihini kaydet
-            const settings = this.getSettings();
-            settings.lastBackup = new Date().toISOString();
-            this.saveSettings(settings);
-            
-            return true;
         } catch (error) {
-            console.error('Backup alınırken hata:', error);
-            return false;
+            console.error('Durum güncellenirken hata:', error);
+            return {
+                success: false,
+                error: 'Sistem hatası: ' + error.message,
+                code: 'SYSTEM_ERROR'
+            };
         }
     },
 
-    // Database'i geri yükle
-    restoreDatabase(jsonData) {
+    /**
+     * BİLDİRİM SİL
+     * @param {string} bildirimId - Bildirim ID
+     * @param {boolean} arsiveEkle - Arşive eklenip eklenmeyeceği
+     * @returns {Object} - Silme sonucu
+     */
+    bildirimSil: function(bildirimId, arsiveEkle = true) {
         try {
-            const data = JSON.parse(jsonData);
+            const bildirimler = this.tumBildirimleriGetir();
+            const index = bildirimler.findIndex(b => b.id === bildirimId);
             
-            if (data.reports && Array.isArray(data.reports)) {
-                localStorage.setItem(this.STORAGE_KEYS.REPORTS, JSON.stringify(data.reports));
-                
-                if (data.settings) {
-                    this.saveSettings(data.settings);
-                }
-                
-                console.log('Database geri yüklendi.');
-                return true;
+            if (index === -1) {
+                return {
+                    success: false,
+                    error: 'Bildirim bulunamadı',
+                    code: 'NOT_FOUND'
+                };
             }
             
-            throw new Error('Geçersiz backup verisi');
+            const silinecekBildirim = bildirimler[index];
+            
+            // Arşive ekle
+            if (arsiveEkle) {
+                this._arsiveEkle(silinecekBildirim, 'manuel_silme');
+            }
+            
+            // Diziden çıkar
+            bildirimler.splice(index, 1);
+            
+            // Local Storage'a kaydet
+            localStorage.setItem(this.DB_KEYS.BILDIRIMLER, JSON.stringify(bildirimler));
+            
+            console.log(`🗑️ Bildirim silindi: ${bildirimId}`);
+            
+            return {
+                success: true,
+                message: 'Bildirim başarıyla silindi',
+                data: { id: bildirimId }
+            };
+            
         } catch (error) {
-            console.error('Database geri yüklenirken hata:', error);
-            return false;
+            console.error('Bildirim silinirken hata:', error);
+            return {
+                success: false,
+                error: 'Sistem hatası: ' + error.message,
+                code: 'SYSTEM_ERROR'
+            };
         }
     },
 
-    // Ayarları kaydet
-    saveSettings(settings) {
+    /**
+     * BİLDİRİM İSTATİSTİKLERİ
+     * @returns {Object} - Tüm istatistikler
+     */
+    istatistikleriGetir: function() {
         try {
-            localStorage.setItem(this.STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
-            return true;
+            const bildirimler = this.tumBildirimleriGetir();
+            const arsiv = this._arsiviGetir();
+            const tumVeriler = [...bildirimler, ...arsiv];
+            
+            // Temel istatistikler
+            const toplamBildirim = tumVeriler.length;
+            const aktifBildirim = bildirimler.length;
+            const arsivlenmisBildirim = arsiv.length;
+            
+            // Duruma göre sayılar
+            const durumSayilari = {};
+            Object.values(this.DURUMLAR).forEach(durum => {
+                durumSayilari[durum] = bildirimler.filter(b => b.durum === durum).length;
+            });
+            
+            // Şehirlere göre dağılım
+            const sehirSayilari = {};
+            tumVeriler.forEach(bildirim => {
+                const sehir = bildirim.il;
+                sehirSayilari[sehir] = (sehirSayilari[sehir] || 0) + 1;
+            });
+            
+            // Problem tiplerine göre dağılım
+            const problemSayilari = {};
+            tumVeriler.forEach(bildirim => {
+                const problem = bildirim.problemTipi;
+                problemSayilari[problem] = (problemSayilari[problem] || 0) + 1;
+            });
+            
+            // Son 30 günlük aktivite
+            const son30Gun = [];
+            const bugun = new Date();
+            
+            for (let i = 29; i >= 0; i--) {
+                const gun = new Date(bugun);
+                gun.setDate(bugun.getDate() - i);
+                const gunStr = gun.toISOString().split('T')[0];
+                
+                const gunlukBildirim = tumVeriler.filter(b => {
+                    const bildirimTarihi = new Date(b.olusturmaTarihi).toISOString().split('T')[0];
+                    return bildirimTarihi === gunStr;
+                }).length;
+                
+                son30Gun.push({
+                    tarih: gunStr,
+                    sayi: gunlukBildirim
+                });
+            }
+            
+            // Ortalama çözüm süresi (tamamlananlar için)
+            const tamamlananlar = tumVeriler.filter(b => b.durum === this.DURUMLAR.TAMAMLANDI && b.tamamlamaTarihi);
+            let ortalamaCozumSuresi = 0;
+            
+            if (tamamlananlar.length > 0) {
+                const toplamGun = tamamlananlar.reduce((toplam, bildirim) => {
+                    const baslangic = new Date(bildirim.olusturmaTarihi);
+                    const bitis = new Date(bildirim.tamamlamaTarihi);
+                    const gunFarki = Math.ceil((bitis - baslangic) / (1000 * 60 * 60 * 24));
+                    return toplam + gunFarki;
+                }, 0);
+                
+                ortalamaCozumSuresi = Math.round(toplamGun / tamamlananlar.length);
+            }
+            
+            return {
+                toplamBildirim,
+                aktifBildirim,
+                arsivlenmisBildirim,
+                durumSayilari,
+                sehirSayilari,
+                problemSayilari,
+                son30Gun,
+                ortalamaCozumSuresi,
+                enCokBildirimSehir: Object.keys(sehirSayilari).reduce((a, b) => sehirSayilari[a] > sehirSayilari[b] ? a : b),
+                enCokBildirimProblem: Object.keys(problemSayilari).reduce((a, b) => problemSayilari[a] > problemSayilari[b] ? a : b)
+            };
+            
         } catch (error) {
-            console.error('Ayarlar kaydedilirken hata:', error);
-            return false;
+            console.error('İstatistikler getirilirken hata:', error);
+            return {
+                toplamBildirim: 0,
+                aktifBildirim: 0,
+                arsivlenmisBildirim: 0,
+                durumSayilari: {},
+                sehirSayilari: {},
+                problemSayilari: {},
+                son30Gun: [],
+                ortalamaCozumSuresi: 0,
+                enCokBildirimSehir: '',
+                enCokBildirimProblem: ''
+            };
         }
     },
 
-    // Ayarları getir
-    getSettings() {
+    /**
+     * EXCEL İÇİN VERİ HAZIRLA
+     * @returns {Array} - Excel'e uygun format
+     */
+    excelIcinHazirla: function() {
         try {
-            const data = localStorage.getItem(this.STORAGE_KEYS.SETTINGS);
-            return data ? JSON.parse(data) : {};
+            const bildirimler = this.tumBildirimleriGetir();
+            const arsiv = this._arsiviGetir();
+            const tumVeriler = [...bildirimler, ...arsiv];
+            
+            return tumVeriler.map(bildirim => ({
+                'ID': bildirim.id,
+                'Tarih': this._formatTarih(bildirim.olusturmaTarihi),
+                'İl': bildirim.il,
+                'İlçe': bildirim.ilce,
+                'Mahalle': bildirim.mahalle,
+                'Sokak/Cadde': bildirim.sokak,
+                'Sokak Detayı': bildirim.sokakDetayi || '',
+                'Problem Tipi': bildirim.problemTipi,
+                'Problem Emoji': bildirim.problemEmoji || '',
+                'Öncelik': bildirim.oncelik,
+                'Durum': this._durumAdiGetir(bildirim.durum),
+                'Fotoğraf': bildirim.fotograf ? 'Var' : 'Yok',
+                'Fotoğraf Boyutu': this._formatBoyut(bildirim.fotografBoyut || 0),
+                'İletişim Bilgisi': bildirim.iletisimBilgisi || '',
+                'E-posta': bildirim.eposta || '',
+                'Açıklama': bildirim.aciklama || '',
+                'Koordinatlar': bildirim.koordinatlar ? JSON.stringify(bildirim.koordinatlar) : '',
+                'Adres': bildirim.adres || '',
+                'Takip Kodu': bildirim.takipKodu,
+                'Son Güncelleme': this._formatTarih(bildirim.sonGuncelleme),
+                'Tamamlama Tarihi': bildirim.tamamlamaTarihi ? this._formatTarih(bildirim.tamamlamaTarihi) : '',
+                'Görüntülenme Sayısı': bildirim.goruntulenmeSayisi || 0
+            }));
+            
         } catch (error) {
-            console.error('Ayarlar yüklenirken hata:', error);
+            console.error('Excel verisi hazırlanırken hata:', error);
+            return [];
+        }
+    },
+
+    /**
+     * VERİ YEDEKLE (JSON İNDİR)
+     * @returns {Object} - Yedek veri
+     */
+    yedekAl: function() {
+        try {
+            const yedekVeri = {
+                meta: {
+                    versiyon: '1.0',
+                    olusturmaTarihi: new Date().toISOString(),
+                    sistem: 'Anlaşmalı Mahalleler Altyapı Sistemi'
+                },
+                bildirimler: this.tumBildirimleriGetir(),
+                arsiv: this._arsiviGetir(),
+                sayaclar: this._sayaclariGetir(),
+                ayarlar: this._ayarlariGetir(),
+                istatistikler: this.istatistikleriGetir()
+            };
+            
+            return {
+                success: true,
+                data: yedekVeri,
+                fileName: `altyapi-yedek-${new Date().toISOString().split('T')[0]}.json`,
+                message: 'Yedek başarıyla oluşturuldu'
+            };
+            
+        } catch (error) {
+            console.error('Yedek alınırken hata:', error);
+            return {
+                success: false,
+                error: 'Yedek oluşturulamadı: ' + error.message,
+                code: 'BACKUP_ERROR'
+            };
+        }
+    },
+
+    /**
+     * YEDEKTEN GERİ YÜKLE
+     * @param {Object} yedekData - Yedek verisi
+     * @param {boolean} mevcutVerileriKoru - Mevcut veriler korunsun mu
+     * @returns {Object} - Geri yükleme sonucu
+     */
+    yedekYukle: function(yedekData, mevcutVerileriKoru = true) {
+        try {
+            // Yedek veriyi doğrula
+            if (!yedekData || typeof yedekData !== 'object') {
+                return {
+                    success: false,
+                    error: 'Geçersiz yedek verisi',
+                    code: 'INVALID_BACKUP'
+                };
+            }
+            
+            // Mevcut verileri yedekle (isteğe bağlı)
+            let mevcutYedek = null;
+            if (mevcutVerileriKoru) {
+                mevcutYedek = this.yedekAl();
+            }
+            
+            // Bildirimleri geri yükle
+            if (yedekData.bildirimler && Array.isArray(yedekData.bildirimler)) {
+                if (!mevcutVerileriKoru) {
+                    localStorage.setItem(this.DB_KEYS.BILDIRIMLER, JSON.stringify(yedekData.bildirimler));
+                } else {
+                    const mevcutBildirimler = this.tumBildirimleriGetir();
+                    const birlesikBildirimler = [...mevcutBildirimler, ...yedekData.bildirimler];
+                    localStorage.setItem(this.DB_KEYS.BILDIRIMLER, JSON.stringify(birlesikBildirimler));
+                }
+            }
+            
+            // Arşivi geri yükle
+            if (yedekData.arsiv && Array.isArray(yedekData.arsiv)) {
+                const mevcutArsiv = this._arsiviGetir();
+                const birlesikArsiv = [...mevcutArsiv, ...yedekData.arsiv];
+                localStorage.setItem(this.DB_KEYS.ARSIV, JSON.stringify(birlesikArsiv));
+            }
+            
+            // Sayaçları geri yükle
+            if (yedekData.sayaclar && typeof yedekData.sayaclar === 'object') {
+                const mevcutSayaclar = this._sayaclariGetir();
+                const birlesikSayaclar = { ...mevcutSayaclar, ...yedekData.sayaclar };
+                localStorage.setItem(this.DB_KEYS.SAYACLAR, JSON.stringify(birlesikSayaclar));
+            }
+            
+            console.log('✅ Yedek başarıyla geri yüklendi');
+            
+            return {
+                success: true,
+                data: {
+                    bildirimSayisi: yedekData.bildirimler?.length || 0,
+                    arsivSayisi: yedekData.arsiv?.length || 0
+                },
+                message: 'Yedek başarıyla geri yüklendi'
+            };
+            
+        } catch (error) {
+            console.error('Yedek yüklenirken hata:', error);
+            return {
+                success: false,
+                error: 'Yedek yüklenemedi: ' + error.message,
+                code: 'RESTORE_ERROR'
+            };
+        }
+    },
+
+    /**
+     * VERİTABANINI TEMİZLE (Tüm verileri sil)
+     * @param {boolean} arsiviKoru - Arşiv korunsun mu
+     * @returns {Object} - Temizleme sonucu
+     */
+    veritabaniniTemizle: function(arsiviKoru = true) {
+        try {
+            // Onay iste (UI tarafında yapılacak)
+            
+            if (!arsiviKoru) {
+                localStorage.removeItem(this.DB_KEYS.ARSIV);
+            }
+            
+            localStorage.removeItem(this.DB_KEYS.BILDIRIMLER);
+            localStorage.removeItem(this.DB_KEYS.SAYACLAR);
+            localStorage.removeItem(this.DB_KEYS.AYARLAR);
+            
+            console.log('🗑️ Veritabanı temizlendi');
+            
+            return {
+                success: true,
+                message: 'Veritabanı başarıyla temizlendi'
+            };
+            
+        } catch (error) {
+            console.error('Veritabanı temizlenirken hata:', error);
+            return {
+                success: false,
+                error: 'Temizleme başarısız: ' + error.message,
+                code: 'CLEANUP_ERROR'
+            };
+        }
+    },
+
+    /**
+     * BİLDİRİM ARA (ID, takip kodu veya içerik ile)
+     * @param {string} aramaKelimesi - Aranacak kelime
+     * @returns {Array} - Bulunan bildirimler
+     */
+    bildirimAra: function(aramaKelimesi) {
+        try {
+            if (!aramaKelimesi || aramaKelimesi.trim() === '') {
+                return [];
+            }
+            
+            const kelime = aramaKelimesi.toLowerCase().trim();
+            const bildirimler = this.tumBildirimleriGetir();
+            
+            return bildirimler.filter(bildirim => {
+                // ID veya takip kodunda ara
+                if (bildirim.id.toLowerCase().includes(kelime) || 
+                    bildirim.takipKodu.toLowerCase().includes(kelime)) {
+                    return true;
+                }
+                
+                // Konum bilgilerinde ara
+                if (bildirim.il.toLowerCase().includes(kelime) ||
+                    bildirim.ilce.toLowerCase().includes(kelime) ||
+                    bildirim.mahalle.toLowerCase().includes(kelime) ||
+                    bildirim.sokak.toLowerCase().includes(kelime)) {
+                    return true;
+                }
+                
+                // Problem ve açıklamada ara
+                if (bildirim.problemTipi.toLowerCase().includes(kelime) ||
+                    (bildirim.aciklama && bildirim.aciklama.toLowerCase().includes(kelime))) {
+                    return true;
+                }
+                
+                // İletişim bilgisinde ara
+                if (bildirim.iletisimBilgisi && bildirim.iletisimBilgisi.toLowerCase().includes(kelime)) {
+                    return true;
+                }
+                
+                return false;
+            });
+            
+        } catch (error) {
+            console.error('Arama yapılırken hata:', error);
+            return [];
+        }
+    },
+
+    /**
+     * BİLDİRİM GÖRÜNTÜLENME SAYISINI ARTIR
+     * @param {string} bildirimId - Bildirim ID
+     */
+    goruntulenmeArtir: function(bildirimId) {
+        try {
+            const bildirimler = this.tumBildirimleriGetir();
+            const index = bildirimler.findIndex(b => b.id === bildirimId);
+            
+            if (index !== -1) {
+                bildirimler[index].goruntulenmeSayisi = (bildirimler[index].goruntulenmeSayisi || 0) + 1;
+                bildirimler[index].sonGoruntulenme = new Date().toISOString();
+                
+                localStorage.setItem(this.DB_KEYS.BILDIRIMLER, JSON.stringify(bildirimler));
+            }
+        } catch (error) {
+            console.error('Görüntülenme sayısı artırılırken hata:', error);
+        }
+    },
+
+    // ========== PRIVATE METHODS ==========
+
+    /**
+     * SIRA NUMARASI AL
+     * @private
+     */
+    _siraNoAl: function(sehirKodu, tarihStr) {
+        try {
+            const sayaclar = this._sayaclariGetir();
+            const anahtar = `${sehirKodu}_${tarihStr}`;
+            
+            if (sayaclar[anahtar]) {
+                return sayaclar[anahtar];
+            }
+            
+            // Yeni tarih için 1'den başla
+            return 1;
+            
+        } catch (error) {
+            console.error('Sıra no alınırken hata:', error);
+            return 1;
+        }
+    },
+
+    /**
+     * SIRA NUMARASI GÜNCELLE
+     * @private
+     */
+    _siraNoGuncelle: function(sehirKodu, tarihStr, yeniSayac) {
+        try {
+            const sayaclar = this._sayaclariGetir();
+            const anahtar = `${sehirKodu}_${tarihStr}`;
+            
+            sayaclar[anahtar] = yeniSayac;
+            localStorage.setItem(this.DB_KEYS.SAYACLAR, JSON.stringify(sayaclar));
+            
+        } catch (error) {
+            console.error('Sıra no güncellenirken hata:', error);
+        }
+    },
+
+    /**
+     * SAYAÇLARI GETİR
+     * @private
+     */
+    _sayaclariGetir: function() {
+        try {
+            const sayaclar = localStorage.getItem(this.DB_KEYS.SAYACLAR);
+            return sayaclar ? JSON.parse(sayaclar) : {};
+        } catch (error) {
+            console.error('Sayaçlar getirilirken hata:', error);
             return {};
         }
     },
 
-    // Raporları coğrafi olarak filtrele
-    getReportsByLocation(lat, lng, radiusKm = 10) {
-        const reports = this.getAllReports();
-        
-        return reports.filter(report => {
-            if (!report.koordinat || !report.koordinat.lat || !report.koordinat.lng) {
-                return false;
-            }
-            
-            const distance = this.calculateDistance(
-                lat, lng,
-                report.koordinat.lat, report.koordinat.lng
-            );
-            
-            return distance <= radiusKm;
-        });
+    /**
+     * ARŞİVİ GETİR
+     * @private
+     */
+    _arsiviGetir: function() {
+        try {
+            const arsiv = localStorage.getItem(this.DB_KEYS.ARSIV);
+            return arsiv ? JSON.parse(arsiv) : [];
+        } catch (error) {
+            console.error('Arşiv getirilirken hata:', error);
+            return [];
+        }
     },
 
-    // İki koordinat arasındaki mesafeyi hesapla (km)
-    calculateDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371; // Earth's radius in km
-        const dLat = this.deg2rad(lat2 - lat1);
-        const dLon = this.deg2rad(lon2 - lon1);
-        const a = 
-            Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) * 
-            Math.sin(dLon/2) * Math.sin(dLon/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        return R * c;
+    /**
+     * AYARLARI GETİR
+     * @private
+     */
+    _ayarlariGetir: function() {
+        try {
+            const ayarlar = localStorage.getItem(this.DB_KEYS.AYARLAR);
+            return ayarlar ? JSON.parse(ayarlar) : {};
+        } catch (error) {
+            console.error('Ayarlar getirilirken hata:', error);
+            return {};
+        }
     },
 
-    // Dereceyi radyana çevir
-    deg2rad(deg) {
-        return deg * (Math.PI/180);
-    },
-
-    // Harita için marker verilerini getir
-    getMapMarkers() {
-        const reports = this.getAllReports();
-        
-        return reports.map(report => {
-            if (!report.koordinat) return null;
+    /**
+     * ARŞİVE EKLE
+     * @private
+     */
+    _arsiveEkle: function(bildirim, sebep) {
+        try {
+            const arsiv = this._arsiviGetir();
             
-            let color;
-            switch(report.durum) {
-                case 'pending': color = '#ffc107'; break; // Sarı
-                case 'approved': color = '#17a2b8'; break; // Mavi
-                case 'completed': color = '#28a745'; break; // Yeşil
-                case 'rejected': color = '#dc3545'; break; // Kırmızı
-                default: color = '#6c757d'; // Gri
-            }
-            
-            return {
-                id: report.id,
-                lat: report.koordinat.lat,
-                lng: report.koordinat.lng,
-                color: color,
-                title: `${report.il} - ${report.ilce}`,
-                content: `
-                    <strong>${report.il} - ${report.ilce}</strong><br>
-                    ${report.mahalle} ${report.sokak}<br>
-                    <strong>Problem:</strong> ${report.problemTipi}<br>
-                    <strong>Durum:</strong> ${report.durum === 'pending' ? 'Bekliyor' : 
-                                             report.durum === 'approved' ? 'Onaylandı' : 
-                                             report.durum === 'completed' ? 'Tamamlandı' : 'Reddedildi'}<br>
-                    <strong>Tarih:</strong> ${report.tarih}
-                `
+            const arsivKayit = {
+                ...bildirim,
+                arsivlenmeTarihi: new Date().toISOString(),
+                arsivlenmeSebebi: sebep
             };
-        }).filter(marker => marker !== null);
+            
+            arsiv.push(arsivKayit);
+            localStorage.setItem(this.DB_KEYS.ARSIV, JSON.stringify(arsiv));
+            
+        } catch (error) {
+            console.error('Arşive eklenirken hata:', error);
+        }
+    },
+
+    /**
+     * ESKİ BİLDİRİMLERİ ARŞİVLE (1 yıldan eski tamamlanmışlar)
+     * @private
+     */
+    _eskiBildirimleriArsivle: function() {
+        try {
+            const birYilOnce = new Date();
+            birYilOnce.setFullYear(birYilOnce.getFullYear() - 1);
+            
+            const bildirimler = this.tumBildirimleriGetir();
+            const arsivlenecekler = [];
+            
+            // 1 yıldan eski tamamlanmış bildirimleri bul
+            for (let i = bildirimler.length - 1; i >= 0; i--) {
+                const bildirim = bildirimler[i];
+                
+                if (bildirim.durum === this.DURUMLAR.TAMAMLANDI && bildirim.tamamlamaTarihi) {
+                    const tamamlamaTarihi = new Date(bildirim.tamamlamaTarihi);
+                    
+                    if (tamamlamaTarihi < birYilOnce) {
+                        arsivlenecekler.push(bildirim);
+                        bildirimler.splice(i, 1);
+                    }
+                }
+            }
+            
+            // Arşive ekle
+            if (arsivlenecekler.length > 0) {
+                const arsiv = this._arsiviGetir();
+                arsivlenecekler.forEach(bildirim => {
+                    const arsivKayit = {
+                        ...bildirim,
+                        arsivlenmeTarihi: new Date().toISOString(),
+                        arsivlenmeSebebi: 'otomatik_arsiv'
+                    };
+                    arsiv.push(arsivKayit);
+                });
+                
+                localStorage.setItem(this.DB_KEYS.ARSIV, JSON.stringify(arsiv));
+                localStorage.setItem(this.DB_KEYS.BILDIRIMLER, JSON.stringify(bildirimler));
+                
+                console.log(`📦 ${arsivlenecekler.length} bildirim arşivlendi`);
+            }
+            
+        } catch (error) {
+            console.error('Eski bildirimler arşivlenirken hata:', error);
+        }
+    },
+
+    /**
+     * TARİH FORMATLA (01.01.2026 22:24)
+     * @private
+     */
+    _formatTarih: function(isoString) {
+        try {
+            if (!isoString) return '';
+            
+            const tarih = new Date(isoString);
+            const gun = tarih.getDate().toString().padStart(2, '0');
+            const ay = (tarih.getMonth() + 1).toString().padStart(2, '0');
+            const yil = tarih.getFullYear();
+            const saat = tarih.getHours().toString().padStart(2, '0');
+            const dakika = tarih.getMinutes().toString().padStart(2, '0');
+            
+            return `${gun}.${ay}.${yil} ${saat}:${dakika}`;
+        } catch (error) {
+            return isoString;
+        }
+    },
+
+    /**
+     * DURUM ADINI GETİR
+     * @private
+     */
+    _durumAdiGetir: function(durumKodu) {
+        const durumlar = {
+            'pending': 'Beklemede',
+            'approved': 'Onaylandı',
+            'in_progress': 'Devam Ediyor',
+            'completed': 'Tamamlandı',
+            'rejected': 'Reddedildi'
+        };
+        
+        return durumlar[durumKodu] || durumKodu;
+    },
+
+    /**
+     * BOYUT FORMATLA
+     * @private
+     */
+    _formatBoyut: function(bytes) {
+        if (bytes === 0) return '0 Byte';
+        
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
 };
 
-// Database'i başlat ve global yap
-window.database = DoguGuneydoguDatabase.init();
+// Global erişim için export
+if (typeof window !== 'undefined') {
+    window.Database = Database;
+}
 
-// Kullanım örnekleri:
-console.log(`
-DOĞU & GÜNEYDOĞU ALTYAPI DATABASE KULLANIMI:
-
-1. Yeni bildirim ekle:
-   window.database.saveReport({
-       il: "Diyarbakır",
-       ilce: "Bağlar",
-       mahalle: "Kaynartepe",
-       sokak: "293. Sokak",
-       problemTipi: "Yol Bozukluğu",
-       oncelik: "high",
-       aciklama: "Yolda çukur var",
-       isim: "Ahmet Yılmaz",
-       telefon: "0532 123 4567",
-       koordinat: { lat: 37.9144, lng: 40.2306 }
-   });
-
-2. Tüm bildirimleri getir:
-   window.database.getAllReports();
-
-3. Filtreli arama:
-   window.database.getFilteredReports({
-       il: "Diyarbakır",
-       durum: "pending",
-       oncelik: "high"
-   });
-
-4. İstatistikleri getir:
-   window.database.getStatistics();
-
-5. Harita marker'ları:
-   window.database.getMapMarkers();
-
-6. Database yedekle:
-   window.database.backupDatabase();
-`);
-
-console.log('Database başlatıldı. Toplam bildirim:', window.database.getAllReports().length);
+// Sayfa yüklendiğinde otomatik temizleme kontrolü
+document.addEventListener('DOMContentLoaded', function() {
+    // Eski tamamlanmış bildirimleri arşivle
+    setTimeout(() => {
+        Database._eskiBildirimleriArsivle();
+    }, 5000); // 5 saniye sonra çalıştır
+    
+    console.log('✅ database.js başarıyla yüklendi!');
+});
