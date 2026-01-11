@@ -1,0 +1,3562 @@
+<!-- 
+  BİLDİRİM FORMU COMPONENT
+  SPA için tasarlandı - App.js tarafından yüklenir
+  8 adımlı wizard, real-time validation, harita entegrasyonlu
+-->
+
+<div class="report-form-container" id="reportFormContainer">
+  <!-- FORM BAŞLIĞI VE İLERLEME -->
+  <div class="form-header">
+    <div class="container">
+      <div class="header-content">
+        <button class="btn btn-icon btn-text" id="cancelFormBtn" aria-label="Formu iptal et">
+          <i class="fas fa-arrow-left"></i>
+          <span>İptal</span>
+        </button>
+        
+        <div class="form-progress">
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 12.5%"></div>
+          </div>
+          <div class="progress-steps">
+            <span class="step-text" id="currentStepText">Adım 1/8</span>
+            <span class="step-title" id="currentStepTitle">Şehir Seçimi</span>
+          </div>
+        </div>
+        
+        <div class="header-actions">
+          <button class="btn btn-icon" id="saveDraftBtn" title="Taslağı Kaydet">
+            <i class="fas fa-save"></i>
+          </button>
+          <button class="btn btn-icon" id="helpBtn" title="Yardım">
+            <i class="fas fa-question-circle"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORM İÇERİĞİ -->
+  <div class="form-content">
+    <div class="container">
+      <div class="form-wizard">
+        <!-- ADIM GÖSTERGELERİ -->
+        <div class="wizard-steps" id="wizardSteps">
+          <div class="wizard-step" data-step="1">
+            <div class="wizard-step-icon">1</div>
+            <div class="wizard-step-label">Şehir</div>
+          </div>
+          <div class="wizard-step" data-step="2">
+            <div class="wizard-step-icon">2</div>
+            <div class="wizard-step-label">İlçe</div>
+          </div>
+          <div class="wizard-step" data-step="3">
+            <div class="wizard-step-icon">3</div>
+            <div class="wizard-step-label">Mahalle</div>
+          </div>
+          <div class="wizard-step" data-step="4">
+            <div class="wizard-step-icon">4</div>
+            <div class="wizard-step-label">Sokak</div>
+          </div>
+          <div class="wizard-step" data-step="5">
+            <div class="wizard-step-icon">5</div>
+            <div class="wizard-step-label">Detay</div>
+          </div>
+          <div class="wizard-step" data-step="6">
+            <div class="wizard-step-icon">6</div>
+            <div class="wizard-step-label">Problem</div>
+          </div>
+          <div class="wizard-step" data-step="7">
+            <div class="wizard-step-icon">7</div>
+            <div class="wizard-step-label">Fotoğraf</div>
+          </div>
+          <div class="wizard-step" data-step="8">
+            <div class="wizard-step-icon">8</div>
+            <div class="wizard-step-label">Önizleme</div>
+          </div>
+          <div class="wizard-progress" id="wizardProgress"></div>
+        </div>
+
+        <!-- FORM ADIMLARI -->
+        <div class="wizard-content">
+          <!-- ADIM 1: ŞEHİR SEÇİMİ -->
+          <div class="wizard-step-content active" data-step="1">
+            <div class="step-header">
+              <h2 class="step-title">Şehir Seçimi</h2>
+              <p class="step-description">Lütfen bildirim yapmak istediğiniz şehri seçin</p>
+            </div>
+            
+            <div class="step-body">
+              <div class="step-layout">
+                <!-- ŞEHİR LİSTESİ -->
+                <div class="form-section">
+                  <label for="citySelect" class="form-label">
+                    <span class="label-text">Şehir</span>
+                    <span class="label-required">*</span>
+                  </label>
+                  <select id="citySelect" class="form-control" required>
+                    <option value="">Şehir seçin</option>
+                    <!-- JS ile doldurulacak -->
+                  </select>
+                  <div class="form-error" id="cityError"></div>
+                </div>
+                
+                <!-- HARİTA GÖSTERİMİ (ŞEHİR) -->
+                <div class="map-section">
+                  <div class="map-header">
+                    <h3 class="map-title">Şehir Haritası</h3>
+                    <div class="map-actions">
+                      <button class="btn btn-icon btn-sm" id="toggleCityMap" title="Haritayı büyüt/küçült">
+                        <i class="fas fa-expand-alt"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="map-container" id="cityMapContainer">
+                    <div id="cityMap" class="map-preview"></div>
+                    <div class="map-overlay">
+                      <div class="map-message">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Şehir seçildiğinde harita güncellenecek</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ADIM 2: İLÇE SEÇİMİ -->
+          <div class="wizard-step-content" data-step="2">
+            <div class="step-header">
+              <h2 class="step-title">İlçe Seçimi</h2>
+              <p class="step-description" id="districtDescription">Lütfen ilçenizi seçin</p>
+            </div>
+            
+            <div class="step-body">
+              <div class="step-layout">
+                <div class="form-section">
+                  <label for="districtSelect" class="form-label">
+                    <span class="label-text">İlçe</span>
+                    <span class="label-required">*</span>
+                  </label>
+                  <select id="districtSelect" class="form-control" disabled required>
+                    <option value="">Önce şehir seçin</option>
+                  </select>
+                  <div class="form-error" id="districtError"></div>
+                </div>
+                
+                <div class="map-section">
+                  <div class="map-header">
+                    <h3 class="map-title">İlçe Haritası</h3>
+                  </div>
+                  <div class="map-container" id="districtMapContainer">
+                    <div id="districtMap" class="map-preview"></div>
+                    <div class="map-overlay">
+                      <div class="map-message">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>İlçe seçildiğinde harita güncellenecek</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ADIM 3: MAHALLE SEÇİMİ + HARİTADAN İŞARETLEME -->
+          <div class="wizard-step-content" data-step="3">
+            <div class="step-header">
+              <h2 class="step-title">Mahalle Seçimi</h2>
+              <p class="step-description" id="neighborhoodDescription">Mahallenizi seçin ve haritadan konumu işaretleyin</p>
+            </div>
+            
+            <div class="step-body">
+              <div class="step-layout">
+                <div class="form-section">
+                  <label for="neighborhoodSelect" class="form-label">
+                    <span class="label-text">Mahalle</span>
+                    <span class="label-required">*</span>
+                  </label>
+                  <select id="neighborhoodSelect" class="form-control" disabled required>
+                    <option value="">Önce ilçe seçin</option>
+                  </select>
+                  <div class="form-error" id="neighborhoodError"></div>
+                  
+                  <div class="form-hint">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Mahalle seçtikten sonra haritadan tam konumu işaretleyin</span>
+                  </div>
+                </div>
+                
+                <div class="map-section">
+                  <div class="map-header">
+                    <h3 class="map-title">Konum İşaretleyin</h3>
+                    <div class="map-actions">
+                      <button class="btn btn-icon btn-sm" id="resetMarkerBtn" title="İşareti sıfırla">
+                        <i class="fas fa-redo"></i>
+                      </button>
+                      <button class="btn btn-icon btn-sm" id="locateMeBtn" title="Konumumu bul">
+                        <i class="fas fa-location-crosshairs"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="map-container" id="neighborhoodMapContainer">
+                    <div id="neighborhoodMap" class="map-preview"></div>
+                    <div class="map-instructions">
+                      <div class="instruction">
+                        <i class="fas fa-mouse-pointer"></i>
+                        <span>Haritaya tıklayarak konumu işaretleyin</span>
+                      </div>
+                      <div class="instruction">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span id="markerLocationText">Henüz konum seçilmedi</span>
+                      </div>
+                    </div>
+                  </div>
+                  <input type="hidden" id="selectedLat">
+                  <input type="hidden" id="selectedLng">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ADIM 4: SOKAK SEÇİMİ -->
+          <div class="wizard-step-content" data-step="4">
+            <div class="step-header">
+              <h2 class="step-title">Sokak Seçimi</h2>
+              <p class="step-description" id="streetDescription">Sokağınızı seçin</p>
+            </div>
+            
+            <div class="step-body">
+              <div class="step-layout">
+                <div class="form-section">
+                  <label for="streetSelect" class="form-label">
+                    <span class="label-text">Sokak/Cadde</span>
+                    <span class="label-required">*</span>
+                  </label>
+                  <select id="streetSelect" class="form-control" disabled required>
+                    <option value="">Önce mahalle seçin</option>
+                  </select>
+                  <div class="form-error" id="streetError"></div>
+                  
+                  <div class="form-actions">
+                    <button class="btn btn-text" id="addStreetBtn" type="button">
+                      <i class="fas fa-plus"></i>
+                      <span>Listede yoksa ekle</span>
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="map-section">
+                  <div class="map-header">
+                    <h3 class="map-title">Sokak Konumu</h3>
+                  </div>
+                  <div class="map-container" id="streetMapContainer">
+                    <div id="streetMap" class="map-preview"></div>
+                    <div class="map-overlay">
+                      <div class="map-message">
+                        <i class="fas fa-road"></i>
+                        <span>Sokak seçildiğinde harita güncellenecek</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ADIM 5: SOKAK DETAYI (Serbest yazı veya haritadan işaretleme) -->
+          <div class="wizard-step-content" data-step="5">
+            <div class="step-header">
+              <h2 class="step-title">Sokak Detayı</h2>
+              <p class="step-description">Sorunun tam konumunu belirtin (isteğe bağlı)</p>
+            </div>
+            
+            <div class="step-body">
+              <div class="step-layout-vertical">
+                <div class="form-section">
+                  <label for="streetDetail" class="form-label">
+                    <span class="label-text">Ek Açıklama</span>
+                    <span class="label-optional">(opsiyonel)</span>
+                  </label>
+                  <textarea 
+                    id="streetDetail" 
+                    class="form-control" 
+                    rows="4" 
+                    placeholder="Örnek: 293. Sokak'ın Meydan Caddesi ile kesiştiği nokta, parkın karşısı, apartman no:15 önü..."
+                    maxlength="250"
+                  ></textarea>
+                  <div class="form-hint">
+                    <span id="charCount">0/250 karakter</span>
+                    <span>Detaylı açıklama çözüm sürecini hızlandırır</span>
+                  </div>
+                </div>
+                
+                <div class="form-section">
+                  <div class="section-header">
+                    <h3 class="section-title">Veya Haritadan İşaretleyin</h3>
+                    <div class="section-actions">
+                      <div class="toggle-group">
+                        <button class="btn btn-sm" id="toggleDetailMapBtn">
+                          <i class="fas fa-map"></i>
+                          <span>Haritayı Aç</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="map-section-collapsible" id="detailMapSection">
+                    <div class="map-container" id="detailMapContainer">
+                      <div id="detailMap" class="map-preview"></div>
+                      <div class="map-instructions">
+                        <div class="instruction">
+                          <i class="fas fa-map-pin"></i>
+                          <span>Tam konumu işaretlemek için haritaya tıklayın</span>
+                        </div>
+                        <div class="instruction">
+                          <i class="fas fa-info-circle"></i>
+                          <span id="detailMarkerText">Henüz detay konum seçilmedi</span>
+                        </div>
+                      </div>
+                    </div>
+                    <input type="hidden" id="detailLat">
+                    <input type="hidden" id="detailLng">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ADIM 6: PROBLEM SEÇİMİ (Checkbox + icon+isim) -->
+          <div class="wizard-step-content" data-step="6">
+            <div class="step-header">
+              <h2 class="step-title">Problem Belirleme</h2>
+              <p class="step-description">Lütfen sorun türünü seçin (birden fazla seçebilirsiniz)</p>
+            </div>
+            
+            <div class="step-body">
+              <div class="step-layout-vertical">
+                <!-- PROBLEM TİPLERİ GRİDİ -->
+                <div class="form-section">
+                  <div class="problem-grid" id="problemGrid">
+                    <!-- JS ile doldurulacak -->
+                  </div>
+                  <div class="form-error" id="problemError"></div>
+                </div>
+                
+                <!-- EK AÇIKLAMA -->
+                <div class="form-section">
+                  <label for="problemDescription" class="form-label">
+                    <span class="label-text">Ek Açıklama</span>
+                    <span class="label-optional">(opsiyonel)</span>
+                  </label>
+                  <textarea 
+                    id="problemDescription" 
+                    class="form-control" 
+                    rows="3" 
+                    placeholder="Sorun hakkında ek bilgi verebilirsiniz..."
+                  ></textarea>
+                </div>
+                
+                <!-- ÖNCELİK SEÇİMİ (Renkli radio butonlar) -->
+                <div class="form-section">
+                  <label class="form-label">
+                    <span class="label-text">Öncelik Derecesi</span>
+                    <span class="label-required">*</span>
+                  </label>
+                  <div class="priority-grid" id="priorityGrid">
+                    <!-- JS ile doldurulacak -->
+                  </div>
+                  <div class="form-error" id="priorityError"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ADIM 7: FOTOĞRAF & İLETİŞİM (Max 5 fotoğraf, kamera, anonim seçeneği) -->
+          <div class="wizard-step-content" data-step="7">
+            <div class="step-header">
+              <h2 class="step-title">Fotoğraf ve İletişim</h2>
+              <p class="step-description">Fotoğraf ekleyin ve iletişim bilgilerinizi girin</p>
+            </div>
+            
+            <div class="step-body">
+              <div class="step-layout-vertical">
+                <!-- FOTOĞRAF YÜKLEME -->
+                <div class="form-section">
+                  <label class="form-label">
+                    <span class="label-text">Fotoğraf</span>
+                    <span class="label-optional">(opsiyonel)</span>
+                    <span class="label-hint">Max 5 fotoğraf, her biri max 2MB</span>
+                  </label>
+                  
+                  <div class="photo-upload-container">
+                    <!-- FOTOĞRAF YÜKLEME BUTONLARI -->
+                    <div class="upload-actions">
+                      <button type="button" class="btn btn-outline" id="uploadPhotoBtn">
+                        <i class="fas fa-upload"></i>
+                        <span>Dosya Yükle</span>
+                      </button>
+                      <button type="button" class="btn btn-outline" id="cameraBtn">
+                        <i class="fas fa-camera"></i>
+                        <span>Kamera ile Çek</span>
+                      </button>
+                      <input type="file" id="photoInput" accept="image/*" multiple style="display: none">
+                    </div>
+                    
+                    <!-- FOTOĞRAF ÖNİZLEME ALANI -->
+                    <div class="photo-preview-container" id="photoPreviewContainer">
+                      <div class="photo-preview-placeholder">
+                        <i class="fas fa-images"></i>
+                        <p>Yüklenen fotoğraflar burada görünecek</p>
+                        <small>En fazla 5 fotoğraf yükleyebilirsiniz</small>
+                      </div>
+                      <!-- JS ile fotoğraflar eklenecek -->
+                    </div>
+                    
+                    <!-- FOTOĞRAF KURALLARI -->
+                    <div class="photo-rules">
+                      <div class="rule">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Her fotoğraf maksimum 2MB olmalıdır</span>
+                      </div>
+                      <div class="rule">
+                        <i class="fas fa-check-circle"></i>
+                        <span>JPG, PNG formatlarını destekliyoruz</span>
+                      </div>
+                      <div class="rule">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Net ve aydınlık fotoğraflar tercih edilir</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- İLETİŞİM BİLGİLERİ -->
+                <div class="form-section">
+                  <div class="section-header">
+                    <h3 class="section-title">İletişim Bilgileri</h3>
+                    <div class="section-actions">
+                      <div class="toggle-group">
+                        <label class="toggle-label">
+                          <input type="checkbox" id="anonymousToggle">
+                          <span class="toggle-slider"></span>
+                          <span class="toggle-text">Anonim Bildirim</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="contact-fields" id="contactFields">
+                    <div class="form-group">
+                      <label for="contactName" class="form-label">
+                        <span class="label-text">Ad Soyad</span>
+                        <span class="label-optional">(opsiyonel)</span>
+                      </label>
+                      <input type="text" id="contactName" class="form-control" placeholder="Adınız ve soyadınız">
+                    </div>
+                    
+                    <div class="form-group">
+                      <label for="contactPhone" class="form-label">
+                        <span class="label-text">Telefon Numarası</span>
+                        <span class="label-optional">(opsiyonel)</span>
+                      </label>
+                      <input type="tel" id="contactPhone" class="form-control" placeholder="05xx xxx xx xx">
+                      <div class="form-hint">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Telefon numarası size dönüş yapmamız için gereklidir</span>
+                      </div>
+                    </div>
+                    
+                    <div class="form-group">
+                      <label for="contactEmail" class="form-label">
+                        <span class="label-text">E-posta Adresi</span>
+                        <span class="label-optional">(opsiyonel)</span>
+                      </label>
+                      <input type="email" id="contactEmail" class="form-control" placeholder="email@ornek.com">
+                    </div>
+                  </div>
+                  
+                  <div class="anonymous-notice" id="anonymousNotice" style="display: none;">
+                    <div class="notice-content">
+                      <i class="fas fa-user-secret"></i>
+                      <div>
+                        <h4>Anonim Bildirim Seçildi</h4>
+                        <p>Kişisel bilgileriniz kaydedilmeyecek. Takip kodunuzla bildiriminizi takip edebilirsiniz.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ADIM 8: ÖNİZLEME (Tüm bilgiler, harita, PDF çıktı önizleme) -->
+          <div class="wizard-step-content" data-step="8">
+            <div class="step-header">
+              <h2 class="step-title">Önizleme ve Onay</h2>
+              <p class="step-description">Bildiriminizi kontrol edin ve onaylayın</p>
+            </div>
+            
+            <div class="step-body">
+              <div class="preview-container">
+                <!-- ÖNİZLEME KARTLARI -->
+                <div class="preview-cards">
+                  <!-- KONUM BİLGİLERİ -->
+                  <div class="preview-card">
+                    <div class="preview-card-header">
+                      <h3 class="preview-card-title">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Konum Bilgileri
+                      </h3>
+                      <button class="btn btn-text btn-sm" data-edit-step="1">
+                        <i class="fas fa-edit"></i>
+                        Düzenle
+                      </button>
+                    </div>
+                    <div class="preview-card-body">
+                      <div class="preview-info-grid" id="previewLocation">
+                        <!-- JS ile doldurulacak -->
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- PROBLEM BİLGİLERİ -->
+                  <div class="preview-card">
+                    <div class="preview-card-header">
+                      <h3 class="preview-card-title">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Problem Bilgileri
+                      </h3>
+                      <button class="btn btn-text btn-sm" data-edit-step="6">
+                        <i class="fas fa-edit"></i>
+                        Düzenle
+                      </button>
+                    </div>
+                    <div class="preview-card-body">
+                      <div class="preview-info-grid" id="previewProblem">
+                        <!-- JS ile doldurulacak -->
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- FOTOĞRAF ÖNİZLEME -->
+                  <div class="preview-card" id="photoPreviewCard">
+                    <div class="preview-card-header">
+                      <h3 class="preview-card-title">
+                        <i class="fas fa-camera"></i>
+                        Fotoğraflar
+                      </h3>
+                      <button class="btn btn-text btn-sm" data-edit-step="7">
+                        <i class="fas fa-edit"></i>
+                        Düzenle
+                      </button>
+                    </div>
+                    <div class="preview-card-body">
+                      <div class="photo-preview-grid" id="previewPhotos">
+                        <!-- JS ile doldurulacak -->
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- İLETİŞİM BİLGİLERİ -->
+                  <div class="preview-card" id="contactPreviewCard">
+                    <div class="preview-card-header">
+                      <h3 class="preview-card-title">
+                        <i class="fas fa-user"></i>
+                        İletişim Bilgileri
+                      </h3>
+                      <button class="btn btn-text btn-sm" data-edit-step="7">
+                        <i class="fas fa-edit"></i>
+                        Düzenle
+                      </button>
+                    </div>
+                    <div class="preview-card-body">
+                      <div class="preview-info-grid" id="previewContact">
+                        <!-- JS ile doldurulacak -->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- HARİTA ÖNİZLEME -->
+                <div class="preview-map-section">
+                  <div class="preview-map-header">
+                    <h3 class="preview-map-title">
+                      <i class="fas fa-map"></i>
+                      Konum Haritası
+                    </h3>
+                    <div class="preview-map-actions">
+                      <button class="btn btn-icon btn-sm" id="zoomInMapBtn">
+                        <i class="fas fa-search-plus"></i>
+                      </button>
+                      <button class="btn btn-icon btn-sm" id="zoomOutMapBtn">
+                        <i class="fas fa-search-minus"></i>
+                      </button>
+                      <button class="btn btn-icon btn-sm" id="fullscreenMapBtn">
+                        <i class="fas fa-expand"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="preview-map-container">
+                    <div id="previewMap" class="preview-map"></div>
+                  </div>
+                  
+                  <!-- PDF ÖNİZLEME BUTONU -->
+                  <div class="preview-actions">
+                    <button class="btn btn-outline" id="previewPdfBtn">
+                      <i class="fas fa-file-pdf"></i>
+                      <span>PDF Önizleme</span>
+                    </button>
+                    <div class="preview-hint">
+                      <i class="fas fa-info-circle"></i>
+                      <span>PDF çıktısı ilgili belediyeye resmi yazı formatında hazırlanacaktır</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- ONAY UYARISI -->
+              <div class="confirmation-alert">
+                <div class="alert-content">
+                  <i class="fas fa-exclamation-circle"></i>
+                  <div>
+                    <h4>Son Kontrol</h4>
+                    <p>Bildiriminizi göndermeden önce tüm bilgilerin doğru olduğundan emin olun. Gönderim sonrasında bildiriminizi takip kodunuzla takip edebilirsiniz.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NAVİGASYON BUTONLARI -->
+        <div class="wizard-navigation">
+          <div class="nav-left">
+            <button class="btn btn-secondary" id="prevStepBtn" disabled>
+              <i class="fas fa-arrow-left"></i>
+              <span>Geri</span>
+            </button>
+          </div>
+          
+          <div class="nav-center">
+            <button class="btn btn-text" id="saveExitBtn">
+              <i class="fas fa-save"></i>
+              <span>Taslak olarak kaydet ve çık</span>
+            </button>
+          </div>
+          
+          <div class="nav-right">
+            <button class="btn btn-primary" id="nextStepBtn">
+              <span>İleri</span>
+              <i class="fas fa-arrow-right"></i>
+            </button>
+            <button class="btn btn-success" id="submitFormBtn" style="display: none;">
+              <i class="fas fa-paper-plane"></i>
+              <span>Bildirimi Gönder</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TASLAK KAYDETME MODALI -->
+  <div class="modal-overlay" id="saveDraftModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Taslağı Kaydet</h3>
+        <button class="modal-close" id="closeDraftModal">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="draftName" class="form-label">Taslak Adı</label>
+          <input type="text" id="draftName" class="form-control" placeholder="Örnek: Kaynartepe yol çalışması">
+          <div class="form-hint">Taslağınıza kolayca ulaşmak için bir isim verin</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="cancelDraftBtn">İptal</button>
+        <button class="btn btn-primary" id="confirmSaveDraftBtn">Kaydet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- KAMERA MODALI -->
+  <div class="modal-overlay" id="cameraModal">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title">Fotoğraf Çek</h3>
+        <button class="modal-close" id="closeCameraModal">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="camera-container">
+          <video id="cameraPreview" autoplay playsinline></video>
+          <canvas id="cameraCanvas" style="display: none;"></canvas>
+          
+          <div class="camera-controls">
+            <button class="btn btn-icon btn-lg" id="switchCameraBtn" title="Kamera değiştir">
+              <i class="fas fa-sync-alt"></i>
+            </button>
+            <button class="btn btn-icon btn-lg btn-primary" id="capturePhotoBtn" title="Fotoğraf çek">
+              <i class="fas fa-camera"></i>
+            </button>
+            <button class="btn btn-icon btn-lg" id="flashToggleBtn" title="Flaş aç/kapa">
+              <i class="fas fa-bolt"></i>
+            </button>
+          </div>
+        </div>
+        
+        <div class="photo-preview" id="cameraPhotoPreview" style="display: none;">
+          <img id="capturedPhoto" alt="Çekilen fotoğraf">
+          <div class="preview-actions">
+            <button class="btn btn-secondary" id="retakePhotoBtn">Yeniden Çek</button>
+            <button class="btn btn-primary" id="usePhotoBtn">Kullan</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PDF ÖNİZLEME MODALI -->
+  <div class="modal-overlay" id="pdfPreviewModal">
+    <div class="modal modal-fullscreen">
+      <div class="modal-header">
+        <h3 class="modal-title">PDF Önizleme - Resmi Yazı Formatı</h3>
+        <button class="modal-close" id="closePdfModal">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="pdf-preview-container" id="pdfPreviewContainer">
+          <!-- PDF önizleme burada oluşturulacak -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="printPdfBtn">
+          <i class="fas fa-print"></i>
+          Yazdır
+        </button>
+        <button class="btn btn-primary" id="downloadPdfBtn">
+          <i class="fas fa-download"></i>
+          PDF İndir
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ONAY MODALI (Bildirim gönderildikten sonra) -->
+  <div class="modal-overlay" id="confirmationModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Bildiriminiz Alındı!</h3>
+        <button class="modal-close" id="closeConfirmationModal">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="confirmation-content">
+          <div class="success-icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          
+          <h4 class="confirmation-message">Bildiriminiz başarıyla kaydedildi</h4>
+          
+          <div class="tracking-info">
+            <div class="tracking-code">
+              <span class="label">Takip Kodu:</span>
+              <div class="code-display" id="trackingCodeDisplay">
+                <!-- JS ile doldurulacak -->
+              </div>
+              <button class="btn btn-icon btn-sm" id="copyTrackingCodeBtn" title="Kodu kopyala">
+                <i class="fas fa-copy"></i>
+              </button>
+            </div>
+            
+            <div class="qr-code-container">
+              <div id="trackingQrCode"></div>
+              <small>QR kodu tarayarak takip edin</small>
+            </div>
+          </div>
+          
+          <div class="confirmation-actions">
+            <div class="action-buttons">
+              <button class="btn btn-outline" id="viewOnMapBtn">
+                <i class="fas fa-map-marked-alt"></i>
+                Haritada Göster
+              </button>
+              <button class="btn btn-outline" id="downloadReportPdfBtn">
+                <i class="fas fa-file-pdf"></i>
+                PDF İndir
+              </button>
+              <button class="btn btn-primary" id="newReportBtn">
+                <i class="fas fa-plus"></i>
+                Yeni Bildirim
+              </button>
+            </div>
+            
+            <div class="confirmation-hint">
+              <i class="fas fa-info-circle"></i>
+              <span>Takip kodunuzu kaybetmeyin, bildiriminizi takip etmek için gereklidir</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STYLE BLOKLARI (SPA için inline) -->
+<style>
+  /* Form Container */
+  .report-form-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--color-background);
+    z-index: var(--z-index-modal);
+    overflow-y: auto;
+  }
+
+  /* Form Header */
+  .form-header {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-index-sticky);
+    background-color: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    padding: var(--space-8) 0;
+  }
+
+  .header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-8);
+  }
+
+  .form-progress {
+    flex: 1;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .progress-bar {
+    height: 4px;
+    background-color: var(--color-neutral-100);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: var(--space-2);
+  }
+
+  .progress-fill {
+    height: 100%;
+    background-color: var(--color-primary);
+    transition: width 0.3s ease;
+  }
+
+  .progress-steps {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .step-text {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-tertiary);
+  }
+
+  .step-title {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+  }
+
+  /* Form Content */
+  .form-content {
+    padding: var(--space-24) 0;
+    min-height: calc(100vh - 80px);
+  }
+
+  /* Wizard Steps */
+  .wizard-steps {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    margin-bottom: var(--space-24);
+    padding: 0 var(--space-8);
+  }
+
+  .wizard-step {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+  }
+
+  .wizard-step:not(:last-child) {
+    margin-right: var(--space-4);
+  }
+
+  .wizard-step-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: var(--color-surface);
+    border: 2px solid var(--color-border);
+    color: var(--color-text-tertiary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    margin-bottom: var(--space-4);
+    transition: all var(--transition-normal);
+  }
+
+  .wizard-step.active .wizard-step-icon {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+  }
+
+  .wizard-step.completed .wizard-step-icon {
+    background-color: var(--color-success);
+    border-color: var(--color-success);
+    color: white;
+  }
+
+  .wizard-step-label {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-tertiary);
+    text-align: center;
+    max-width: 60px;
+    line-height: 1.2;
+  }
+
+  .wizard-step.active .wizard-step-label {
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-medium);
+  }
+
+  .wizard-progress {
+    height: 2px;
+    background-color: var(--color-primary);
+    position: absolute;
+    top: 16px;
+    left: 0;
+    z-index: 1;
+    transition: width var(--transition-normal);
+  }
+
+  /* Wizard Content */
+  .wizard-step-content {
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .wizard-step-content.active {
+    display: block;
+  }
+
+  .step-header {
+    margin-bottom: var(--space-16);
+    text-align: center;
+  }
+
+  .step-title {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-4);
+  }
+
+  .step-description {
+    font-size: var(--font-size-base);
+    color: var(--color-text-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* Step Layouts */
+  .step-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-16);
+    align-items: start;
+  }
+
+  .step-layout-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-16);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 768px) {
+    .step-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Map Sections */
+  .map-section {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .map-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-8) var(--space-12);
+    background-color: var(--color-neutral-50);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .map-title {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin: 0;
+  }
+
+  .map-container {
+    position: relative;
+    height: 300px;
+  }
+
+  .map-preview {
+    width: 100%;
+    height: 100%;
+  }
+
+  .map-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .map-message {
+    text-align: center;
+    padding: var(--space-16);
+  }
+
+  .map-message i {
+    font-size: var(--font-size-2xl);
+    color: var(--color-text-tertiary);
+    margin-bottom: var(--space-8);
+  }
+
+  .map-message span {
+    display: block;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+  }
+
+  .map-instructions {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: var(--space-8);
+    background-color: rgba(255, 255, 255, 0.9);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .instruction {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-4);
+  }
+
+  .instruction:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Problem Grid */
+  .problem-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: var(--space-8);
+  }
+
+  .problem-option {
+    position: relative;
+    cursor: pointer;
+  }
+
+  .problem-checkbox {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .problem-card {
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-12);
+    text-align: center;
+    transition: all var(--transition-fast);
+    background-color: var(--color-surface);
+  }
+
+  .problem-card:hover {
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .problem-checkbox:checked + .problem-card {
+    border-color: var(--color-primary);
+    background-color: rgba(15, 42, 36, 0.05);
+  }
+
+  .problem-icon {
+    font-size: var(--font-size-2xl);
+    margin-bottom: var(--space-4);
+  }
+
+  .problem-name {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+  }
+
+  /* Priority Grid */
+  .priority-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: var(--space-8);
+  }
+
+  .priority-option {
+    position: relative;
+  }
+
+  .priority-radio {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .priority-card {
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-12);
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    background-color: var(--color-surface);
+  }
+
+  .priority-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .priority-radio:checked + .priority-card {
+    border-width: 3px;
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .priority-low .priority-card {
+    border-color: var(--color-success);
+  }
+
+  .priority-low .priority-radio:checked + .priority-card {
+    background-color: rgba(31, 122, 77, 0.1);
+  }
+
+  .priority-medium .priority-card {
+    border-color: var(--color-warning);
+  }
+
+  .priority-medium .priority-radio:checked + .priority-card {
+    background-color: rgba(196, 162, 74, 0.1);
+  }
+
+  .priority-high .priority-card {
+    border-color: var(--color-error);
+  }
+
+  .priority-high .priority-radio:checked + .priority-card {
+    background-color: rgba(239, 68, 68, 0.1);
+  }
+
+  .priority-urgent .priority-card {
+    border-color: var(--color-error);
+    background-color: rgba(90, 15, 20, 0.05);
+  }
+
+  .priority-urgent .priority-radio:checked + .priority-card {
+    background-color: rgba(90, 15, 20, 0.1);
+  }
+
+  .priority-label {
+    display: block;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    margin-bottom: var(--space-2);
+  }
+
+  .priority-desc {
+    display: block;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-tertiary);
+  }
+
+  /* Photo Upload */
+  .photo-upload-container {
+    border: 2px dashed var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-16);
+    text-align: center;
+  }
+
+  .upload-actions {
+    display: flex;
+    gap: var(--space-8);
+    justify-content: center;
+    margin-bottom: var(--space-16);
+  }
+
+  .photo-preview-container {
+    min-height: 150px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-12);
+    background-color: var(--color-neutral-50);
+  }
+
+  .photo-preview-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--color-text-tertiary);
+  }
+
+  .photo-preview-placeholder i {
+    font-size: var(--font-size-3xl);
+    margin-bottom: var(--space-8);
+  }
+
+  .photo-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: var(--space-8);
+  }
+
+  .photo-preview-item {
+    position: relative;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+  }
+
+  .photo-preview-item img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+  }
+
+  .photo-preview-remove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 24px;
+    height: 24px;
+    background-color: rgba(239, 68, 68, 0.9);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: var(--font-size-xs);
+  }
+
+  .photo-rules {
+    margin-top: var(--space-12);
+    text-align: left;
+  }
+
+  .rule {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-tertiary);
+    margin-bottom: var(--space-4);
+  }
+
+  .rule i {
+    color: var(--color-success);
+  }
+
+  /* Contact Fields */
+  .contact-fields {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-12);
+  }
+
+  .toggle-group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+  }
+
+  .toggle-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    cursor: pointer;
+  }
+
+  .toggle-label input[type="checkbox"] {
+    display: none;
+  }
+
+  .toggle-slider {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background-color: var(--color-border);
+    border-radius: 12px;
+    transition: background-color 0.3s;
+  }
+
+  .toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: white;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s;
+  }
+
+  input[type="checkbox"]:checked + .toggle-slider {
+    background-color: var(--color-primary);
+  }
+
+  input[type="checkbox"]:checked + .toggle-slider::before {
+    transform: translateX(20px);
+  }
+
+  .toggle-text {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-primary);
+  }
+
+  .anonymous-notice {
+    background-color: rgba(107, 114, 128, 0.1);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-12);
+    margin-top: var(--space-12);
+  }
+
+  .notice-content {
+    display: flex;
+    gap: var(--space-8);
+  }
+
+  .notice-content i {
+    font-size: var(--font-size-xl);
+    color: var(--color-info);
+    margin-top: 2px;
+  }
+
+  .notice-content h4 {
+    font-size: var(--font-size-base);
+    margin-bottom: var(--space-2);
+  }
+
+  .notice-content p {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin: 0;
+  }
+
+  /* Preview Styles */
+  .preview-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-16);
+    align-items: start;
+  }
+
+  @media (max-width: 1024px) {
+    .preview-container {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .preview-cards {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-12);
+  }
+
+  .preview-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+
+  .preview-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-12);
+    background-color: var(--color-neutral-50);
+    border-bottom: 1px solid var(--color-divider);
+  }
+
+  .preview-card-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin: 0;
+  }
+
+  .preview-card-body {
+    padding: var(--space-12);
+  }
+
+  .preview-info-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space-8) var(--space-12);
+    align-items: start;
+  }
+
+  .preview-label {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-tertiary);
+    white-space: nowrap;
+  }
+
+  .preview-value {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-primary);
+    word-break: break-word;
+  }
+
+  /* Preview Map */
+  .preview-map-section {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    height: fit-content;
+  }
+
+  .preview-map-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-12);
+    background-color: var(--color-neutral-50);
+    border-bottom: 1px solid var(--color-divider);
+  }
+
+  .preview-map-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin: 0;
+  }
+
+  .preview-map-container {
+    height: 400px;
+  }
+
+  .preview-map {
+    width: 100%;
+    height: 100%;
+  }
+
+  .preview-actions {
+    padding: var(--space-12);
+    border-top: 1px solid var(--color-divider);
+    text-align: center;
+  }
+
+  /* Confirmation Alert */
+  .confirmation-alert {
+    background-color: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(196, 162, 74, 0.3);
+    border-radius: var(--radius-md);
+    padding: var(--space-12);
+    margin-top: var(--space-24);
+  }
+
+  .alert-content {
+    display: flex;
+    gap: var(--space-12);
+  }
+
+  .alert-content i {
+    font-size: var(--font-size-xl);
+    color: var(--color-warning);
+    margin-top: 2px;
+  }
+
+  .alert-content h4 {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-4);
+  }
+
+  .alert-content p {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin: 0;
+  }
+
+  /* Navigation */
+  .wizard-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-16) 0;
+    border-top: 1px solid var(--color-divider);
+    margin-top: var(--space-24);
+  }
+
+  /* Camera Modal */
+  .camera-container {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    background-color: black;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    margin-bottom: var(--space-16);
+  }
+
+  #cameraPreview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .camera-controls {
+    position: absolute;
+    bottom: var(--space-16);
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: var(--space-16);
+  }
+
+  /* Confirmation Modal */
+  .confirmation-content {
+    text-align: center;
+  }
+
+  .success-icon {
+    font-size: var(--font-size-4xl);
+    color: var(--color-success);
+    margin-bottom: var(--space-16);
+  }
+
+  .confirmation-message {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-24);
+  }
+
+  .tracking-info {
+    background-color: var(--color-neutral-50);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-16);
+    margin-bottom: var(--space-24);
+  }
+
+  .tracking-code {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-12);
+    margin-bottom: var(--space-16);
+  }
+
+  .tracking-code .label {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+  }
+
+  .code-display {
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary);
+    background-color: white;
+    padding: var(--space-8) var(--space-16);
+    border: 2px solid var(--color-primary);
+    border-radius: var(--radius-md);
+  }
+
+  .qr-code-container {
+    text-align: center;
+  }
+
+  .qr-code-container canvas {
+    margin: 0 auto;
+    display: block;
+  }
+
+  .confirmation-actions {
+    margin-top: var(--space-24);
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: var(--space-8);
+    justify-content: center;
+    margin-bottom: var(--space-16);
+  }
+
+  /* Animations */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Utility Classes */
+  .label-required {
+    color: var(--color-error);
+    margin-left: var(--space-2);
+  }
+
+  .label-optional {
+    color: var(--color-text-tertiary);
+    margin-left: var(--space-2);
+    font-size: var(--font-size-xs);
+  }
+
+  .label-hint {
+    color: var(--color-text-tertiary);
+    margin-left: var(--space-4);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-normal);
+  }
+
+  .form-hint {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--space-4);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-tertiary);
+  }
+
+  .form-actions {
+    margin-top: var(--space-8);
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-12);
+  }
+
+  .section-title {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin: 0;
+  }
+
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .form-header {
+      padding: var(--space-4) 0;
+    }
+    
+    .header-content {
+      flex-wrap: wrap;
+      gap: var(--space-4);
+    }
+    
+    .form-progress {
+      order: 3;
+      flex-basis: 100%;
+      margin-top: var(--space-4);
+    }
+    
+    .wizard-steps {
+      overflow-x: auto;
+      padding-bottom: var(--space-8);
+      margin-bottom: var(--space-16);
+    }
+    
+    .wizard-step {
+      flex: 0 0 auto;
+      min-width: 50px;
+    }
+    
+    .step-layout,
+    .preview-container {
+      grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+      flex-direction: column;
+    }
+    
+    .confirmation-actions .action-buttons {
+      flex-direction: column;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .problem-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .priority-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .upload-actions {
+      flex-direction: column;
+    }
+    
+    .tracking-code {
+      flex-direction: column;
+      gap: var(--space-8);
+    }
+    
+    .code-display {
+      font-size: var(--font-size-lg);
+      padding: var(--space-6) var(--space-12);
+    }
+  }
+</style>
+
+<!-- JAVASCRIPT (SPA için inline) -->
+<script>
+  // Bildirim Formu JavaScript
+  document.addEventListener('DOMContentLoaded', function() {
+    if (!App || !App.state) return;
+    
+    const ReportForm = {
+      // State
+      currentStep: 1,
+      totalSteps: 8,
+      formData: {
+        city: '',
+        district: '',
+        neighborhood: '',
+        street: '',
+        streetDetail: '',
+        selectedLat: null,
+        selectedLng: null,
+        detailLat: null,
+        detailLng: null,
+        problems: [],
+        problemDescription: '',
+        priority: '',
+        photos: [],
+        anonymous: false,
+        contactName: '',
+        contactPhone: '',
+        contactEmail: ''
+      },
+      
+      // UI Elements
+      elements: {},
+      
+      // Map Instances
+      maps: {
+        city: null,
+        district: null,
+        neighborhood: null,
+        street: null,
+        detail: null,
+        preview: null
+      },
+      
+      // Markers
+      markers: {
+        neighborhood: null,
+        detail: null,
+        preview: null
+      },
+      
+      // Initialize
+      init: function() {
+        this.cacheElements();
+        this.setupEventListeners();
+        this.loadFormData();
+        this.loadCities();
+        this.loadProblemTypes();
+        this.loadPriorityOptions();
+        this.updateStep();
+      },
+      
+      // Cache DOM elements
+      cacheElements: function() {
+        // Navigation
+        this.elements.prevBtn = document.getElementById('prevStepBtn');
+        this.elements.nextBtn = document.getElementById('nextStepBtn');
+        this.elements.submitBtn = document.getElementById('submitFormBtn');
+        this.elements.cancelBtn = document.getElementById('cancelFormBtn');
+        this.elements.saveExitBtn = document.getElementById('saveExitBtn');
+        this.elements.saveDraftBtn = document.getElementById('saveDraftBtn');
+        
+        // Form elements
+        this.elements.citySelect = document.getElementById('citySelect');
+        this.elements.districtSelect = document.getElementById('districtSelect');
+        this.elements.neighborhoodSelect = document.getElementById('neighborhoodSelect');
+        this.elements.streetSelect = document.getElementById('streetSelect');
+        this.elements.streetDetail = document.getElementById('streetDetail');
+        this.elements.problemDescription = document.getElementById('problemDescription');
+        this.elements.contactName = document.getElementById('contactName');
+        this.elements.contactPhone = document.getElementById('contactPhone');
+        this.elements.contactEmail = document.getElementById('contactEmail');
+        this.elements.anonymousToggle = document.getElementById('anonymousToggle');
+        this.elements.contactFields = document.getElementById('contactFields');
+        this.elements.anonymousNotice = document.getElementById('anonymousNotice');
+        
+        // Map elements
+        this.elements.cityMap = document.getElementById('cityMap');
+        this.elements.districtMap = document.getElementById('districtMap');
+        this.elements.neighborhoodMap = document.getElementById('neighborhoodMap');
+        this.elements.streetMap = document.getElementById('streetMap');
+        this.elements.detailMap = document.getElementById('detailMap');
+        this.elements.previewMap = document.getElementById('previewMap');
+        
+        // Error elements
+        this.elements.cityError = document.getElementById('cityError');
+        this.elements.districtError = document.getElementById('districtError');
+        this.elements.neighborhoodError = document.getElementById('neighborhoodError');
+        this.elements.streetError = document.getElementById('streetError');
+        this.elements.problemError = document.getElementById('problemError');
+        this.elements.priorityError = document.getElementById('priorityError');
+        
+        // Progress
+        this.elements.progressFill = document.getElementById('progressFill');
+        this.elements.currentStepText = document.getElementById('currentStepText');
+        this.elements.currentStepTitle = document.getElementById('currentStepTitle');
+        
+        // Photo upload
+        this.elements.photoInput = document.getElementById('photoInput');
+        this.elements.uploadPhotoBtn = document.getElementById('uploadPhotoBtn');
+        this.elements.cameraBtn = document.getElementById('cameraBtn');
+        this.elements.photoPreviewContainer = document.getElementById('photoPreviewContainer');
+        
+        // Modals
+        this.elements.saveDraftModal = document.getElementById('saveDraftModal');
+        this.elements.cameraModal = document.getElementById('cameraModal');
+        this.elements.pdfPreviewModal = document.getElementById('pdfPreviewModal');
+        this.elements.confirmationModal = document.getElementById('confirmationModal');
+        
+        // Preview elements
+        this.elements.previewLocation = document.getElementById('previewLocation');
+        this.elements.previewProblem = document.getElementById('previewProblem');
+        this.elements.previewPhotos = document.getElementById('previewPhotos');
+        this.elements.previewContact = document.getElementById('previewContact');
+        this.elements.trackingCodeDisplay = document.getElementById('trackingCodeDisplay');
+        this.elements.trackingQrCode = document.getElementById('trackingQrCode');
+        
+        // Edit buttons
+        document.querySelectorAll('[data-edit-step]').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const step = parseInt(e.target.closest('[data-edit-step]').getAttribute('data-edit-step'));
+            this.goToStep(step);
+          });
+        });
+      },
+      
+      // Setup event listeners
+      setupEventListeners: function() {
+        // Navigation
+        this.elements.prevBtn.addEventListener('click', () => this.prevStep());
+        this.elements.nextBtn.addEventListener('click', () => this.nextStep());
+        this.elements.submitBtn.addEventListener('click', () => this.submitForm());
+        this.elements.cancelBtn.addEventListener('click', () => this.cancelForm());
+        this.elements.saveExitBtn.addEventListener('click', () => this.saveAndExit());
+        this.elements.saveDraftBtn.addEventListener('click', () => this.showSaveDraftModal());
+        
+        // Form changes
+        this.elements.citySelect.addEventListener('change', (e) => this.onCityChange(e.target.value));
+        this.elements.districtSelect.addEventListener('change', (e) => this.onDistrictChange(e.target.value));
+        this.elements.neighborhoodSelect.addEventListener('change', (e) => this.onNeighborhoodChange(e.target.value));
+        this.elements.streetSelect.addEventListener('change', (e) => this.onStreetChange(e.target.value));
+        this.elements.streetDetail.addEventListener('input', (e) => this.onStreetDetailChange(e.target.value));
+        this.elements.problemDescription.addEventListener('input', (e) => this.onProblemDescriptionChange(e.target.value));
+        this.elements.contactName.addEventListener('input', (e) => this.onContactNameChange(e.target.value));
+        this.elements.contactPhone.addEventListener('input', (e) => this.onContactPhoneChange(e.target.value));
+        this.elements.contactEmail.addEventListener('input', (e) => this.onContactEmailChange(e.target.value));
+        this.elements.anonymousToggle.addEventListener('change', (e) => this.onAnonymousToggleChange(e.target.checked));
+        
+        // Real-time validation
+        this.elements.citySelect.addEventListener('blur', () => this.validateStep(1));
+        this.elements.districtSelect.addEventListener('blur', () => this.validateStep(2));
+        this.elements.neighborhoodSelect.addEventListener('blur', () => this.validateStep(3));
+        this.elements.streetSelect.addEventListener('blur', () => this.validateStep(4));
+        
+        // Photo upload
+        this.elements.uploadPhotoBtn.addEventListener('click', () => this.elements.photoInput.click());
+        this.elements.photoInput.addEventListener('change', (e) => this.handlePhotoUpload(e.target.files));
+        this.elements.cameraBtn.addEventListener('click', () => this.openCamera());
+        
+        // Character count for street detail
+        this.elements.streetDetail.addEventListener('input', (e) => {
+          const charCount = e.target.value.length;
+          document.getElementById('charCount').textContent = `${charCount}/250 karakter`;
+        });
+        
+        // Add street button
+        document.getElementById('addStreetBtn')?.addEventListener('click', () => this.addNewStreet());
+        
+        // Map buttons
+        document.getElementById('resetMarkerBtn')?.addEventListener('click', () => this.resetNeighborhoodMarker());
+        document.getElementById('locateMeBtn')?.addEventListener('click', () => this.locateUser());
+        document.getElementById('toggleDetailMapBtn')?.addEventListener('click', () => this.toggleDetailMap());
+        
+        // Preview actions
+        document.getElementById('previewPdfBtn')?.addEventListener('click', () => this.previewPdf());
+        document.getElementById('zoomInMapBtn')?.addEventListener('click', () => this.zoomInPreviewMap());
+        document.getElementById('zoomOutMapBtn')?.addEventListener('click', () => this.zoomOutPreviewMap());
+        document.getElementById('fullscreenMapBtn')?.addEventListener('click', () => this.toggleFullscreenPreviewMap());
+        
+        // Confirmation modal actions
+        document.getElementById('copyTrackingCodeBtn')?.addEventListener('click', () => this.copyTrackingCode());
+        document.getElementById('viewOnMapBtn')?.addEventListener('click', () => this.viewOnMap());
+        document.getElementById('downloadReportPdfBtn')?.addEventListener('click', () => this.downloadReportPdf());
+        document.getElementById('newReportBtn')?.addEventListener('click', () => this.newReport());
+        
+        // Modal close buttons
+        document.getElementById('closeDraftModal')?.addEventListener('click', () => this.hideSaveDraftModal());
+        document.getElementById('closeCameraModal')?.addEventListener('click', () => this.closeCamera());
+        document.getElementById('closePdfModal')?.addEventListener('click', () => this.hidePdfPreview());
+        document.getElementById('closeConfirmationModal')?.addEventListener('click', () => this.hideConfirmationModal());
+        
+        // Draft modal actions
+        document.getElementById('cancelDraftBtn')?.addEventListener('click', () => this.hideSaveDraftModal());
+        document.getElementById('confirmSaveDraftBtn')?.addEventListener('click', () => this.saveDraft());
+        
+        // PDF modal actions
+        document.getElementById('printPdfBtn')?.addEventListener('click', () => this.printPdf());
+        document.getElementById('downloadPdfBtn')?.addEventListener('click', () => this.downloadPdf());
+        
+        // Camera modal actions
+        document.getElementById('switchCameraBtn')?.addEventListener('click', () => this.switchCamera());
+        document.getElementById('capturePhotoBtn')?.addEventListener('click', () => this.capturePhoto());
+        document.getElementById('flashToggleBtn')?.addEventListener('click', () => this.toggleFlash());
+        document.getElementById('retakePhotoBtn')?.addEventListener('click', () => this.retakePhoto());
+        document.getElementById('usePhotoBtn')?.addEventListener('click', () => this.useCapturedPhoto());
+      },
+      
+      // Load form data from Local Storage
+      loadFormData: function() {
+        try {
+          const savedData = localStorage.getItem('report_form_draft');
+          if (savedData) {
+            const parsed = JSON.parse(savedData);
+            this.formData = { ...this.formData, ...parsed };
+            
+            // Update form fields if data exists
+            if (this.formData.city) {
+              setTimeout(() => {
+                this.elements.citySelect.value = this.formData.city;
+                this.onCityChange(this.formData.city, true);
+              }, 100);
+            }
+          }
+        } catch (error) {
+          console.error('Form verisi yüklenirken hata:', error);
+        }
+      },
+      
+      // Save form data to Local Storage
+      saveFormData: function() {
+        try {
+          localStorage.setItem('report_form_draft', JSON.stringify(this.formData));
+          console.log('Form verisi kaydedildi');
+        } catch (error) {
+          console.error('Form verisi kaydedilirken hata:', error);
+        }
+      },
+      
+      // Load cities from veriler.js
+      loadCities: function() {
+        const cities = VeriYoneticisi.sehirleriGetir();
+        this.elements.citySelect.innerHTML = '<option value="">Şehir seçin</option>';
+        
+        cities.forEach(city => {
+          const option = document.createElement('option');
+          option.value = city;
+          option.textContent = city;
+          this.elements.citySelect.appendChild(option);
+        });
+        
+        // Set saved city if exists
+        if (this.formData.city) {
+          this.elements.citySelect.value = this.formData.city;
+        }
+      },
+      
+      // Load problem types
+      loadProblemTypes: function() {
+        const problems = VeriYoneticisi.problemTipleriniGetir();
+        const container = document.getElementById('problemGrid');
+        
+        problems.forEach(problem => {
+          const option = document.createElement('div');
+          option.className = 'problem-option';
+          option.innerHTML = `
+            <input type="checkbox" class="problem-checkbox" id="problem-${problem.id}" value="${problem.ad}">
+            <label for="problem-${problem.id}" class="problem-card">
+              <div class="problem-icon">${problem.emoji}</div>
+              <div class="problem-name">${problem.ad}</div>
+            </label>
+          `;
+          
+          const checkbox = option.querySelector('input');
+          checkbox.addEventListener('change', (e) => this.onProblemChange(e.target.value, e.target.checked));
+          
+          // Check if already selected
+          if (this.formData.problems.includes(problem.ad)) {
+            checkbox.checked = true;
+          }
+          
+          container.appendChild(option);
+        });
+      },
+      
+      // Load priority options
+      loadPriorityOptions: function() {
+        const priorities = VeriYoneticisi.oncelikSeviyeleriniGetir();
+        const container = document.getElementById('priorityGrid');
+        
+        priorities.forEach(priority => {
+          const option = document.createElement('div');
+          option.className = `priority-option priority-${priority.ad.toLowerCase()}`;
+          option.innerHTML = `
+            <input type="radio" class="priority-radio" id="priority-${priority.id}" name="priority" value="${priority.ad}">
+            <label for="priority-${priority.id}" class="priority-card">
+              <span class="priority-label">${priority.ad}</span>
+              <span class="priority-desc">${priority.aciklama}</span>
+            </label>
+          `;
+          
+          const radio = option.querySelector('input');
+          radio.addEventListener('change', (e) => this.onPriorityChange(e.target.value));
+          
+          // Check if already selected
+          if (this.formData.priority === priority.ad) {
+            radio.checked = true;
+          }
+          
+          container.appendChild(option);
+        });
+      },
+      
+      // Step navigation
+      nextStep: function() {
+        // Validate current step
+        if (!this.validateCurrentStep()) {
+          return;
+        }
+        
+        // Special handling for step 3 (map marker)
+        if (this.currentStep === 3 && (!this.formData.selectedLat || !this.formData.selectedLng)) {
+          App.showNotification('Lütfen haritadan konum işaretleyin', 'warning');
+          return;
+        }
+        
+        if (this.currentStep < this.totalSteps) {
+          this.currentStep++;
+          this.updateStep();
+        }
+      },
+      
+      prevStep: function() {
+        if (this.currentStep > 1) {
+          this.currentStep--;
+          this.updateStep();
+        }
+      },
+      
+      goToStep: function(step) {
+        if (step >= 1 && step <= this.totalSteps) {
+          this.currentStep = step;
+          this.updateStep();
+        }
+      },
+      
+      updateStep: function() {
+        // Update progress bar
+        const progressPercentage = ((this.currentStep - 1) / (this.totalSteps - 1)) * 100;
+        this.elements.progressFill.style.width = `${progressPercentage}%`;
+        
+        // Update step text
+        this.elements.currentStepText.textContent = `Adım ${this.currentStep}/${this.totalSteps}`;
+        
+        // Update step title
+        const stepTitles = [
+          'Şehir Seçimi',
+          'İlçe Seçimi',
+          'Mahalle Seçimi',
+          'Sokak Seçimi',
+          'Sokak Detayı',
+          'Problem Belirleme',
+          'Fotoğraf ve İletişim',
+          'Önizleme ve Onay'
+        ];
+        this.elements.currentStepTitle.textContent = stepTitles[this.currentStep - 1];
+        
+        // Update wizard steps
+        document.querySelectorAll('.wizard-step').forEach((stepEl, index) => {
+          const stepNum = index + 1;
+          stepEl.classList.remove('active', 'completed');
+          
+          if (stepNum === this.currentStep) {
+            stepEl.classList.add('active');
+          } else if (stepNum < this.currentStep) {
+            stepEl.classList.add('completed');
+          }
+        });
+        
+        // Update wizard progress
+        const wizardProgress = document.getElementById('wizardProgress');
+        const stepWidth = 100 / (this.totalSteps - 1);
+        wizardProgress.style.width = `${(this.currentStep - 1) * stepWidth}%`;
+        
+        // Show/hide step content
+        document.querySelectorAll('.wizard-step-content').forEach(content => {
+          content.classList.remove('active');
+        });
+        document.querySelector(`.wizard-step-content[data-step="${this.currentStep}"]`).classList.add('active');
+        
+        // Update navigation buttons
+        this.elements.prevBtn.disabled = this.currentStep === 1;
+        
+        if (this.currentStep === this.totalSteps) {
+          this.elements.nextBtn.style.display = 'none';
+          this.elements.submitBtn.style.display = 'inline-flex';
+          this.updatePreview();
+          this.initializePreviewMap();
+        } else {
+          this.elements.nextBtn.style.display = 'inline-flex';
+          this.elements.submitBtn.style.display = 'none';
+        }
+        
+        // Initialize maps for current step if needed
+        this.initializeStepMaps();
+        
+        // Auto-save form data
+        this.saveFormData();
+      },
+      
+      // Step validation
+      validateCurrentStep: function() {
+        switch (this.currentStep) {
+          case 1:
+            return this.validateCity();
+          case 2:
+            return this.validateDistrict();
+          case 3:
+            return this.validateNeighborhood();
+          case 4:
+            return this.validateStreet();
+          case 6:
+            return this.validateProblem();
+          default:
+            return true;
+        }
+      },
+      
+      validateStep: function(step) {
+        switch (step) {
+          case 1:
+            return this.validateCity();
+          case 2:
+            return this.validateDistrict();
+          case 3:
+            return this.validateNeighborhood();
+          case 4:
+            return this.validateStreet();
+          case 6:
+            return this.validateProblem();
+          default:
+            return true;
+        }
+      },
+      
+      validateCity: function() {
+        const city = this.elements.citySelect.value;
+        if (!city) {
+          this.showError('cityError', 'Lütfen bir şehir seçin');
+          return false;
+        }
+        this.hideError('cityError');
+        return true;
+      },
+      
+      validateDistrict: function() {
+        const district = this.elements.districtSelect.value;
+        if (!district) {
+          this.showError('districtError', 'Lütfen bir ilçe seçin');
+          return false;
+        }
+        this.hideError('districtError');
+        return true;
+      },
+      
+      validateNeighborhood: function() {
+        const neighborhood = this.elements.neighborhoodSelect.value;
+        if (!neighborhood) {
+          this.showError('neighborhoodError', 'Lütfen bir mahalle seçin');
+          return false;
+        }
+        this.hideError('neighborhoodError');
+        return true;
+      },
+      
+      validateStreet: function() {
+        const street = this.elements.streetSelect.value;
+        if (!street) {
+          this.showError('streetError', 'Lütfen bir sokak seçin');
+          return false;
+        }
+        this.hideError('streetError');
+        return true;
+      },
+      
+      validateProblem: function() {
+        // Check if at least one problem is selected
+        const selectedProblems = document.querySelectorAll('.problem-checkbox:checked');
+        if (selectedProblems.length === 0) {
+          this.showError('problemError', 'Lütfen en az bir problem tipi seçin');
+          return false;
+        }
+        
+        // Check if priority is selected
+        const selectedPriority = document.querySelector('.priority-radio:checked');
+        if (!selectedPriority) {
+          this.showError('priorityError', 'Lütfen bir öncelik derecesi seçin');
+          return false;
+        }
+        
+        this.hideError('problemError');
+        this.hideError('priorityError');
+        return true;
+      },
+      
+      // Error handling
+      showError: function(elementId, message) {
+        const element = document.getElementById(elementId);
+        if (element) {
+          element.textContent = message;
+          element.style.display = 'block';
+        }
+      },
+      
+      hideError: function(elementId) {
+        const element = document.getElementById(elementId);
+        if (element) {
+          element.textContent = '';
+          element.style.display = 'none';
+        }
+      },
+      
+      // Form field change handlers
+      onCityChange: function(city, skipDistrictLoad = false) {
+        this.formData.city = city;
+        
+        // Update description
+        const descElement = document.getElementById('districtDescription');
+        if (descElement && city) {
+          descElement.textContent = `${city} şehrinden ilçe seçin`;
+        }
+        
+        // Load districts
+        if (city && !skipDistrictLoad) {
+          const districts = VeriYoneticisi.ilceleriGetir(city);
+          this.elements.districtSelect.innerHTML = '<option value="">İlçe seçin</option>';
+          
+          districts.forEach(district => {
+            const option = document.createElement('option');
+            option.value = district;
+            option.textContent = district;
+            this.elements.districtSelect.appendChild(option);
+          });
+          
+          this.elements.districtSelect.disabled = false;
+          this.elements.districtSelect.value = '';
+          
+          // Reset dependent fields
+          this.formData.district = '';
+          this.formData.neighborhood = '';
+          this.formData.street = '';
+          this.elements.neighborhoodSelect.innerHTML = '<option value="">Önce ilçe seçin</option>';
+          this.elements.neighborhoodSelect.disabled = true;
+          this.elements.streetSelect.innerHTML = '<option value="">Önce mahalle seçin</option>';
+          this.elements.streetSelect.disabled = true;
+          
+          // Initialize city map
+          this.initializeCityMap();
+        }
+        
+        this.saveFormData();
+      },
+      
+      onDistrictChange: function(district) {
+        this.formData.district = district;
+        
+        // Update description
+        const descElement = document.getElementById('neighborhoodDescription');
+        if (descElement && district) {
+          descElement.textContent = `${this.formData.city} - ${district} ilçesinden mahalle seçin`;
+        }
+        
+        // Load neighborhoods
+        if (district) {
+          const neighborhoods = VeriYoneticisi.mahalleleriGetir(this.formData.city, district);
+          this.elements.neighborhoodSelect.innerHTML = '<option value="">Mahalle seçin</option>';
+          
+          neighborhoods.forEach(neighborhood => {
+            const option = document.createElement('option');
+            option.value = neighborhood;
+            option.textContent = neighborhood;
+            this.elements.neighborhoodSelect.appendChild(option);
+          });
+          
+          this.elements.neighborhoodSelect.disabled = false;
+          this.elements.neighborhoodSelect.value = '';
+          
+          // Reset dependent fields
+          this.formData.neighborhood = '';
+          this.formData.street = '';
+          this.elements.streetSelect.innerHTML = '<option value="">Önce mahalle seçin</option>';
+          this.elements.streetSelect.disabled = true;
+          
+          // Initialize district map
+          this.initializeDistrictMap();
+        }
+        
+        this.saveFormData();
+      },
+      
+      onNeighborhoodChange: function(neighborhood) {
+        this.formData.neighborhood = neighborhood;
+        
+        // Update description
+        const descElement = document.getElementById('streetDescription');
+        if (descElement && neighborhood) {
+          descElement.textContent = `${this.formData.district} - ${neighborhood} mahallesinden sokak seçin`;
+        }
+        
+        // Load streets
+        if (neighborhood) {
+          const streets = VeriYoneticisi.sokaklariGetir(this.formData.city, this.formData.district, neighborhood);
+          this.elements.streetSelect.innerHTML = '<option value="">Sokak seçin</option>';
+          
+          streets.forEach(street => {
+            const option = document.createElement('option');
+            option.value = street;
+            option.textContent = street;
+            this.elements.streetSelect.appendChild(option);
+          });
+          
+          this.elements.streetSelect.disabled = false;
+          this.elements.streetSelect.value = '';
+          
+          // Initialize neighborhood map
+          this.initializeNeighborhoodMap();
+        }
+        
+        this.saveFormData();
+      },
+      
+      onStreetChange: function(street) {
+        this.formData.street = street;
+        
+        if (street) {
+          // Initialize street map
+          this.initializeStreetMap();
+        }
+        
+        this.saveFormData();
+      },
+      
+      onStreetDetailChange: function(detail) {
+        this.formData.streetDetail = detail;
+        this.saveFormData();
+      },
+      
+      onProblemChange: function(problem, isChecked) {
+        if (isChecked) {
+          if (!this.formData.problems.includes(problem)) {
+            this.formData.problems.push(problem);
+          }
+        } else {
+          this.formData.problems = this.formData.problems.filter(p => p !== problem);
+        }
+        this.saveFormData();
+      },
+      
+      onProblemDescriptionChange: function(description) {
+        this.formData.problemDescription = description;
+        this.saveFormData();
+      },
+      
+      onPriorityChange: function(priority) {
+        this.formData.priority = priority;
+        this.saveFormData();
+      },
+      
+      onContactNameChange: function(name) {
+        this.formData.contactName = name;
+        this.saveFormData();
+      },
+      
+      onContactPhoneChange: function(phone) {
+        this.formData.contactPhone = phone;
+        this.saveFormData();
+      },
+      
+      onContactEmailChange: function(email) {
+        this.formData.contactEmail = email;
+        this.saveFormData();
+      },
+      
+      onAnonymousToggleChange: function(isAnonymous) {
+        this.formData.anonymous = isAnonymous;
+        
+        if (isAnonymous) {
+          this.elements.contactFields.style.display = 'none';
+          this.elements.anonymousNotice.style.display = 'block';
+          
+          // Clear contact fields
+          this.formData.contactName = '';
+          this.formData.contactPhone = '';
+          this.formData.contactEmail = '';
+          this.elements.contactName.value = '';
+          this.elements.contactPhone.value = '';
+          this.elements.contactEmail.value = '';
+        } else {
+          this.elements.contactFields.style.display = 'block';
+          this.elements.anonymousNotice.style.display = 'none';
+        }
+        
+        this.saveFormData();
+      },
+      
+      // Map initialization
+      initializeStepMaps: function() {
+        switch (this.currentStep) {
+          case 1:
+            if (this.formData.city && !this.maps.city) {
+              this.initializeCityMap();
+            }
+            break;
+          case 2:
+            if (this.formData.district && !this.maps.district) {
+              this.initializeDistrictMap();
+            }
+            break;
+          case 3:
+            if (this.formData.neighborhood && !this.maps.neighborhood) {
+              this.initializeNeighborhoodMap();
+            }
+            break;
+          case 4:
+            if (this.formData.street && !this.maps.street) {
+              this.initializeStreetMap();
+            }
+            break;
+          case 5:
+            if (!this.maps.detail) {
+              this.initializeDetailMap();
+            }
+            break;
+        }
+      },
+      
+      initializeCityMap: function() {
+        if (!this.formData.city || this.maps.city) return;
+        
+        const coordinates = VeriYoneticisi.koordinatGetir(this.formData.city);
+        this.maps.city = L.map(this.elements.cityMap).setView([coordinates.lat, coordinates.lng], 10);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors'
+        }).addTo(this.maps.city);
+        
+        // Add marker for city center
+        L.marker([coordinates.lat, coordinates.lng])
+          .addTo(this.maps.city)
+          .bindPopup(`<b>${this.formData.city}</b><br>Seçilen şehir`)
+          .openPopup();
+      },
+      
+      initializeDistrictMap: function() {
+        if (!this.formData.district || this.maps.district) return;
+        
+        // Use city coordinates for now (could be enhanced with district-specific coordinates)
+        const coordinates = VeriYoneticisi.koordinatGetir(this.formData.city);
+        this.maps.district = L.map(this.elements.districtMap).setView([coordinates.lat, coordinates.lng], 11);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors'
+        }).addTo(this.maps.district);
+        
+        // Add marker for district
+        L.marker([coordinates.lat, coordinates.lng])
+          .addTo(this.maps.district)
+          .bindPopup(`<b>${this.formData.district}</b><br>Seçilen ilçe`);
+      },
+      
+      initializeNeighborhoodMap: function() {
+        if (!this.formData.neighborhood || this.maps.neighborhood) return;
+        
+        const coordinates = VeriYoneticisi.koordinatGetir(this.formData.city);
+        this.maps.neighborhood = L.map(this.elements.neighborhoodMap).setView([coordinates.lat, coordinates.lng], 13);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors'
+        }).addTo(this.maps.neighborhood);
+        
+        // Add click event for marker placement
+        this.maps.neighborhood.on('click', (e) => {
+          this.setNeighborhoodMarker(e.latlng.lat, e.latlng.lng);
+        });
+        
+        // Add existing marker if coordinates exist
+        if (this.formData.selectedLat && this.formData.selectedLng) {
+          this.setNeighborhoodMarker(this.formData.selectedLat, this.formData.selectedLng);
+        }
+      },
+      
+      initializeStreetMap: function() {
+        if (!this.formData.street || this.maps.street) return;
+        
+        const coordinates = VeriYoneticisi.koordinatGetir(this.formData.city);
+        this.maps.street = L.map(this.elements.streetMap).setView([coordinates.lat, coordinates.lng], 15);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors'
+        }).addTo(this.maps.street);
+        
+        // Add marker for street (approximate)
+        L.marker([coordinates.lat, coordinates.lng])
+          .addTo(this.maps.street)
+          .bindPopup(`<b>${this.formData.street}</b><br>Seçilen sokak`);
+      },
+      
+      initializeDetailMap: function() {
+        if (this.maps.detail) return;
+        
+        const coordinates = this.formData.selectedLat && this.formData.selectedLng 
+          ? [this.formData.selectedLat, this.formData.selectedLng]
+          : [39.9208, 32.8541]; // Default to Turkey center
+        
+        this.maps.detail = L.map(this.elements.detailMap).setView(coordinates, 16);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors'
+        }).addTo(this.maps.detail);
+        
+        // Add click event for detail marker placement
+        this.maps.detail.on('click', (e) => {
+          this.setDetailMarker(e.latlng.lat, e.latlng.lng);
+        });
+        
+        // Add existing detail marker if coordinates exist
+        if (this.formData.detailLat && this.formData.detailLng) {
+          this.setDetailMarker(this.formData.detailLat, this.formData.detailLng);
+        }
+      },
+      
+      initializePreviewMap: function() {
+        if (this.maps.preview) return;
+        
+        const coordinates = this.formData.selectedLat && this.formData.selectedLng 
+          ? [this.formData.selectedLat, this.formData.selectedLng]
+          : [39.9208, 32.8541];
+        
+        this.maps.preview = L.map(this.elements.previewMap).setView(coordinates, 15);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors'
+        }).addTo(this.maps.preview);
+        
+        // Add marker for the selected location
+        if (this.formData.selectedLat && this.formData.selectedLng) {
+          this.markers.preview = L.marker([this.formData.selectedLat, this.formData.selectedLng])
+            .addTo(this.maps.preview)
+            .bindPopup(`<b>Bildirim Konumu</b><br>${this.formData.street}, ${this.formData.neighborhood}`)
+            .openPopup();
+        }
+      },
+      
+      // Marker handling
+      setNeighborhoodMarker: function(lat, lng) {
+        this.formData.selectedLat = lat;
+        this.formData.selectedLng = lng;
+        
+        document.getElementById('selectedLat').value = lat;
+        document.getElementById('selectedLng').value = lng;
+        
+        // Update marker text
+        document.getElementById('markerLocationText').textContent = 
+          `Konum: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+        
+        // Remove existing marker
+        if (this.markers.neighborhood) {
+          this.maps.neighborhood.removeLayer(this.markers.neighborhood);
+        }
+        
+        // Add new marker
+        this.markers.neighborhood = L.marker([lat, lng])
+          .addTo(this.maps.neighborhood)
+          .bindPopup(`<b>Seçilen Konum</b><br>${lat.toFixed(6)}, ${lng.toFixed(6)}`)
+          .openPopup();
+        
+        // Center map on marker
+        this.maps.neighborhood.setView([lat, lng], 16);
+        
+        this.saveFormData();
+      },
+      
+      setDetailMarker: function(lat, lng) {
+        this.formData.detailLat = lat;
+        this.formData.detailLng = lng;
+        
+        document.getElementById('detailLat').value = lat;
+        document.getElementById('detailLng').value = lng;
+        
+        // Update marker text
+        document.getElementById('detailMarkerText').textContent = 
+          `Detay konum: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+        
+        // Remove existing marker
+        if (this.markers.detail) {
+          this.maps.detail.removeLayer(this.markers.detail);
+        }
+        
+        // Add new marker
+        this.markers.detail = L.marker([lat, lng], {
+          icon: L.divIcon({
+            className: 'custom-marker detail-marker',
+            html: '<i class="fas fa-map-pin"></i>',
+            iconSize: [30, 30]
+          })
+        })
+        .addTo(this.maps.detail)
+        .bindPopup(`<b>Detay Konum</b><br>${lat.toFixed(6)}, ${lng.toFixed(6)}`)
+        .openPopup();
+        
+        this.saveFormData();
+      },
+      
+      resetNeighborhoodMarker: function() {
+        this.formData.selectedLat = null;
+        this.formData.selectedLng = null;
+        
+        document.getElementById('selectedLat').value = '';
+        document.getElementById('selectedLng').value = '';
+        document.getElementById('markerLocationText').textContent = 'Henüz konum seçilmedi';
+        
+        if (this.markers.neighborhood) {
+          this.maps.neighborhood.removeLayer(this.markers.neighborhood);
+          this.markers.neighborhood = null;
+        }
+        
+        this.saveFormData();
+      },
+      
+      locateUser: function() {
+        if (!navigator.geolocation) {
+          App.showNotification('Konum servisi desteklenmiyor', 'error');
+          return;
+        }
+        
+        App.showNotification('Konumunuz alınıyor...', 'info');
+        
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            this.setNeighborhoodMarker(lat, lng);
+            App.showNotification('Konumunuz alındı', 'success');
+          },
+          (error) => {
+            console.error('Konum alınamadı:', error);
+            App.showNotification('Konum alınamadı', 'error');
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0
+          }
+        );
+      },
+      
+      toggleDetailMap: function() {
+        const section = document.getElementById('detailMapSection');
+        const button = document.getElementById('toggleDetailMapBtn');
+        
+        if (section.style.display === 'none' || !section.style.display) {
+          section.style.display = 'block';
+          button.innerHTML = '<i class="fas fa-map"></i><span>Haritayı Kapat</span>';
+          
+          // Initialize map if not already initialized
+          if (!this.maps.detail) {
+            setTimeout(() => {
+              this.initializeDetailMap();
+            }, 100);
+          } else {
+            // Refresh map size
+            setTimeout(() => {
+              this.maps.detail.invalidateSize();
+            }, 100);
+          }
+        } else {
+          section.style.display = 'none';
+          button.innerHTML = '<i class="fas fa-map"></i><span>Haritayı Aç</span>';
+        }
+      },
+      
+      // Photo handling
+      handlePhotoUpload: function(files) {
+        if (!files || files.length === 0) return;
+        
+        const maxPhotos = 5;
+        const currentCount = this.formData.photos.length;
+        const availableSlots = maxPhotos - currentCount;
+        
+        if (availableSlots <= 0) {
+          App.showNotification(`En fazla ${maxPhotos} fotoğraf yükleyebilirsiniz`, 'warning');
+          return;
+        }
+        
+        const filesToProcess = Array.from(files).slice(0, availableSlots);
+        
+        filesToProcess.forEach(file => {
+          // Check file size (2MB = 2 * 1024 * 1024 bytes)
+          if (file.size > 2 * 1024 * 1024) {
+            App.showNotification(`${file.name} dosyası 2MB limitini aşıyor`, 'error');
+            return;
+          }
+          
+          // Check file type
+          if (!file.type.match('image.*')) {
+            App.showNotification(`${file.name} geçerli bir resim dosyası değil`, 'error');
+            return;
+          }
+          
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            this.addPhotoPreview(file.name, e.target.result);
+            this.formData.photos.push({
+              name: file.name,
+              data: e.target.result,
+              size: file.size,
+              type: file.type
+            });
+            this.saveFormData();
+          };
+          reader.readAsDataURL(file);
+        });
+        
+        // Reset file input
+        this.elements.photoInput.value = '';
+      },
+      
+      addPhotoPreview: function(fileName, dataUrl) {
+        const previewItem = document.createElement('div');
+        previewItem.className = 'photo-preview-item';
+        previewItem.innerHTML = `
+          <img src="${dataUrl}" alt="${fileName}">
+          <button type="button" class="photo-preview-remove" title="Kaldır">
+            <i class="fas fa-times"></i>
+          </button>
+        `;
+        
+        // Add remove event
+        const removeBtn = previewItem.querySelector('.photo-preview-remove');
+        removeBtn.addEventListener('click', () => {
+          const index = Array.from(this.elements.photoPreviewContainer.children)
+            .indexOf(previewItem) - 1; // -1 for placeholder
+        
+          if (index >= 0) {
+            this.formData.photos.splice(index, 1);
+            this.elements.photoPreviewContainer.removeChild(previewItem);
+            this.saveFormData();
+          }
+        });
+        
+        // Remove placeholder if it's the first photo
+        const placeholder = this.elements.photoPreviewContainer.querySelector('.photo-preview-placeholder');
+        if (placeholder) {
+          this.elements.photoPreviewContainer.removeChild(placeholder);
+        }
+        
+        this.elements.photoPreviewContainer.appendChild(previewItem);
+      },
+      
+      // Camera handling
+      openCamera: function() {
+        this.elements.cameraModal.style.display = 'flex';
+        
+        // Access camera
+        navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            facingMode: 'environment' // Prefer rear camera
+          } 
+        })
+        .then(stream => {
+          this.cameraStream = stream;
+          const video = document.getElementById('cameraPreview');
+          video.srcObject = stream;
+        })
+        .catch(error => {
+          console.error('Kamera erişim hatası:', error);
+          App.showNotification('Kameraya erişilemedi', 'error');
+          this.closeCamera();
+        });
+      },
+      
+      closeCamera: function() {
+        this.elements.cameraModal.style.display = 'none';
+        
+        // Stop camera stream
+        if (this.cameraStream) {
+          this.cameraStream.getTracks().forEach(track => track.stop());
+          this.cameraStream = null;
+        }
+        
+        // Reset camera preview
+        const video = document.getElementById('cameraPreview');
+        video.srcObject = null;
+        
+        // Hide photo preview
+        document.getElementById('cameraPhotoPreview').style.display = 'none';
+        document.querySelector('.camera-container').style.display = 'block';
+      },
+      
+      switchCamera: function() {
+        if (!this.cameraStream) return;
+        
+        const currentFacingMode = this.cameraStream.getVideoTracks()[0].getSettings().facingMode;
+        const newFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+        
+        // Stop current stream
+        this.cameraStream.getTracks().forEach(track => track.stop());
+        
+        // Start new stream
+        navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            facingMode: newFacingMode
+          } 
+        })
+        .then(stream => {
+          this.cameraStream = stream;
+          const video = document.getElementById('cameraPreview');
+          video.srcObject = stream;
+        })
+        .catch(error => {
+          console.error('Kamera değiştirme hatası:', error);
+          App.showNotification('Kamera değiştirilemedi', 'error');
+        });
+      },
+      
+      capturePhoto: function() {
+        const video = document.getElementById('cameraPreview');
+        const canvas = document.getElementById('cameraCanvas');
+        const context = canvas.getContext('2d');
+        
+        // Set canvas size to video size
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        // Draw video frame to canvas
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Convert to data URL
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        
+        // Show preview
+        document.getElementById('capturedPhoto').src = dataUrl;
+        document.querySelector('.camera-container').style.display = 'none';
+        document.getElementById('cameraPhotoPreview').style.display = 'block';
+        
+        // Store captured photo
+        this.capturedPhotoData = dataUrl;
+      },
+      
+      toggleFlash: function() {
+        // Flash control requires specific device support
+        App.showNotification('Flaş özelliği bu cihazda desteklenmiyor', 'info');
+      },
+      
+      retakePhoto: function() {
+        document.querySelector('.camera-container').style.display = 'block';
+        document.getElementById('cameraPhotoPreview').style.display = 'none';
+        this.capturedPhotoData = null;
+      },
+      
+      useCapturedPhoto: function() {
+        if (!this.capturedPhotoData) return;
+        
+        // Add to photos
+        const fileName = `kamera_${Date.now()}.jpg`;
+        this.addPhotoPreview(fileName, this.capturedPhotoData);
+        
+        this.formData.photos.push({
+          name: fileName,
+          data: this.capturedPhotoData,
+          size: this.capturedPhotoData.length, // Approximate
+          type: 'image/jpeg'
+        });
+        
+        this.saveFormData();
+        this.closeCamera();
+      },
+      
+      // Preview updating
+      updatePreview: function() {
+        this.updateLocationPreview();
+        this.updateProblemPreview();
+        this.updatePhotoPreview();
+        this.updateContactPreview();
+      },
+      
+      updateLocationPreview: function() {
+        const locationData = [
+          { label: 'Şehir', value: this.formData.city },
+          { label: 'İlçe', value: this.formData.district },
+          { label: 'Mahalle', value: this.formData.neighborhood },
+          { label: 'Sokak', value: this.formData.street },
+          { label: 'Sokak Detayı', value: this.formData.streetDetail || 'Belirtilmedi' },
+          { label: 'Koordinatlar', value: this.formData.selectedLat && this.formData.selectedLng 
+            ? `${this.formData.selectedLat.toFixed(6)}, ${this.formData.selectedLng.toFixed(6)}`
+            : 'Belirtilmedi'
+          }
+        ];
+        
+        this.elements.previewLocation.innerHTML = locationData.map(item => `
+          <div class="preview-label">${item.label}:</div>
+          <div class="preview-value">${item.value || 'Seçilmedi'}</div>
+        `).join('');
+      },
+      
+      updateProblemPreview: function() {
+        const problemData = [
+          { label: 'Problem Tipleri', value: this.formData.problems.length > 0 
+            ? this.formData.problems.join(', ')
+            : 'Seçilmedi'
+          },
+          { label: 'Öncelik', value: this.formData.priority || 'Seçilmedi' },
+          { label: 'Ek Açıklama', value: this.formData.problemDescription || 'Belirtilmedi' }
+        ];
+        
+        this.elements.previewProblem.innerHTML = problemData.map(item => `
+          <div class="preview-label">${item.label}:</div>
+          <div class="preview-value">${item.value}</div>
+        `).join('');
+      },
+      
+      updatePhotoPreview: function() {
+        if (this.formData.photos.length === 0) {
+          this.elements.previewPhotos.innerHTML = `
+            <div class="no-photos-message">
+              <i class="fas fa-camera"></i>
+              <p>Fotoğraf eklenmedi</p>
+            </div>
+          `;
+          return;
+        }
+        
+        this.elements.previewPhotos.innerHTML = this.formData.photos.map((photo, index) => `
+          <div class="photo-preview-item">
+            <img src="${photo.data}" alt="Fotoğraf ${index + 1}">
+            <span class="photo-name">${photo.name}</span>
+          </div>
+        `).join('');
+      },
+      
+      updateContactPreview: function() {
+        if (this.formData.anonymous) {
+          this.elements.previewContact.innerHTML = `
+            <div class="preview-label">Bildirim Türü:</div>
+            <div class="preview-value">Anonim Bildirim</div>
+          `;
+          return;
+        }
+        
+        const contactData = [
+          { label: 'Ad Soyad', value: this.formData.contactName || 'Belirtilmedi' },
+          { label: 'Telefon', value: this.formData.contactPhone || 'Belirtilmedi' },
+          { label: 'E-posta', value: this.formData.contactEmail || 'Belirtilmedi' }
+        ];
+        
+        this.elements.previewContact.innerHTML = contactData.map(item => `
+          <div class="preview-label">${item.label}:</div>
+          <div class="preview-value">${item.value}</div>
+        `).join('');
+      },
+      
+      // Preview map controls
+      zoomInPreviewMap: function() {
+        if (this.maps.preview) {
+          this.maps.preview.zoomIn();
+        }
+      },
+      
+      zoomOutPreviewMap: function() {
+        if (this.maps.preview) {
+          this.maps.preview.zoomOut();
+        }
+      },
+      
+      toggleFullscreenPreviewMap: function() {
+        const mapContainer = document.querySelector('.preview-map-container');
+        if (!document.fullscreenElement) {
+          mapContainer.requestFullscreen().catch(err => {
+            console.error('Tam ekran hatası:', err);
+          });
+        } else {
+          document.exitFullscreen();
+        }
+      },
+      
+      // PDF handling
+      previewPdf: function() {
+        this.elements.pdfPreviewModal.style.display = 'flex';
+        this.generatePdfPreview();
+      },
+      
+      hidePdfPreview: function() {
+        this.elements.pdfPreviewModal.style.display = 'none';
+      },
+      
+      generatePdfPreview: function() {
+        const container = document.getElementById('pdfPreviewContainer');
+        
+        // Create PDF-like preview
+        const pdfContent = `
+          <div class="pdf-document">
+            <div class="pdf-header">
+              <div class="pdf-logo">
+                <i class="fas fa-handshake"></i>
+                <div>
+                  <h1>Anlaşmalı Mahalleler</h1>
+                  <p>Altyapı Sorun Bildirim Sistemi</p>
+                </div>
+              </div>
+              <div class="pdf-meta">
+                <p>Belge No: <strong>${this.generateDocumentNumber()}</strong></p>
+                <p>Tarih: <strong>${new Date().toLocaleDateString('tr-TR')}</strong></p>
+              </div>
+            </div>
+            
+            <div class="pdf-body">
+              <div class="pdf-section">
+                <h2>RESMİ BİLDİRİM YAZISI</h2>
+                <div class="pdf-address">
+                  <p><strong>İlgili Makama,</strong></p>
+                  <p>${this.formData.city} İli</p>
+                  <p>${this.formData.district} İlçe Belediye Başkanlığı'na</p>
+                </div>
+              </div>
+              
+              <div class="pdf-section">
+                <h3>KONU: Altyapı Sorunu Bildirimi</h3>
+                
+                <div class="pdf-content">
+                  <p>Yukarıda adı geçen ilçenize bağlı <strong>${this.formData.neighborhood}</strong> mahallesi, 
+                  <strong>${this.formData.street}</strong> adresinde aşağıda belirtilen altyapı sorunu tespit edilmiştir:</p>
+                  
+                  <div class="pdf-problems">
+                    <h4>Tespit Edilen Sorunlar:</h4>
+                    <ul>
+                      ${this.formData.problems.map(problem => `<li>${problem}</li>`).join('')}
+                    </ul>
+                  </div>
+                  
+                  ${this.formData.streetDetail ? `
+                  <div class="pdf-detail">
+                    <h4>Ek Bilgi:</h4>
+                    <p>${this.formData.streetDetail}</p>
+                  </div>
+                  ` : ''}
+                  
+                  ${this.formData.problemDescription ? `
+                  <div class="pdf-description">
+                    <h4>Açıklama:</h4>
+                    <p>${this.formData.problemDescription}</p>
+                  </div>
+                  ` : ''}
+                  
+                  <div class="pdf-priority">
+                    <h4>Öncelik Derecesi: <span class="priority-${this.formData.priority.toLowerCase()}">${this.formData.priority}</span></h4>
+                    <p>Yukarıda belirtilen sorunun ${this.getPriorityDeadline()} içinde çözülmesi talep edilmektedir.</p>
+                  </div>
+                  
+                  ${!this.formData.anonymous ? `
+                  <div class="pdf-contact">
+                    <h4>İletişim Bilgileri:</h4>
+                    <p><strong>Ad Soyad:</strong> ${this.formData.contactName}</p>
+                    <p><strong>Telefon:</strong> ${this.formData.contactPhone}</p>
+                    ${this.formData.contactEmail ? `<p><strong>E-posta:</strong> ${this.formData.contactEmail}</p>` : ''}
+                  </div>
+                  ` : ''}
+                  
+                  <div class="pdf-conclusion">
+                    <p>Gereğini bilgilerinize saygılarımla arz ederim.</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="pdf-footer">
+                <div class="pdf-signature">
+                  <p>Bildirim Sahibi</p>
+                  ${!this.formData.anonymous ? `<p><strong>${this.formData.contactName}</strong></p>` : '<p><strong>Anonim Bildirim</strong></p>'}
+                </div>
+                <div class="pdf-stamp">
+                  <div class="stamp">
+                    <span>ANLAŞMALI MAHALLELER</span>
+                    <span>BİLDİRİM SİSTEMİ</span>
+                    <span>${new Date().getFullYear()}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="pdf-notes">
+              <h4>NOTLAR:</h4>
+              <ul>
+                <li>Bu belge elektronik ortamda oluşturulmuştur, ıslak imza gerektirmez.</li>
+                <li>Bildirim takip kodu: <strong>${this.generateTrackingCode()}</strong></li>
+                <li>Bildirimin durumunu takip kodunuzla sistem üzerinden takip edebilirsiniz.</li>
+                <li>Açıklama ve fotoğraflar ekte sunulmuştur.</li>
+              </ul>
+            </div>
+          </div>
+        `;
+        
+        container.innerHTML = pdfContent;
+      },
+      
+      generateDocumentNumber: function() {
+        const date = new Date();
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        return `BM-${year}${month}${day}-${random}`;
+      },
+      
+      generateTrackingCode: function() {
+        if (!this.trackingCode) {
+          const sehirKodu = App.SEHIR_KISALTMALARI[this.formData.city] || 'GEN';
+          const tarihStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+          const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+          this.trackingCode = `${sehirKodu}-${tarihStr}-${random}`;
+        }
+        return this.trackingCode;
+      },
+      
+      getPriorityDeadline: function() {
+        switch (this.formData.priority) {
+          case 'Acil': return '24 saat';
+          case 'Yüksek': return '3 iş günü';
+          case 'Orta': return '1 hafta';
+          case 'Düşük': return '2 hafta';
+          default: return 'uygun sürede';
+        }
+      },
+      
+      printPdf: function() {
+        window.print();
+      },
+      
+      downloadPdf: function() {
+        App.showNotification('PDF indirme özelliği yakında eklenecek', 'info');
+        // PDF generation with jsPDF would be implemented here
+      },
+      
+      // Form submission
+      submitForm: function() {
+        // Final validation
+        if (!this.validateCurrentStep()) {
+          App.showNotification('Lütfen tüm zorunlu alanları kontrol edin', 'error');
+          return;
+        }
+        
+        // Prepare data for Database
+        const reportData = {
+          il: this.formData.city,
+          ilce: this.formData.district,
+          mahalle: this.formData.neighborhood,
+          sokak: this.formData.street,
+          sokakDetayi: this.formData.streetDetail,
+          problemTipi: this.formData.problems.join(', '),
+          problemEmoji: this.getProblemEmoji(),
+          aciklama: this.formData.problemDescription,
+          oncelik: this.formData.priority,
+          fotograf: this.formData.photos.length > 0 ? this.formData.photos[0].data : '',
+          iletisimBilgisi: this.formData.anonymous ? 'Anonim' : 
+            `${this.formData.contactName || ''} ${this.formData.contactPhone || ''}`.trim(),
+          eposta: this.formData.anonymous ? '' : this.formData.contactEmail,
+          koordinatlar: this.formData.selectedLat && this.formData.selectedLng ? {
+            lat: this.formData.selectedLat,
+            lng: this.formData.selectedLng
+          } : null,
+          adres: `${this.formData.street}, ${this.formData.neighborhood}, ${this.formData.district}, ${this.formData.city}`
+        };
+        
+        // Show loading
+        App.showLoading('#reportFormContainer');
+        
+        // Submit to Database
+        setTimeout(() => {
+          const result = Database.bildirimEkle(reportData);
+          
+          App.hideLoading();
+          
+          if (result.success) {
+            // Clear form data from Local Storage
+            localStorage.removeItem('report_form_draft');
+            
+            // Show confirmation modal
+            this.showConfirmationModal(result.data.id);
+            
+            // Add photos to database (simplified - in real app would need proper handling)
+            this.formData.photos.forEach((photo, index) => {
+              if (index > 0) { // First photo already saved
+                // Additional photos would be saved here
+              }
+            });
+          } else {
+            App.showNotification(`Bildirim gönderilemedi: ${result.error}`, 'error');
+          }
+        }, 1500);
+      },
+      
+      getProblemEmoji: function() {
+        const problemEmojis = {
+          'Yol Bozukluğu': '🚧',
+          'Su Baskını': '💧',
+          'Elektrik Kesintisi': '⚡',
+          'Çöp Toplama': '🗑️',
+          'Trafik Lambası': '🚦',
+          'Aydınlatma': '💡',
+          'Park/Bahçe': '🌳',
+          'İnşaat Molozu': '🏗️',
+          'İçme Suyu': '🚰',
+          'Kanalizasyon': '🚽',
+          'Güvenlik': '⚜️'
+        };
+        
+        return this.formData.problems.map(p => problemEmojis[p] || '⚠️').join(' ');
+      },
+      
+      // Confirmation modal
+      showConfirmationModal: function(trackingCode) {
+        this.elements.confirmationModal.style.display = 'flex';
+        this.elements.trackingCodeDisplay.textContent = trackingCode;
+        
+        // Generate QR code
+        if (typeof QRCode !== 'undefined') {
+          new QRCode(this.elements.trackingQrCode, {
+            text: trackingCode,
+            width: 150,
+            height: 150,
+            colorDark: "#0F2A24",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+          });
+        }
+      },
+      
+      hideConfirmationModal: function() {
+        this.elements.confirmationModal.style.display = 'none';
+        this.closeForm();
+      },
+      
+      copyTrackingCode: function() {
+        const code = this.elements.trackingCodeDisplay.textContent;
+        navigator.clipboard.writeText(code).then(() => {
+          App.showNotification('Takip kodu panoya kopyalandı', 'success');
+        }).catch(err => {
+          console.error('Kopyalama hatası:', err);
+        });
+      },
+      
+      viewOnMap: function() {
+        this.hideConfirmationModal();
+        App.navigateTo('map');
+        
+        // In a real app, would filter map to show this specific report
+        setTimeout(() => {
+          App.showNotification('Bildiriminiz haritada gösteriliyor', 'info');
+        }, 500);
+      },
+      
+      downloadReportPdf: function() {
+        this.downloadPdf();
+      },
+      
+      newReport: function() {
+        this.hideConfirmationModal();
+        this.resetForm();
+        this.currentStep = 1;
+        this.updateStep();
+      },
+      
+      // Draft handling
+      showSaveDraftModal: function() {
+        this.elements.saveDraftModal.style.display = 'flex';
+        
+        // Set default draft name
+        const draftName = document.getElementById('draftName');
+        if (this.formData.street) {
+          draftName.value = `${this.formData.street} - ${this.formData.problems[0] || 'Bildirim'}`;
+        } else if (this.formData.city) {
+          draftName.value = `${this.formData.city} bildirimi`;
+        }
+      },
+      
+      hideSaveDraftModal: function() {
+        this.elements.saveDraftModal.style.display = 'none';
+      },
+      
+      saveDraft: function() {
+        const draftName = document.getElementById('draftName').value.trim();
+        if (!draftName) {
+          App.showNotification('Lütfen bir taslak adı girin', 'warning');
+          return;
+        }
+        
+        // Save draft with name
+        const draftData = {
+          name: draftName,
+          data: this.formData,
+          savedAt: new Date().toISOString(),
+          step: this.currentStep
+        };
+        
+        try {
+          // Get existing drafts
+          const existingDrafts = JSON.parse(localStorage.getItem('report_drafts') || '[]');
+          
+          // Add new draft
+          existingDrafts.push(draftData);
+          
+          // Keep only last 10 drafts
+          if (existingDrafts.length > 10) {
+            existingDrafts.shift();
+          }
+          
+          localStorage.setItem('report_drafts', JSON.stringify(existingDrafts));
+          
+          this.hideSaveDraftModal();
+          App.showNotification('Taslak kaydedildi', 'success');
+          this.closeForm();
+        } catch (error) {
+          console.error('Taslak kaydedilirken hata:', error);
+          App.showNotification('Taslak kaydedilemedi', 'error');
+        }
+      },
+      
+      saveAndExit: function() {
+        this.saveFormData();
+        this.closeForm();
+        App.showNotification('Form verileriniz kaydedildi', 'info');
+      },
+      
+      // Form management
+      cancelForm: function() {
+        if (this.isFormDirty()) {
+          if (confirm('Formdaki veriler kaybolacak. Emin misiniz?')) {
+            this.closeForm();
+          }
+        } else {
+          this.closeForm();
+        }
+      },
+      
+      isFormDirty: function() {
+        return !!(this.formData.city || 
+                 this.formData.district || 
+                 this.formData.neighborhood || 
+                 this.formData.street ||
+                 this.formData.problems.length > 0 ||
+                 this.formData.photos.length > 0);
+      },
+      
+      closeForm: function() {
+        // Navigate back to home
+        App.navigateTo('home');
+      },
+      
+      resetForm: function() {
+        this.formData = {
+          city: '',
+          district: '',
+          neighborhood: '',
+          street: '',
+          streetDetail: '',
+          selectedLat: null,
+          selectedLng: null,
+          detailLat: null,
+          detailLng: null,
+          problems: [],
+          problemDescription: '',
+          priority: '',
+          photos: [],
+          anonymous: false,
+          contactName: '',
+          contactPhone: '',
+          contactEmail: ''
+        };
+        
+        // Reset form fields
+        this.elements.citySelect.value = '';
+        this.elements.districtSelect.innerHTML = '<option value="">Önce şehir seçin</option>';
+        this.elements.districtSelect.disabled = true;
+        this.elements.neighborhoodSelect.innerHTML = '<option value="">Önce ilçe seçin</option>';
+        this.elements.neighborhoodSelect.disabled = true;
+        this.elements.streetSelect.innerHTML = '<option value="">Önce mahalle seçin</option>';
+        this.elements.streetSelect.disabled = true;
+        this.elements.streetDetail.value = '';
+        document.getElementById('charCount').textContent = '0/250 karakter';
+        this.elements.problemDescription.value = '';
+        this.elements.contactName.value = '';
+        this.elements.contactPhone.value = '';
+        this.elements.contactEmail.value = '';
+        this.elements.anonymousToggle.checked = false;
+        this.elements.contactFields.style.display = 'block';
+        this.elements.anonymousNotice.style.display = 'none';
+        
+        // Reset checkboxes and radios
+        document.querySelectorAll('.problem-checkbox').forEach(cb => cb.checked = false);
+        document.querySelectorAll('.priority-radio').forEach(rb => rb.checked = false);
+        
+        // Reset photo preview
+        this.elements.photoPreviewContainer.innerHTML = `
+          <div class="photo-preview-placeholder">
+            <i class="fas fa-images"></i>
+            <p>Yüklenen fotoğraflar burada görünecek</p>
+            <small>En fazla 5 fotoğraf yükleyebilirsiniz</small>
+          </div>
+        `;
+        
+        // Reset maps
+        Object.values(this.maps).forEach(map => {
+          if (map && map.remove) {
+            map.remove();
+          }
+        });
+        this.maps = {
+          city: null,
+          district: null,
+          neighborhood: null,
+          street: null,
+          detail: null,
+          preview: null
+        };
+        
+        this.markers = {
+          neighborhood: null,
+          detail: null,
+          preview: null
+        };
+        
+        // Clear Local Storage draft
+        localStorage.removeItem('report_form_draft');
+      },
+      
+      // Additional street functionality
+      addNewStreet: function() {
+        const streetName = prompt('Yeni sokak adını girin:');
+        if (!streetName || !streetName.trim()) return;
+        
+        if (!this.formData.city || !this.formData.district || !this.formData.neighborhood) {
+          App.showNotification('Önce şehir, ilçe ve mahalle seçmelisiniz', 'warning');
+          return;
+        }
+        
+        // In a real app, this would be an admin function
+        // For now, just add to the select temporarily
+        const option = document.createElement('option');
+        option.value = streetName;
+        option.textContent = streetName + ' (yeni)';
+        this.elements.streetSelect.appendChild(option);
+        this.elements.streetSelect.value = streetName;
+        
+        this.onStreetChange(streetName);
+        
+        App.showNotification('Sokak geçici olarak eklendi. Kalıcı ekleme için admin paneline başvurun.', 'info');
+      }
+    };
+    
+    // Initialize form when component loads
+    ReportForm.init();
+    
+    // Make available globally for debugging
+    window.ReportForm = ReportForm;
+  });
+</script>
