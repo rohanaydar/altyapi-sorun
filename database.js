@@ -1,11 +1,61 @@
-// Doğu & Güneydoğu Altyapı Bildirim Sistemi - Database
+// Anlaşmalı Mahalleler Altyapı Bildirim Sistemi - Database
 const DoguGuneydoguDatabase = {
     // Database anahtarları
     STORAGE_KEYS: {
         REPORTS: 'dogu_guneydogu_altyapi_reports_v2',
         SETTINGS: 'dogu_guneydogu_altyapi_settings_v2'
     },
+        // Admin kullanıcı bilgileri
+        const ADMIN_CREDENTIALS = {
+            username: 'mardinli',
+            password: 'amed2147'
+        };
 
+        // Gizli admin butonu
+        document.getElementById('secretAdminBtn').addEventListener('click', function() {
+            document.getElementById('passwordModal').classList.add('active');
+        });
+
+        // Admin login formu
+        document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('adminUsername').value;
+            const password = document.getElementById('adminPassword').value;
+            
+            if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                // Giriş başarılı
+                closePasswordModal();
+                toggleAdminPanel();
+            } else {
+                // Giriş başarısız
+                document.getElementById('loginError').style.display = 'block';
+                document.getElementById('adminPassword').value = '';
+                document.getElementById('adminPassword').focus();
+                
+                // 3 saniye sonra hata mesajını gizle
+                setTimeout(() => {
+                    document.getElementById('loginError').style.display = 'none';
+                }, 3000);
+            }
+        });
+
+        // Password modal'ı kapat
+        function closePasswordModal() {
+            document.getElementById('passwordModal').classList.remove('active');
+            document.getElementById('adminLoginForm').reset();
+            document.getElementById('loginError').style.display = 'none';
+        }
+
+        // Admin panelini aç/kapa
+        function toggleAdminPanel() {
+            const panel = document.getElementById('adminPanel');
+            panel.classList.toggle('active');
+            
+            if (panel.classList.contains('active')) {
+                loadAdminReports();
+            }
+        }
     // Database'i başlat
     init() {
         console.log('Doğu & Güneydoğu Database başlatılıyor...');
