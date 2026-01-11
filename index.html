@@ -4,42 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Anlaşmalı Mahalleler - Altyapı Sorun Bildirim Sistemi</title>
-    <!-- Bu kodu head bölümüne, diğer stil dosyalarının yanına ekleyin -->
-<script>
-    // CSS dosyasının yüklenip yüklenmediğini kontrol et
-    document.addEventListener('DOMContentLoaded', function() {
-        var cssFile = 'style.css';
-        var linkElement = document.querySelector('link[href="' + cssFile + '"]');
-        
-        if (linkElement) {
-            console.log('✅ CSS dosyası HTML içinde bulundu:', cssFile);
-            
-            // CSS'in gerçekten yüklenip yüklenmediğini kontrol et
-            var cssLoaded = false;
-            for (var i = 0; i < document.styleSheets.length; i++) {
-                if (document.styleSheets[i].href && 
-                    document.styleSheets[i].href.includes(cssFile)) {
-                    cssLoaded = true;
-                    break;
-                }
-            }
-            
-            if (cssLoaded) {
-                console.log('✅ CSS başarıyla yüklendi');
-            } else {
-                console.log('❌ CSS bağlantısı var ama yüklenemedi');
-            }
-        } else {
-            console.log('❌ CSS dosyası HTML içinde bulunamadı:', cssFile);
-            
-            // Tüm stil dosyalarını listele
-            console.log('📋 Mevcut stil dosyaları:');
-            document.querySelectorAll('link[rel="stylesheet"]').forEach(function(link) {
-                console.log('  -', link.href);
-            });
-        }
-    });
-</script>
+    <!-- BU KODU MEVCUT style.css LİNKİNİN ÜZERİNE EKLEYİN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<!-- TEMEL STİLLER - CSS yüklenene kadar sayfayı okunabilir yapar -->
+<style>
+    /* Acil durum stilleri - CSS yüklenene kadar */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { 
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+        line-height: 1.6; 
+        color: #333; 
+        background: #f5f5f5; 
+        padding: 20px; 
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header { background: #0F2A24; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+    h1 { font-size: 24px; margin-bottom: 10px; }
+    .btn { 
+        display: inline-block; 
+        background: #0F2A24; 
+        color: white; 
+        padding: 10px 20px; 
+        border-radius: 4px; 
+        text-decoration: none; 
+        margin: 5px; 
+    }
+    .alert { 
+        background: #fff3cd; 
+        border: 1px solid #ffeaa7; 
+        padding: 15px; 
+        border-radius: 4px; 
+        margin: 20px 0; 
+    }
+</style>
     <!-- FONTS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
