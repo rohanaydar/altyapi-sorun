@@ -11,7 +11,42 @@ Mükemmel. **index.html** ana sayfasını oluşturuyorum. Bu SPA'nın giriş nok
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Anlaşmalı Mahalleler - Altyapı Sorun Bildirim Sistemi</title>
-    
+    <!-- Bu kodu head bölümüne, diğer stil dosyalarının yanına ekleyin -->
+<script>
+    // CSS dosyasının yüklenip yüklenmediğini kontrol et
+    document.addEventListener('DOMContentLoaded', function() {
+        var cssFile = 'style.css';
+        var linkElement = document.querySelector('link[href="' + cssFile + '"]');
+        
+        if (linkElement) {
+            console.log('✅ CSS dosyası HTML içinde bulundu:', cssFile);
+            
+            // CSS'in gerçekten yüklenip yüklenmediğini kontrol et
+            var cssLoaded = false;
+            for (var i = 0; i < document.styleSheets.length; i++) {
+                if (document.styleSheets[i].href && 
+                    document.styleSheets[i].href.includes(cssFile)) {
+                    cssLoaded = true;
+                    break;
+                }
+            }
+            
+            if (cssLoaded) {
+                console.log('✅ CSS başarıyla yüklendi');
+            } else {
+                console.log('❌ CSS bağlantısı var ama yüklenemedi');
+            }
+        } else {
+            console.log('❌ CSS dosyası HTML içinde bulunamadı:', cssFile);
+            
+            // Tüm stil dosyalarını listele
+            console.log('📋 Mevcut stil dosyaları:');
+            document.querySelectorAll('link[rel="stylesheet"]').forEach(function(link) {
+                console.log('  -', link.href);
+            });
+        }
+    });
+</script>
     <!-- FONTS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
