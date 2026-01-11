@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diyarbakır Altyapı Bildirim Sistemi</title>
+    <title>Doğu & Güneydoğu Altyapı Bildirim</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
             --primary: #2c3e50;
@@ -12,6 +13,7 @@
             --success: #27ae60;
             --warning: #f39c12;
             --danger: #e74c3c;
+            --info: #17a2b8;
             --light: #ecf0f1;
             --dark: #2c3e50;
         }
@@ -26,28 +28,53 @@
         
         /* HEADER */
         .header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
             color: white;
             padding: 25px 20px;
             text-align: center;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            position: relative;
         }
         .logo {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+            font-size: 2.8rem;
+            margin-bottom: 15px;
         }
-        .logo i { color: var(--light); }
+        .logo i { color: #ecf0f1; }
         .header h1 {
-            font-size: 2rem;
+            font-size: 2.2rem;
             margin-bottom: 10px;
             font-weight: 600;
         }
         .header p {
             opacity: 0.9;
-            font-size: 1.1rem;
-            max-width: 600px;
+            font-size: 1.2rem;
+            max-width: 800px;
             margin: 0 auto;
+        }
+        
+        /* SECRET ADMIN BUTTON */
+        .secret-admin-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--danger) 0%, #c0392b 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 999;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+            transition: all 0.3s;
+        }
+        .secret-admin-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.6);
+        }
+        .secret-admin-btn i {
+            font-size: 1.5rem;
         }
         
         /* TABS */
@@ -56,11 +83,14 @@
             background: white;
             border-bottom: 2px solid var(--light);
             margin: 0 auto;
-            max-width: 800px;
+            max-width: 1200px;
+            border-radius: 10px 10px 0 0;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
         .tab {
             flex: 1;
-            padding: 18px;
+            padding: 20px;
             text-align: center;
             cursor: pointer;
             font-weight: 600;
@@ -68,6 +98,7 @@
             color: var(--dark);
             border-bottom: 3px solid transparent;
             transition: all 0.3s;
+            background: white;
         }
         .tab:hover {
             background: #f8f9fa;
@@ -79,13 +110,17 @@
             background: #f8f9fa;
         }
         .tab i {
-            margin-right: 8px;
+            margin-right: 10px;
+            font-size: 1.2rem;
         }
         
         /* CONTAINER */
-        .container {
-            max-width: 800px;
+        .main-container {
+            max-width: 1200px;
             margin: 30px auto;
+            padding: 0 20px;
+        }
+        .container {
             background: white;
             border-radius: 15px;
             box-shadow: 0 8px 30px rgba(0,0,0,0.08);
@@ -119,12 +154,9 @@
         }
         .form-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 25px;
             margin-bottom: 25px;
-        }
-        @media (max-width: 768px) {
-            .form-grid { grid-template-columns: 1fr; }
         }
         .form-group {
             margin-bottom: 25px;
@@ -164,7 +196,7 @@
         /* PRIORITY RADIO */
         .priority-group {
             display: flex;
-            gap: 20px;
+            gap: 15px;
             margin-top: 10px;
         }
         .priority-option {
@@ -182,6 +214,7 @@
             cursor: pointer;
             transition: all 0.3s;
             font-weight: 500;
+            font-size: 0.9rem;
         }
         .priority-option input:checked + .priority-label {
             border-color: var(--secondary);
@@ -232,6 +265,10 @@
             background: var(--danger);
             color: white;
         }
+        .btn-info {
+            background: var(--info);
+            color: white;
+        }
         .btn-small {
             padding: 8px 16px;
             font-size: 0.9rem;
@@ -240,6 +277,7 @@
             display: flex;
             gap: 10px;
             margin-top: 10px;
+            flex-wrap: wrap;
         }
         .form-actions {
             text-align: center;
@@ -250,8 +288,8 @@
         .success-message {
             background: #d4edda;
             color: #155724;
-            padding: 25px;
-            border-radius: 8px;
+            padding: 30px;
+            border-radius: 10px;
             text-align: center;
             margin-top: 20px;
             display: none;
@@ -270,10 +308,58 @@
             font-weight: bold;
             color: var(--primary);
             margin: 15px 0;
-            padding: 10px;
+            padding: 15px;
             background: white;
-            border-radius: 5px;
+            border-radius: 8px;
             display: inline-block;
+            border: 2px dashed var(--success);
+        }
+        
+        /* MAP CONTAINER */
+        .map-container {
+            height: 500px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 30px 0;
+            border: 2px solid #e0e0e0;
+            position: relative;
+        }
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        .map-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 1000;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            min-width: 250px;
+        }
+        .map-legend {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            z-index: 1000;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
         }
         
         /* REPORTS TABLE */
@@ -282,7 +368,7 @@
         }
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
@@ -292,6 +378,10 @@
             padding: 25px;
             border-radius: 10px;
             text-align: center;
+            transition: transform 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
         }
         .stat-card h3 {
             font-size: 2.5rem;
@@ -386,48 +476,40 @@
             min-width: 200px;
         }
         
-        /* FOOTER */
-        .footer {
-            text-align: center;
-            padding: 30px;
-            margin-top: 50px;
-            color: #666;
-            font-size: 0.9rem;
-            border-top: 1px solid #eee;
-        }
-        .footer a {
-            color: var(--secondary);
-            text-decoration: none;
-        }
-        .footer a:hover {
-            text-decoration: underline;
-        }
-        
-        /* ADMIN PANEL */
-        .admin-header {
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .admin-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
-        }
-        .admin-stat {
+        /* ADMIN PANEL - SECRET */
+        .admin-panel {
+            position: fixed;
+            top: 0;
+            right: -450px;
+            width: 450px;
+            height: 100vh;
             background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            text-align: center;
+            box-shadow: -5px 0 30px rgba(0,0,0,0.2);
+            z-index: 1000;
+            transition: right 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            overflow-y: auto;
         }
-        .admin-stat h3 {
-            font-size: 2.5rem;
-            color: var(--primary);
-            margin-bottom: 10px;
+        .admin-panel.active {
+            right: 0;
+        }
+        .admin-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #34495e 100%);
+            color: white;
+            padding: 25px;
+            position: relative;
+        }
+        .close-admin {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
         }
         
         /* MODAL */
@@ -438,10 +520,11 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
             align-items: center;
             justify-content: center;
+            backdrop-filter: blur(5px);
         }
         .modal.active {
             display: flex;
@@ -450,14 +533,14 @@
             background: white;
             border-radius: 15px;
             width: 90%;
-            max-width: 500px;
+            max-width: 600px;
             max-height: 90vh;
             overflow-y: auto;
             animation: modalFadeIn 0.3s ease;
         }
         @keyframes modalFadeIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
         }
         .modal-header {
             padding: 25px;
@@ -465,6 +548,9 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
         }
         .modal-body {
             padding: 25px;
@@ -474,17 +560,52 @@
             border: none;
             font-size: 1.5rem;
             cursor: pointer;
+            color: white;
+        }
+        
+        /* FOOTER */
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            margin-top: 50px;
             color: #666;
+            font-size: 0.9rem;
+            border-top: 1px solid #eee;
+            background: #f8f9fa;
+        }
+        .footer a {
+            color: var(--secondary);
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
         }
         
         /* RESPONSIVE */
+        @media (max-width: 1200px) {
+            .main-container { padding: 0 15px; }
+        }
+        @media (max-width: 992px) {
+            .admin-panel { width: 400px; }
+        }
         @media (max-width: 768px) {
-            .container { margin: 15px; }
+            .tabs { flex-direction: column; }
+            .tab { padding: 15px; }
             .form-container, .reports-container { padding: 25px; }
             .form-grid { grid-template-columns: 1fr; }
             .filters { flex-direction: column; }
             .filter-select { width: 100%; }
-            .reports-table { display: block; overflow-x: auto; }
+            .map-container { height: 400px; }
+            .admin-panel { width: 100%; right: -100%; }
+            .priority-group { flex-direction: column; }
+        }
+        @media (max-width: 480px) {
+            .header h1 { font-size: 1.8rem; }
+            .header p { font-size: 1rem; }
+            .form-container, .reports-container { padding: 20px; }
+            .map-container { height: 300px; }
+            .btn-group { flex-direction: column; }
+            .btn { width: 100%; }
         }
     </style>
 </head>
@@ -492,225 +613,358 @@
     <!-- HEADER -->
     <div class="header">
         <div class="logo">
-            <i class="fas fa-city"></i>
+            <i class="fas fa-map-marked-alt"></i>
         </div>
-        <h1>Diyarbakır Altyapı Bildirim Sistemi</h1>
-        <p>Mahallenizdeki altyapı sorunlarını bildirin, hızlı çözüm sağlayalım</p>
+        <h1>Doğu & Güneydoğu Altyapı Bildirim Sistemi</h1>
+        <p>Bölgenizdeki altyapı sorunlarını bildirin, hızlı çözüm sağlayalım</p>
+    </div>
+
+    <!-- SECRET ADMIN BUTTON -->
+    <div class="secret-admin-btn" id="secretAdminBtn" title="Gizli Admin Paneli">
+        <i class="fas fa-user-shield"></i>
     </div>
 
     <!-- TABS -->
-    <div class="tabs">
-        <div class="tab active" data-tab="bildirim">
-            <i class="fas fa-plus-circle"></i> Yeni Bildirim
+    <div class="main-container">
+        <div class="tabs">
+            <div class="tab active" data-tab="bildirim">
+                <i class="fas fa-plus-circle"></i> Yeni Bildirim
+            </div>
+            <div class="tab" data-tab="harita">
+                <i class="fas fa-map"></i> Harita Görünümü
+            </div>
+            <div class="tab" data-tab="bildirimler">
+                <i class="fas fa-list"></i> Tüm Bildirimler
+            </div>
         </div>
-        <div class="tab" data-tab="bildirimler">
-            <i class="fas fa-list"></i> Tüm Bildirimler
-        </div>
-        <div class="tab" data-tab="admin">
-            <i class="fas fa-user-shield"></i> Admin Onay Paneli
-        </div>
-    </div>
 
-    <!-- BILDIRIM FORM -->
-    <div class="container active" id="bildirim-container">
-        <div class="form-container">
-            <h2 class="form-title">
-                <i class="fas fa-bell"></i> Yeni Altyapı Bildirimi
-            </h2>
-            
-            <form id="bildirimForm">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label><i class="fas fa-map-marker-alt"></i> İlçe</label>
-                        <select id="ilce" required>
-                            <option value="">Seçiniz</option>
-                            <option value="Bağlar">Bağlar</option>
-                            <option value="Kayapınar">Kayapınar</option>
-                            <option value="Sur">Sur</option>
-                            <option value="Yenişehir">Yenişehir</option>
-                        </select>
+        <!-- BILDIRIM FORM -->
+        <div class="container active" id="bildirim-container">
+            <div class="form-container">
+                <h2 class="form-title">
+                    <i class="fas fa-bell"></i> Yeni Altyapı Bildirimi
+                </h2>
+                
+                <form id="bildirimForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label><i class="fas fa-city"></i> İl</label>
+                            <select id="il" required>
+                                <option value="">Seçiniz</option>
+                                <option value="Diyarbakır">Diyarbakır</option>
+                                <option value="Şanlıurfa">Şanlıurfa</option>
+                                <option value="Gaziantep">Gaziantep</option>
+                                <option value="Mardin">Mardin</option>
+                                <option value="Batman">Batman</option>
+                                <option value="Siirt">Siirt</option>
+                                <option value="Şırnak">Şırnak</option>
+                                <option value="Hakkari">Hakkari</option>
+                                <option value="Van">Van</option>
+                                <option value="Muş">Muş</option>
+                                <option value="Bitlis">Bitlis</option>
+                                <option value="Bingöl">Bingöl</option>
+                                <option value="Tunceli">Tunceli</option>
+                                <option value="Elazığ">Elazığ</option>
+                                <option value="Malatya">Malatya</option>
+                                <option value="Adıyaman">Adıyaman</option>
+                                <option value="Kilis">Kilis</option>
+                                <option value="Osmaniye">Osmaniye</option>
+                                <option value="Hatay">Hatay</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label><i class="fas fa-map-marker-alt"></i> İlçe</label>
+                            <select id="ilce" required>
+                                <option value="">Önce il seçin</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label><i class="fas fa-home"></i> Mahalle</label>
+                            <select id="mahalle" required>
+                                <option value="">Önce ilçe seçin</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label><i class="fas fa-road"></i> Sokak</label>
+                            <select id="sokak" required>
+                                <option value="">Önce mahalle seçin</option>
+                            </select>
+                        </div>
                     </div>
                     
                     <div class="form-group">
-                        <label><i class="fas fa-home"></i> Mahalle</label>
-                        <select id="mahalle" required>
-                            <option value="">Önce ilçe seçin</option>
-                        </select>
+                        <label><i class="fas fa-road"></i> Sokak Detay</label>
+                        <input type="text" id="sokakDetay" placeholder="Kapı no, apartman adı, işaretleyici detay">
                     </div>
-                </div>
-                
-                <div class="form-group">
-                    <label><i class="fas fa-road"></i> Sokak / Cadde</label>
-                    <input type="text" id="sokak" required placeholder="Örn: 293. Sokak, Atatürk Caddesi">
-                </div>
-                
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label><i class="fas fa-exclamation-triangle"></i> Problem Tipi</label>
-                        <select id="problemTipi" required>
-                            <option value="">Seçiniz</option>
-                            <option value="Yol Bozukluğu">Yol Bozukluğu</option>
-                            <option value="Su Baskını">Su Baskını</option>
-                            <option value="Kanalizasyon">Kanalizasyon Taşması</option>
-                            <option value="Aydınlatma">Aydınlatma Arızası</option>
-                            <option value="Çöp">Çöp Toplama Sorunu</option>
-                            <option value="Park">Park/Bahçe Bakımı</option>
-                            <option value="Diğer">Diğer</option>
-                        </select>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label><i class="fas fa-exclamation-triangle"></i> Problem Tipi</label>
+                            <select id="problemTipi" required>
+                                <option value="">Seçiniz</option>
+                                <option value="Yol Bozukluğu">Yol Bozukluğu</option>
+                                <option value="Çukur">Yolda Çukur</option>
+                                <option value="Asfalt Sorunu">Asfalt Bozukluğu</option>
+                                <option value="Su Baskını">Su Baskını</option>
+                                <option value="Kanalizasyon">Kanalizasyon Taşması</option>
+                                <option value="İçme Suyu">İçme Suyu Sorunu</option>
+                                <option value="Aydınlatma">Aydınlatma Arızası</option>
+                                <option value="Elektrik">Elektrik Kesintisi</option>
+                                <option value="Çöp">Çöp Toplama Sorunu</option>
+                                <option value="Park">Park/Bahçe Bakımı</option>
+                                <option value="Trafik">Trafik İşaretleri</option>
+                                <option value="Diğer">Diğer</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label><i class="fas fa-flag"></i> Öncelik Durumu</label>
+                            <div class="priority-group">
+                                <div class="priority-option">
+                                    <input type="radio" name="oncelik" value="low" id="low" checked>
+                                    <label class="priority-label" for="low">Düşük</label>
+                                </div>
+                                <div class="priority-option">
+                                    <input type="radio" name="oncelik" value="medium" id="medium">
+                                    <label class="priority-label" for="medium">Orta</label>
+                                </div>
+                                <div class="priority-option">
+                                    <input type="radio" name="oncelik" value="high" id="high">
+                                    <label class="priority-label" for="high">Acil</label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="form-group">
-                        <label><i class="fas fa-flag"></i> Öncelik Durumu</label>
-                        <div class="priority-group">
-                            <div class="priority-option">
-                                <input type="radio" name="oncelik" value="low" id="low" checked>
-                                <label class="priority-label" for="low">Düşük</label>
+                        <label><i class="fas fa-align-left"></i> Sorun Açıklaması</label>
+                        <textarea id="aciklama" required placeholder="Sorunu detaylı bir şekilde açıklayın... (Zorunlu)"></textarea>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label><i class="fas fa-image"></i> Fotoğraf (İsteğe Bağlı)</label>
+                            <input type="file" id="fotograf" accept="image/*" multiple>
+                            <small style="color: #666; display: block; margin-top: 5px;">Maksimum 5 fotoğraf yükleyebilirsiniz</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label><i class="fas fa-map-pin"></i> Konum Seç</label>
+                            <div style="display: flex; gap: 10px;">
+                                <button type="button" class="btn btn-secondary" onclick="getCurrentLocation()" style="flex: 1;">
+                                    <i class="fas fa-location-crosshairs"></i> Şuanki Konum
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="selectOnMap()" style="flex: 1;">
+                                    <i class="fas fa-map"></i> Haritadan Seç
+                                </button>
                             </div>
-                            <div class="priority-option">
-                                <input type="radio" name="oncelik" value="medium" id="medium">
-                                <label class="priority-label" for="medium">Orta</label>
+                            <div id="locationInfo" style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px; display: none;">
+                                <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                                <span id="locationText">Konum seçildi</span>
                             </div>
-                            <div class="priority-option">
-                                <input type="radio" name="oncelik" value="high" id="high">
-                                <label class="priority-label" for="high">Acil</label>
-                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> Adınız Soyadınız (İsteğe Bağlı)</label>
+                            <input type="text" id="isim" placeholder="Adınız soyadınız">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label><i class="fas fa-phone"></i> Telefon (İsteğe Bağlı)</label>
+                            <input type="tel" id="telefon" placeholder="05xx xxx xx xx">
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Bildirimi Gönder
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="success-message" id="successMessage">
+                    <h3><i class="fas fa-check-circle"></i> Bildiriminiz Başarıyla Alındı!</h3>
+                    <p>Bildiriminiz sisteme kaydedildi ve incelenmek üzere yöneticilere iletildi.</p>
+                    <div class="tracking-code" id="trackingCode">DB-20240001</div>
+                    <p>Bu takip kodunu kaydedin, bildiriminizin durumunu takip etmek için kullanabilirsiniz.</p>
+                    <div style="margin-top: 25px;">
+                        <button class="btn btn-secondary" onclick="showTab('bildirimler')">
+                            <i class="fas fa-list"></i> Tüm Bildirimleri Gör
+                        </button>
+                        <button class="btn btn-primary" onclick="resetForm()">
+                            <i class="fas fa-plus"></i> Yeni Bildirim
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HARITA GORUNUMU -->
+        <div class="container" id="harita-container">
+            <div class="reports-container">
+                <h2 class="form-title">
+                    <i class="fas fa-map"></i> Harita Görünümü
+                </h2>
+                <p style="color: #666; margin-bottom: 20px;">Bölgedeki tüm bildirimleri harita üzerinde görüntüleyin</p>
+                
+                <div class="map-container">
+                    <div id="map"></div>
+                    <div class="map-controls">
+                        <h4 style="margin-bottom: 15px; color: var(--primary);">Filtreler</h4>
+                        <div class="form-group">
+                            <label style="font-size: 0.9rem;">Durum</label>
+                            <select class="filter-select" id="mapStatusFilter" onchange="updateMap()" style="width: 100%; padding: 8px;">
+                                <option value="">Tümü</option>
+                                <option value="pending">Bekleyen</option>
+                                <option value="approved">Onaylanan</option>
+                                <option value="completed">Tamamlanan</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label style="font-size: 0.9rem;">Öncelik</label>
+                            <select class="filter-select" id="mapPriorityFilter" onchange="updateMap()" style="width: 100%; padding: 8px;">
+                                <option value="">Tümü</option>
+                                <option value="high">Acil</option>
+                                <option value="medium">Orta</option>
+                                <option value="low">Düşük</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary btn-small" onclick="resetMapView()" style="width: 100%; margin-top: 10px;">
+                            <i class="fas fa-sync-alt"></i> Haritayı Sıfırla
+                        </button>
+                    </div>
+                    <div class="map-legend">
+                        <h4 style="margin-bottom: 10px; color: var(--primary); font-size: 0.9rem;">Gösterge</h4>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: var(--danger);"></div>
+                            <span>Acil Bildirimler</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: var(--warning);"></div>
+                            <span>Orta Öncelikli</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: var(--success);"></div>
+                            <span>Düşük Öncelikli</span>
                         </div>
                     </div>
                 </div>
                 
-                <div class="form-group">
-                    <label><i class="fas fa-align-left"></i> Sorun Açıklaması</label>
-                    <textarea id="aciklama" required placeholder="Sorunu detaylı bir şekilde açıklayın..."></textarea>
+                <div style="margin-top: 30px;">
+                    <h3 style="color: var(--primary); margin-bottom: 20px;">Haritadaki Bildirimler</h3>
+                    <div id="mapReportsList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+                        <!-- Map reports will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TUM BILDIRIMLER -->
+        <div class="container" id="bildirimler-container">
+            <div class="reports-container">
+                <h2 class="form-title">
+                    <i class="fas fa-list"></i> Tüm Bildirimler
+                </h2>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3 id="totalCount">0</h3>
+                        <p>Toplam Bildirim</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="pendingCount">0</h3>
+                        <p>Bekleyen</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="approvedCount">0</h3>
+                        <p>Onaylanan</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="completedCount">0</h3>
+                        <p>Tamamlanan</p>
+                    </div>
                 </div>
                 
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label><i class="fas fa-user"></i> Adınız Soyadınız (İsteğe Bağlı)</label>
-                        <input type="text" id="isim" placeholder="Adınız soyadınız">
-                    </div>
+                <div class="filters">
+                    <select class="filter-select" id="statusFilter" onchange="loadReports()">
+                        <option value="">Tüm Durumlar</option>
+                        <option value="pending">Bekleyen</option>
+                        <option value="approved">Onaylanan</option>
+                        <option value="rejected">Reddedilen</option>
+                        <option value="completed">Tamamlanan</option>
+                    </select>
                     
-                    <div class="form-group">
-                        <label><i class="fas fa-phone"></i> Telefon (İsteğe Bağlı)</label>
-                        <input type="tel" id="telefon" placeholder="05xx xxx xx xx">
-                    </div>
+                    <select class="filter-select" id="ilFilter" onchange="loadReports()">
+                        <option value="">Tüm İller</option>
+                        <!-- İller JS ile doldurulacak -->
+                    </select>
+                    
+                    <select class="filter-select" id="priorityFilter" onchange="loadReports()">
+                        <option value="">Tüm Öncelikler</option>
+                        <option value="high">Acil</option>
+                        <option value="medium">Orta</option>
+                        <option value="low">Düşük</option>
+                    </select>
+                    
+                    <select class="filter-select" id="problemFilter" onchange="loadReports()">
+                        <option value="">Tüm Problemler</option>
+                        <!-- Problemler JS ile doldurulacak -->
+                    </select>
                 </div>
                 
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-paper-plane"></i> Bildirimi Gönder
-                    </button>
-                </div>
-            </form>
-            
-            <div class="success-message" id="successMessage">
-                <h3><i class="fas fa-check-circle"></i> Bildiriminiz Başarıyla Alındı!</h3>
-                <p>Bildiriminiz sisteme kaydedildi ve incelenmek üzere yöneticilere iletildi.</p>
-                <div class="tracking-code" id="trackingCode">DB-20240001</div>
-                <p>Bu takip kodunu kaydedin, bildiriminizin durumunu takip etmek için kullanabilirsiniz.</p>
-                <div style="margin-top: 25px;">
-                    <button class="btn btn-secondary" onclick="showTab('bildirimler')">
-                        <i class="fas fa-list"></i> Tüm Bildirimleri Gör
-                    </button>
-                    <button class="btn btn-primary" onclick="resetForm()">
-                        <i class="fas fa-plus"></i> Yeni Bildirim
-                    </button>
-                </div>
+                <table class="reports-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tarih</th>
+                            <th>İl / İlçe</th>
+                            <th>Mahalle / Sokak</th>
+                            <th>Problem</th>
+                            <th>Öncelik</th>
+                            <th>Durum</th>
+                            <th>İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportsTableBody">
+                        <!-- Reports will be loaded here -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <!-- TÜM BILDIRIMLER -->
-    <div class="container" id="bildirimler-container">
-        <div class="reports-container">
-            <h2 class="form-title">
-                <i class="fas fa-list"></i> Tüm Bildirimler
-            </h2>
-            
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <h3 id="totalCount">0</h3>
-                    <p>Toplam Bildirim</p>
-                </div>
-                <div class="stat-card">
-                    <h3 id="pendingCount">0</h3>
-                    <p>Bekleyen</p>
-                </div>
-                <div class="stat-card">
-                    <h3 id="approvedCount">0</h3>
-                    <p>Onaylanan</p>
-                </div>
-                <div class="stat-card">
-                    <h3 id="completedCount">0</h3>
-                    <p>Tamamlanan</p>
-                </div>
-            </div>
-            
-            <div class="filters">
-                <select class="filter-select" id="statusFilter" onchange="filterReports()">
-                    <option value="">Tüm Durumlar</option>
-                    <option value="pending">Bekleyen</option>
-                    <option value="approved">Onaylanan</option>
-                    <option value="rejected">Reddedilen</option>
-                    <option value="completed">Tamamlanan</option>
-                </select>
-                
-                <select class="filter-select" id="ilceFilter" onchange="filterReports()">
-                    <option value="">Tüm İlçeler</option>
-                    <option value="Bağlar">Bağlar</option>
-                    <option value="Kayapınar">Kayapınar</option>
-                    <option value="Sur">Sur</option>
-                    <option value="Yenişehir">Yenişehir</option>
-                </select>
-                
-                <select class="filter-select" id="priorityFilter" onchange="filterReports()">
-                    <option value="">Tüm Öncelikler</option>
-                    <option value="high">Acil</option>
-                    <option value="medium">Orta</option>
-                    <option value="low">Düşük</option>
-                </select>
-            </div>
-            
-            <table class="reports-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Tarih</th>
-                        <th>Mahalle</th>
-                        <th>Problem</th>
-                        <th>Öncelik</th>
-                        <th>Durum</th>
-                        <th>İşlem</th>
-                    </tr>
-                </thead>
-                <tbody id="reportsTableBody">
-                    <!-- Reports will be loaded here -->
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- ADMIN PANEL -->
-    <div class="container" id="admin-container">
+    <!-- SECRET ADMIN PANEL -->
+    <div class="admin-panel" id="adminPanel">
         <div class="admin-header">
-            <h2><i class="fas fa-user-shield"></i> Admin Onay Paneli</h2>
-            <p>Bildirimleri onaylayın, reddedin veya durumlarını güncelleyin</p>
+            <h2><i class="fas fa-user-shield"></i> Gizli Admin Paneli</h2>
+            <p>Yönetici işlemleri</p>
+            <button class="close-admin" onclick="toggleAdminPanel()">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
         
         <div class="reports-container">
-            <div class="admin-stats">
-                <div class="admin-stat">
+            <div class="stats-grid">
+                <div class="admin-stat" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                     <h3 id="adminTotal">0</h3>
                     <p>Toplam Bildirim</p>
                 </div>
-                <div class="admin-stat">
+                <div class="admin-stat" style="background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);">
                     <h3 id="adminPending">0</h3>
                     <p>Onay Bekleyen</p>
                 </div>
-                <div class="admin-stat">
+                <div class="admin-stat" style="background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);">
                     <h3 id="adminToday">0</h3>
-                    <p>Bugünkü Bildirim</p>
+                    <p>Bugünkü</p>
                 </div>
-                <div class="admin-stat">
+                <div class="admin-stat" style="background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);">
                     <h3 id="adminResolved">0</h3>
                     <p>Çözülen</p>
                 </div>
@@ -724,28 +978,47 @@
                     <option value="rejected">Reddedilenler</option>
                 </select>
                 
-                <button class="btn btn-primary" onclick="refreshAdminData()">
+                <button class="btn btn-primary" onclick="loadAdminReports()">
                     <i class="fas fa-sync-alt"></i> Yenile
+                </button>
+                
+                <button class="btn btn-danger" onclick="clearAllReports()">
+                    <i class="fas fa-trash"></i> Temizle
                 </button>
             </div>
             
-            <table class="reports-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Tarih</th>
-                        <th>Mahalle</th>
-                        <th>Sokak</th>
-                        <th>Problem</th>
-                        <th>Öncelik</th>
-                        <th>Durum</th>
-                        <th>İşlem</th>
-                    </tr>
-                </thead>
-                <tbody id="adminTableBody">
-                    <!-- Admin reports will be loaded here -->
-                </tbody>
-            </table>
+            <div style="max-height: 500px; overflow-y: auto; margin-top: 20px;">
+                <table class="reports-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>İl/İlçe</th>
+                            <th>Sokak</th>
+                            <th>Problem</th>
+                            <th>Durum</th>
+                            <th>İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTableBody">
+                        <!-- Admin reports will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                <h4 style="color: var(--primary); margin-bottom: 15px;"><i class="fas fa-database"></i> Database İşlemleri</h4>
+                <div class="btn-group">
+                    <button class="btn btn-info" onclick="backupDatabase()">
+                        <i class="fas fa-download"></i> Yedek Al
+                    </button>
+                    <button class="btn btn-warning" onclick="restoreDatabase()">
+                        <i class="fas fa-upload"></i> Geri Yükle
+                    </button>
+                    <button class="btn btn-danger" onclick="clearDatabase()">
+                        <i class="fas fa-broom"></i> Temizle
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -753,7 +1026,7 @@
     <div class="modal" id="reportModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Bildirim Detayları</h3>
+                <h3><i class="fas fa-info-circle"></i> Bildirim Detayları</h3>
                 <button class="close-modal" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body" id="modalBody">
@@ -764,19 +1037,107 @@
 
     <!-- FOOTER -->
     <div class="footer">
-        <p>© 2024 Diyarbakır Altyapı Bildirim Sistemi. Tüm hakları saklıdır.</p>
-        <p>Telefon: <a href="tel:04121234567">0412 123 45 67</a> | Email: <a href="mailto:altyapi@diyarbakir.bel.tr">altyapi@diyarbakir.bel.tr</a></p>
+        <p>© 2024 Doğu & Güneydoğu Altyapı Bildirim Sistemi. Tüm hakları saklıdır.</p>
+        <p>Telefon: <a href="tel:04121234567">0412 123 45 67</a> | Email: <a href="mailto:altyapi@doguguneydogu.gov.tr">altyapi@doguguneydogu.gov.tr</a></p>
+        <p style="margin-top: 10px; font-size: 0.8rem; color: #999;">
+            Bu sistem sadece bildirim amaçlıdır. Acil durumlarda 112'yi arayınız.
+        </p>
     </div>
 
     <script src="database.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // İlçe-Mahalle eşleştirmesi
-        const mahalleler = {
-            'Bağlar': ['Kaynartepe', 'Yeniköy', 'Fırat', 'Barış', '5 Nisan', 'Aşağıışıklar'],
-            'Kayapınar': ['Karacadağ', 'Cumhuriyet', 'Yenimahalle', 'Huzurevleri', 'Üçkuyu'],
-            'Sur': ['Alipaşa', 'Cevatpaşa', 'Hasırlı', 'Melikahmet', 'Süleymannazif'],
-            'Yenişehir': ['Aziziye', 'Karşıyaka', 'Ofis', 'Selahattineyyubi', 'Şehitlik']
+        // Türkiye şehir verileri
+        const turkiyeSehirler = {
+            'Diyarbakır': {
+                ilceler: ['Bağlar', 'Kayapınar', 'Sur', 'Yenişehir', 'Ergani', 'Bismil', 'Çınar', 'Çermik', 'Dicle', 'Eğil', 'Hani', 'Hazro', 'Kocaköy', 'Kulp', 'Lice', 'Silvan'],
+                koordinat: [37.9144, 40.2306]
+            },
+            'Şanlıurfa': {
+                ilceler: ['Eyyübiye', 'Haliliye', 'Karaköprü', 'Akçakale', 'Birecik', 'Bozova', 'Ceylanpınar', 'Halfeti', 'Harran', 'Hilvan', 'Siverek', 'Suruç', 'Viranşehir'],
+                koordinat: [37.1591, 38.7969]
+            },
+            'Gaziantep': {
+                ilceler: ['Şahinbey', 'Şehitkamil', 'Nizip', 'İslahiye', 'Nurdağı', 'Araban', 'Oğuzeli', 'Yavuzeli', 'Karkamış'],
+                koordinat: [37.0662, 37.3833]
+            },
+            'Mardin': {
+                ilceler: ['Artuklu', 'Kızıltepe', 'Midyat', 'Nusaybin', 'Derik', 'Mazıdağı', 'Dargeçit', 'Savur', 'Ömerli', 'Yeşilli'],
+                koordinat: [37.3122, 40.7356]
+            },
+            'Batman': {
+                ilceler: ['Merkez', 'Beşiri', 'Gercüş', 'Hasankeyf', 'Kozluk', 'Sason'],
+                koordinat: [37.8812, 41.1351]
+            },
+            'Siirt': {
+                ilceler: ['Merkez', 'Baykan', 'Eruh', 'Kurtalan', 'Pervari', 'Şirvan', 'Tillo'],
+                koordinat: [37.9443, 41.9329]
+            },
+            'Şırnak': {
+                ilceler: ['Merkez', 'Cizre', 'İdil', 'Silopi', 'Uludere', 'Güçlükonak', 'Beytüşşebap'],
+                koordinat: [37.5184, 42.4549]
+            },
+            'Hakkari': {
+                ilceler: ['Merkez', 'Çukurca', 'Şemdinli', 'Yüksekova'],
+                koordinat: [37.5744, 43.7408]
+            },
+            'Van': {
+                ilceler: ['İpekyolu', 'Tuşba', 'Edremit', 'Erciş', 'Çaldıran', 'Çatak', 'Gevaş', 'Gürpınar', 'Muradiye', 'Özalp', 'Bahçesaray', 'Saray'],
+                koordinat: [38.5011, 43.3730]
+            },
+            'Muş': {
+                ilceler: ['Merkez', 'Bulanık', 'Malazgirt', 'Varto', 'Hasköy', 'Korkut'],
+                koordinat: [38.9462, 41.7539]
+            },
+            'Bitlis': {
+                ilceler: ['Merkez', 'Adilcevaz', 'Ahlat', 'Güroymak', 'Hizan', 'Mutki', 'Tatvan'],
+                koordinat: [38.3938, 42.1232]
+            },
+            'Bingöl': {
+                ilceler: ['Merkez', 'Adaklı', 'Genç', 'Karlıova', 'Kiğı', 'Solhan', 'Yayladere', 'Yedisu'],
+                koordinat: [38.8853, 40.4986]
+            },
+            'Tunceli': {
+                ilceler: ['Merkez', 'Çemişgezek', 'Hozat', 'Mazgirt', 'Nazımiye', 'Ovacık', 'Pertek', 'Pülümür'],
+                koordinat: [39.1061, 39.5482]
+            },
+            'Elazığ': {
+                ilceler: ['Merkez', 'Ağın', 'Alacakaya', 'Arıcak', 'Baskil', 'Karakoçan', 'Keban', 'Kovancılar', 'Maden', 'Palu', 'Sivrice'],
+                koordinat: [38.6810, 39.2264]
+            },
+            'Malatya': {
+                ilceler: ['Battalgazi', 'Yeşilyurt', 'Akçadağ', 'Arapgir', 'Arguvan', 'Darende', 'Doğanşehir', 'Doğanyol', 'Hekimhan', 'Kale', 'Kuluncak', 'Pütürge', 'Yazıhan'],
+                koordinat: [38.3552, 38.3095]
+            },
+            'Adıyaman': {
+                ilceler: ['Merkez', 'Besni', 'Çelikhan', 'Gerger', 'Gölbaşı', 'Kahta', 'Samsat', 'Sincik', 'Tut'],
+                koordinat: [37.7648, 38.2786]
+            },
+            'Kilis': {
+                ilceler: ['Merkez', 'Elbeyli', 'Musabeyli', 'Polateli'],
+                koordinat: [36.7184, 37.1212]
+            },
+            'Osmaniye': {
+                ilceler: ['Merkez', 'Bahçe', 'Düziçi', 'Hasanbeyli', 'Kadirli', 'Sumbas', 'Toprakkale'],
+                koordinat: [37.0746, 36.2464]
+            },
+            'Hatay': {
+                ilceler: ['Antakya', 'Defne', 'Altınözü', 'Belen', 'Dörtyol', 'Erzin', 'Hassa', 'İskenderun', 'Kırıkhan', 'Kumlu', 'Reyhanlı', 'Samandağ', 'Yayladağı', 'Payas'],
+                koordinat: [36.4018, 36.3498]
+            }
         };
+
+        // Sokak verileri (örnek)
+        const sokakVerileri = {
+            'Merkez': ['Atatürk Caddesi', 'Cumhuriyet Caddesi', 'İnönü Caddesi', 'Fatih Sokak', 'Barış Sokak', 'Zafer Sokak'],
+            'Bağlar': ['293. Sokak', '5 Nisan Caddesi', 'Fırat Sokak', 'Barış Sokak', 'Demokratik Toplum Sokak'],
+            'Kayapınar': ['Karacadağ Caddesi', 'Cumhuriyet Bulvarı', 'Huzurevleri Sokak', 'Üçkuyu Mahallesi'],
+            'Sur': ['Melikahmet Sokak', 'Süleymannazif Caddesi', 'Hasırlı Mahallesi', 'Alipaşa Sokak']
+        };
+
+        // Leaflet harita değişkeni
+        let map = null;
+        let markers = [];
 
         // Tab değiştirme
         function showTab(tabName) {
@@ -791,26 +1152,10 @@
             // Verileri yükle
             if (tabName === 'bildirimler') {
                 loadReports();
-            } else if (tabName === 'admin') {
-                loadAdminReports();
+            } else if (tabName === 'harita') {
+                initMap();
             }
         }
-
-        // İlçe seçildiğinde mahalleleri yükle
-        document.getElementById('ilce').addEventListener('change', function() {
-            const ilce = this.value;
-            const mahalleSelect = document.getElementById('mahalle');
-            mahalleSelect.innerHTML = '<option value="">Seçiniz</option>';
-            
-            if (ilce && mahalleler[ilce]) {
-                mahalleler[ilce].forEach(mahalle => {
-                    const option = document.createElement('option');
-                    option.value = mahalle;
-                    option.textContent = mahalle;
-                    mahalleSelect.appendChild(option);
-                });
-            }
-        });
 
         // Tab click event'leri
         document.querySelectorAll('.tab').forEach(tab => {
@@ -819,24 +1164,101 @@
             });
         });
 
+        // İl seçildiğinde ilçeleri yükle
+        document.getElementById('il').addEventListener('change', function() {
+            const il = this.value;
+            const ilceSelect = document.getElementById('ilce');
+            const mahalleSelect = document.getElementById('mahalle');
+            const sokakSelect = document.getElementById('sokak');
+            
+            ilceSelect.innerHTML = '<option value="">Seçiniz</option>';
+            mahalleSelect.innerHTML = '<option value="">Önce ilçe seçin</option>';
+            sokakSelect.innerHTML = '<option value="">Önce mahalle seçin</option>';
+            
+            if (il && turkiyeSehirler[il]) {
+                turkiyeSehirler[il].ilceler.forEach(ilce => {
+                    const option = document.createElement('option');
+                    option.value = ilce;
+                    option.textContent = ilce;
+                    ilceSelect.appendChild(option);
+                });
+            }
+        });
+
+        // İlçe seçildiğinde mahalleleri yükle
+        document.getElementById('ilce').addEventListener('change', function() {
+            const ilce = this.value;
+            const mahalleSelect = document.getElementById('mahalle');
+            const sokakSelect = document.getElementById('sokak');
+            
+            mahalleSelect.innerHTML = '<option value="">Seçiniz</option>';
+            sokakSelect.innerHTML = '<option value="">Önce mahalle seçin</option>';
+            
+            if (ilce) {
+                // Örnek mahalleler (gerçek uygulamada API'den çekilir)
+                const mahalleler = ['Merkez Mahallesi', 'Yenimahalle', 'Cumhuriyet Mahallesi', 'Atatürk Mahallesi', 'Fatih Mahallesi', 'Barış Mahallesi'];
+                
+                mahalleler.forEach(mahalle => {
+                    const option = document.createElement('option');
+                    option.value = mahalle;
+                    option.textContent = mahalle;
+                    mahalleSelect.appendChild(option);
+                });
+            }
+        });
+
+        // Mahalle seçildiğinde sokakları yükle
+        document.getElementById('mahalle').addEventListener('change', function() {
+            const mahalle = this.value;
+            const sokakSelect = document.getElementById('sokak');
+            
+            sokakSelect.innerHTML = '<option value="">Seçiniz</option>';
+            
+            if (mahalle) {
+                // Sokakları yükle (örnek)
+                const sokaklar = sokakVerileri[mahalle.split(' ')[0]] || 
+                                ['1. Sokak', '2. Sokak', '3. Sokak', '4. Sokak', '5. Sokak', 'Atatürk Caddesi', 'Cumhuriyet Sokak'];
+                
+                sokaklar.forEach(sokak => {
+                    const option = document.createElement('option');
+                    option.value = sokak;
+                    option.textContent = sokak;
+                    sokakSelect.appendChild(option);
+                });
+            }
+        });
+
         // Form submit
         document.getElementById('bildirimForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
+            // Rastgele koordinat oluştur (gerçek uygulamada haritadan veya GPS'ten alınır)
+            const il = document.getElementById('il').value;
+            const ilKoordinat = turkiyeSehirler[il] ? turkiyeSehirler[il].koordinat : [38.9637, 35.2433]; // Türkiye merkez
+            const randomLat = ilKoordinat[0] + (Math.random() - 0.5) * 0.1;
+            const randomLng = ilKoordinat[1] + (Math.random() - 0.5) * 0.1;
+            
             // Bildirim oluştur
             const bildirim = {
                 id: 'DB-' + Date.now().toString().slice(-8),
+                il: document.getElementById('il').value,
                 ilce: document.getElementById('ilce').value,
                 mahalle: document.getElementById('mahalle').value,
                 sokak: document.getElementById('sokak').value,
+                sokakDetay: document.getElementById('sokakDetay').value,
                 problemTipi: document.getElementById('problemTipi').value,
                 oncelik: document.querySelector('input[name="oncelik"]:checked').value,
                 aciklama: document.getElementById('aciklama').value,
                 isim: document.getElementById('isim').value || 'İsimsiz',
                 telefon: document.getElementById('telefon').value || 'Belirtilmemiş',
                 tarih: new Date().toLocaleString('tr-TR'),
-                durum: 'pending', // Beklemede
-                adminNot: ''
+                durum: 'pending',
+                adminNot: '',
+                koordinat: {
+                    lat: randomLat,
+                    lng: randomLng
+                },
+                fotograf: [] // Gerçek uygulamada base64 veya URL'ler
             };
             
             // Database'e kaydet
@@ -852,15 +1274,191 @@
                 
                 // İstatistikleri güncelle
                 updateStats();
+                loadAdminReports();
+                
+                // Haritayı güncelle
+                if (map) {
+                    updateMap();
+                }
             }
         });
 
         // Formu sıfırla
         function resetForm() {
             document.getElementById('bildirimForm').reset();
+            document.getElementById('ilce').innerHTML = '<option value="">Önce il seçin</option>';
             document.getElementById('mahalle').innerHTML = '<option value="">Önce ilçe seçin</option>';
+            document.getElementById('sokak').innerHTML = '<option value="">Önce mahalle seçin</option>';
             document.getElementById('successMessage').classList.remove('active');
             document.getElementById('bildirimForm').style.display = 'block';
+            document.getElementById('locationInfo').style.display = 'none';
+        }
+
+        // Konum bilgisi al
+        function getCurrentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        document.getElementById('locationText').textContent = 
+                            `Konum alındı: ${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`;
+                        document.getElementById('locationInfo').style.display = 'block';
+                    },
+                    (error) => {
+                        alert('Konum alınamadı. Haritadan seçin veya manuel girin.');
+                    }
+                );
+            } else {
+                alert('Tarayıcınız konum servisini desteklemiyor.');
+            }
+        }
+
+        // Haritadan seç
+        function selectOnMap() {
+            showTab('harita');
+            alert('Haritada bir noktaya tıklayarak konum seçebilirsiniz.');
+        }
+
+        // Haritayı başlat
+        function initMap() {
+            if (!map) {
+                map = L.map('map').setView([38.9637, 35.2433], 6); // Türkiye merkez
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors',
+                    maxZoom: 18
+                }).addTo(map);
+                
+                // Haritaya tıklama event'i ekle
+                map.on('click', function(e) {
+                    const lat = e.latlng.lat;
+                    const lng = e.latlng.lng;
+                    
+                    document.getElementById('locationText').textContent = 
+                        `Haritadan seçildi: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+                    document.getElementById('locationInfo').style.display = 'block';
+                    
+                    // Marker ekle
+                    L.marker([lat, lng]).addTo(map)
+                        .bindPopup('Seçilen konum')
+                        .openPopup();
+                });
+            }
+            
+            updateMap();
+        }
+
+        // Haritayı güncelle
+        function updateMap() {
+            if (!map) return;
+            
+            // Eski marker'ları temizle
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+            
+            // Filtreleri al
+            const statusFilter = document.getElementById('mapStatusFilter').value;
+            const priorityFilter = document.getElementById('mapPriorityFilter').value;
+            
+            // Bildirimleri al ve filtrele
+            const reports = window.database.getAllReports();
+            let filteredReports = reports;
+            
+            if (statusFilter) {
+                filteredReports = filteredReports.filter(r => r.durum === statusFilter);
+            }
+            if (priorityFilter) {
+                filteredReports = filteredReports.filter(r => r.oncelik === priorityFilter);
+            }
+            
+            // Haritaya marker ekle
+            filteredReports.forEach(report => {
+                if (report.koordinat && report.koordinat.lat && report.koordinat.lng) {
+                    const markerColor = report.oncelik === 'high' ? 'red' : 
+                                      report.oncelik === 'medium' ? 'orange' : 'green';
+                    
+                    const icon = L.divIcon({
+                        className: 'custom-marker',
+                        html: `<div style="background-color: ${markerColor}; width: 25px; height: 25px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>`,
+                        iconSize: [25, 25],
+                        iconAnchor: [12, 25]
+                    });
+                    
+                    const marker = L.marker([report.koordinat.lat, report.koordinat.lng], { icon: icon })
+                        .addTo(map)
+                        .bindPopup(`
+                            <strong>${report.il} - ${report.ilce}</strong><br>
+                            ${report.mahalle} ${report.sokak}<br>
+                            <strong>Problem:</strong> ${report.problemTipi}<br>
+                            <strong>Durum:</strong> ${report.durum === 'pending' ? 'Bekliyor' : 
+                                                     report.durum === 'approved' ? 'Onaylandı' : 'Tamamlandı'}<br>
+                            <button onclick="viewReport('${report.id}')" style="margin-top: 10px; padding: 5px 10px; background: #3498db; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                                Detay Gör
+                            </button>
+                        `);
+                    
+                    markers.push(marker);
+                }
+            });
+            
+            // Harita raporlarını listele
+            const mapReportsList = document.getElementById('mapReportsList');
+            mapReportsList.innerHTML = '';
+            
+            if (filteredReports.length === 0) {
+                mapReportsList.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #666;">
+                        <i class="fas fa-map-marker-alt" style="font-size: 3rem; margin-bottom: 15px; display: block;"></i>
+                        Haritada gösterilecek bildirim bulunmuyor
+                    </div>
+                `;
+                return;
+            }
+            
+            filteredReports.forEach(report => {
+                const card = document.createElement('div');
+                card.style.background = 'white';
+                card.style.padding = '15px';
+                card.style.borderRadius = '8px';
+                card.style.boxShadow = '0 2px 10px rgba(0,0,0,0.05)';
+                
+                const priorityColor = report.oncelik === 'high' ? '#e74c3c' : 
+                                    report.oncelik === 'medium' ? '#f39c12' : '#27ae60';
+                
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                        <div>
+                            <strong style="color: var(--primary);">${report.il} / ${report.ilce}</strong>
+                            <div style="font-size: 0.9rem; color: #666;">${report.mahalle} ${report.sokak}</div>
+                        </div>
+                        <span style="background: ${priorityColor}; color: white; padding: 3px 8px; border-radius: 12px; font-size: 0.8rem;">
+                            ${report.oncelik === 'high' ? 'Acil' : report.oncelik === 'medium' ? 'Orta' : 'Düşük'}
+                        </span>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <span style="background: #f8f9fa; padding: 5px 10px; border-radius: 5px; font-size: 0.9rem;">
+                            ${report.problemTipi}
+                        </span>
+                    </div>
+                    <div style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">
+                        ${report.aciklama.substring(0, 100)}${report.aciklama.length > 100 ? '...' : ''}
+                    </div>
+                    <button onclick="viewReport('${report.id}')" style="width: 100%; padding: 8px; background: var(--secondary); color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        <i class="fas fa-eye"></i> Detay Gör
+                    </button>
+                `;
+                
+                mapReportsList.appendChild(card);
+            });
+        }
+
+        // Harita görünümünü sıfırla
+        function resetMapView() {
+            if (map) {
+                map.setView([38.9637, 35.2433], 6);
+            }
+            document.getElementById('mapStatusFilter').value = '';
+            document.getElementById('mapPriorityFilter').value = '';
+            updateMap();
         }
 
         // Raporları yükle
@@ -871,16 +1469,38 @@
             // İstatistikleri güncelle
             updateStats();
             
+            // Filtre seçeneklerini doldur
+            updateFilterOptions(reports);
+            
             // Tabloyu doldur
             const tbody = document.getElementById('reportsTableBody');
             tbody.innerHTML = '';
+            
+            if (filteredReports.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 40px; color: #666;">
+                            <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 15px; display: block;"></i>
+                            Filtrelerinize uygun bildirim bulunmuyor
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
             
             filteredReports.forEach(report => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${report.id}</td>
                     <td>${report.tarih}</td>
-                    <td>${report.mahalle}</td>
+                    <td>
+                        <strong>${report.il}</strong><br>
+                        <small style="color: #666;">${report.ilce}</small>
+                    </td>
+                    <td>
+                        ${report.mahalle}<br>
+                        <small style="color: #666;">${report.sokak}</small>
+                    </td>
                     <td>${report.problemTipi}</td>
                     <td><span class="priority-badge priority-${report.oncelik}">${
                         report.oncelik === 'high' ? 'Acil' : 
@@ -899,18 +1519,77 @@
                 `;
                 tbody.appendChild(row);
             });
+        }
+
+        // Filtre seçeneklerini güncelle
+        function updateFilterOptions(reports) {
+            // İller
+            const ilSelect = document.getElementById('ilFilter');
+            const currentIl = ilSelect.value;
+            ilSelect.innerHTML = '<option value="">Tüm İller</option>';
             
-            if (filteredReports.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="7" style="text-align: center; padding: 40px; color: #666;">
-                            <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 15px; display: block;"></i>
-                            Henüz bildirim bulunmuyor
-                        </td>
-                    </tr>
-                `;
+            const iller = [...new Set(reports.map(r => r.il))].sort();
+            iller.forEach(il => {
+                const option = document.createElement('option');
+                option.value = il;
+                option.textContent = il;
+                if (il === currentIl) option.selected = true;
+                ilSelect.appendChild(option);
+            });
+            
+            // Problemler
+            const problemSelect = document.getElementById('problemFilter');
+            const currentProblem = problemSelect.value;
+            problemSelect.innerHTML = '<option value="">Tüm Problemler</option>';
+            
+            const problemler = [...new Set(reports.map(r => r.problemTipi))].sort();
+            problemler.forEach(problem => {
+                const option = document.createElement('option');
+                option.value = problem;
+                option.textContent = problem;
+                if (problem === currentProblem) option.selected = true;
+                problemSelect.appendChild(option);
+            });
+        }
+
+        // Rapor filtreleme
+        function filterReportsData(reports) {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const ilFilter = document.getElementById('ilFilter').value;
+            const priorityFilter = document.getElementById('priorityFilter').value;
+            const problemFilter = document.getElementById('problemFilter').value;
+            
+            return reports.filter(report => {
+                if (statusFilter && report.durum !== statusFilter) return false;
+                if (ilFilter && report.il !== ilFilter) return false;
+                if (priorityFilter && report.oncelik !== priorityFilter) return false;
+                if (problemFilter && report.problemTipi !== problemFilter) return false;
+                return true;
+            });
+        }
+
+        // İstatistikleri güncelle
+        function updateStats() {
+            const reports = window.database.getAllReports();
+            
+            document.getElementById('totalCount').textContent = reports.length;
+            document.getElementById('pendingCount').textContent = reports.filter(r => r.durum === 'pending').length;
+            document.getElementById('approvedCount').textContent = reports.filter(r => r.durum === 'approved').length;
+            document.getElementById('completedCount').textContent = reports.filter(r => r.durum === 'completed').length;
+        }
+
+        // Admin panelini aç/kapa
+        function toggleAdminPanel() {
+            const panel = document.getElementById('adminPanel');
+            panel.classList.toggle('active');
+            
+            if (panel.classList.contains('active')) {
+                loadAdminReports();
             }
         }
+
+        // Gizli admin butonu
+        document.getElementById('secretAdminBtn').addEventListener('click', toggleAdminPanel);
 
         // Admin raporlarını yükle
         function loadAdminReports() {
@@ -933,14 +1612,12 @@
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${report.id}</td>
-                    <td>${report.tarih}</td>
-                    <td>${report.mahalle}</td>
+                    <td>
+                        <strong>${report.il}</strong><br>
+                        <small>${report.ilce}</small>
+                    </td>
                     <td>${report.sokak}</td>
                     <td>${report.problemTipi}</td>
-                    <td><span class="priority-badge priority-${report.oncelik}">${
-                        report.oncelik === 'high' ? 'Acil' : 
-                        report.oncelik === 'medium' ? 'Orta' : 'Düşük'
-                    }</span></td>
                     <td><span class="status-badge status-${report.durum}">${
                         report.durum === 'pending' ? 'Bekliyor' :
                         report.durum === 'approved' ? 'Onaylandı' :
@@ -957,7 +1634,7 @@
                             <button class="btn btn-small btn-warning" onclick="completeReport('${report.id}')" ${report.durum === 'completed' ? 'disabled' : ''}>
                                 <i class="fas fa-flag-checkered"></i>
                             </button>
-                            <button class="btn btn-small btn-secondary" onclick="viewReport('${report.id}')">
+                            <button class="btn btn-small btn-info" onclick="viewReport('${report.id}')">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>
@@ -965,35 +1642,6 @@
                 `;
                 tbody.appendChild(row);
             });
-        }
-
-        // Rapor filtreleme
-        function filterReports() {
-            loadReports();
-        }
-
-        // Filtreleme fonksiyonu
-        function filterReportsData(reports) {
-            const statusFilter = document.getElementById('statusFilter').value;
-            const ilceFilter = document.getElementById('ilceFilter').value;
-            const priorityFilter = document.getElementById('priorityFilter').value;
-            
-            return reports.filter(report => {
-                if (statusFilter && report.durum !== statusFilter) return false;
-                if (ilceFilter && report.ilce !== ilceFilter) return false;
-                if (priorityFilter && report.oncelik !== priorityFilter) return false;
-                return true;
-            });
-        }
-
-        // İstatistikleri güncelle
-        function updateStats() {
-            const reports = window.database.getAllReports();
-            
-            document.getElementById('totalCount').textContent = reports.length;
-            document.getElementById('pendingCount').textContent = reports.filter(r => r.durum === 'pending').length;
-            document.getElementById('approvedCount').textContent = reports.filter(r => r.durum === 'approved').length;
-            document.getElementById('completedCount').textContent = reports.filter(r => r.durum === 'completed').length;
         }
 
         // Admin istatistiklerini güncelle
@@ -1013,6 +1661,7 @@
                 window.database.updateReportStatus(id, 'approved', 'Admin tarafından onaylandı');
                 loadAdminReports();
                 loadReports();
+                updateMap();
                 alert('Bildirim onaylandı!');
             }
         }
@@ -1023,6 +1672,7 @@
                 window.database.updateReportStatus(id, 'rejected', `Reddedildi: ${reason}`);
                 loadAdminReports();
                 loadReports();
+                updateMap();
                 alert('Bildirim reddedildi!');
             }
         }
@@ -1032,7 +1682,60 @@
                 window.database.updateReportStatus(id, 'completed', 'Tamamlandı');
                 loadAdminReports();
                 loadReports();
+                updateMap();
                 alert('Bildirim tamamlandı olarak işaretlendi!');
+            }
+        }
+
+        // Tüm raporları temizle
+        function clearAllReports() {
+            if (confirm('TÜM bildirimleri silmek istediğinize emin misiniz? Bu işlem geri alınamaz!')) {
+                window.database.clearDatabase();
+                loadAdminReports();
+                loadReports();
+                updateMap();
+                alert('Tüm bildirimler silindi!');
+            }
+        }
+
+        // Database yedekleme
+        function backupDatabase() {
+            window.database.backupDatabase();
+            alert('Database yedeklemesi indiriliyor...');
+        }
+
+        // Database geri yükleme
+        function restoreDatabase() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const success = window.database.restoreDatabase(e.target.result);
+                    if (success) {
+                        alert('Database başarıyla geri yüklendi!');
+                        loadAdminReports();
+                        loadReports();
+                        updateMap();
+                    } else {
+                        alert('Database geri yüklenirken hata oluştu!');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        // Database'i temizle
+        function clearDatabase() {
+            if (confirm('Database\'i tamamen temizlemek istediğinize emin misiniz? Bu işlem geri alınamaz!')) {
+                window.database.clearDatabase();
+                loadAdminReports();
+                loadReports();
+                updateMap();
+                alert('Database temizlendi!');
             }
         }
 
@@ -1040,73 +1743,96 @@
         function viewReport(id) {
             const report = window.database.getReport(id);
             if (report) {
+                const statusText = report.durum === 'pending' ? 'Bekliyor' :
+                                 report.durum === 'approved' ? 'Onaylandı' :
+                                 report.durum === 'rejected' ? 'Reddedildi' : 'Tamamlandı';
+                
+                const priorityText = report.oncelik === 'high' ? 'Acil' :
+                                   report.oncelik === 'medium' ? 'Orta' : 'Düşük';
+                
                 document.getElementById('modalBody').innerHTML = `
-                    <div style="margin-bottom: 25px;">
-                        <h4 style="color: var(--primary); margin-bottom: 15px;">Bildirim Bilgileri</h4>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                            <div>
-                                <strong>ID:</strong> ${report.id}
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
+                        <div>
+                            <h4 style="color: var(--primary); margin-bottom: 15px;">Bildirim Bilgileri</h4>
+                            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                                <div style="margin-bottom: 10px;">
+                                    <strong>ID:</strong> ${report.id}
+                                </div>
+                                <div style="margin-bottom: 10px;">
+                                    <strong>Tarih:</strong> ${report.tarih}
+                                </div>
+                                <div style="margin-bottom: 10px;">
+                                    <strong>İl:</strong> ${report.il}
+                                </div>
+                                <div style="margin-bottom: 10px;">
+                                    <strong>İlçe:</strong> ${report.ilce}
+                                </div>
+                                <div style="margin-bottom: 10px;">
+                                    <strong>Mahalle:</strong> ${report.mahalle}
+                                </div>
+                                <div style="margin-bottom: 10px;">
+                                    <strong>Sokak:</strong> ${report.sokak}
+                                </div>
+                                ${report.sokakDetay ? `
+                                <div style="margin-bottom: 10px;">
+                                    <strong>Sokak Detay:</strong> ${report.sokakDetay}
+                                </div>
+                                ` : ''}
                             </div>
-                            <div>
-                                <strong>Tarih:</strong> ${report.tarih}
-                            </div>
-                            <div>
-                                <strong>İlçe:</strong> ${report.ilce}
-                            </div>
-                            <div>
-                                <strong>Mahalle:</strong> ${report.mahalle}
-                            </div>
-                            <div>
-                                <strong>Sokak:</strong> ${report.sokak}
-                            </div>
-                            <div>
-                                <strong>Problem:</strong> ${report.problemTipi}
-                            </div>
-                            <div>
-                                <strong>Öncelik:</strong> <span class="priority-badge priority-${report.oncelik}">${
-                                    report.oncelik === 'high' ? 'Acil' : 
-                                    report.oncelik === 'medium' ? 'Orta' : 'Düşük'
-                                }</span>
-                            </div>
-                            <div>
-                                <strong>Durum:</strong> <span class="status-badge status-${report.durum}">${
-                                    report.durum === 'pending' ? 'Bekliyor' :
-                                    report.durum === 'approved' ? 'Onaylandı' :
-                                    report.durum === 'rejected' ? 'Reddedildi' : 'Tamamlandı'
-                                }</span>
+                        </div>
+                        
+                        <div>
+                            <h4 style="color: var(--primary); margin-bottom: 15px;">Durum Bilgileri</h4>
+                            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                                <div style="margin-bottom: 10px;">
+                                    <strong>Problem Tipi:</strong> ${report.problemTipi}
+                                </div>
+                                <div style="margin-bottom: 10px;">
+                                    <strong>Öncelik:</strong> <span class="priority-badge priority-${report.oncelik}">${priorityText}</span>
+                                </div>
+                                <div style="margin-bottom: 10px;">
+                                    <strong>Durum:</strong> <span class="status-badge status-${report.durum}">${statusText}</span>
+                                </div>
+                                ${report.koordinat ? `
+                                <div style="margin-bottom: 10px;">
+                                    <strong>Koordinat:</strong> ${report.koordinat.lat.toFixed(4)}, ${report.koordinat.lng.toFixed(4)}
+                                </div>
+                                ` : ''}
                             </div>
                         </div>
                     </div>
                     
                     <div style="margin-bottom: 25px;">
                         <h4 style="color: var(--primary); margin-bottom: 15px;">Açıklama</h4>
-                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid var(--secondary);">
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 4px solid var(--secondary); white-space: pre-wrap;">
                             ${report.aciklama}
                         </div>
                     </div>
                     
-                    <div style="margin-bottom: 25px;">
-                        <h4 style="color: var(--primary); margin-bottom: 15px;">Bildiren Kişi</h4>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                            <div>
-                                <strong>Ad Soyad:</strong> ${report.isim}
-                            </div>
-                            <div>
-                                <strong>Telefon:</strong> ${report.telefon}
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
+                        <div>
+                            <h4 style="color: var(--primary); margin-bottom: 15px;">Bildiren Kişi</h4>
+                            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                                <div style="margin-bottom: 10px;">
+                                    <strong>Ad Soyad:</strong> ${report.isim}
+                                </div>
+                                <div style="margin-bottom: 10px;">
+                                    <strong>Telefon:</strong> ${report.telefon}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    ${report.adminNot ? `
-                    <div style="margin-bottom: 25px;">
-                        <h4 style="color: var(--primary); margin-bottom: 15px;">Admin Notu</h4>
-                        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid var(--warning);">
-                            ${report.adminNot}
+                        
+                        ${report.adminNot ? `
+                        <div>
+                            <h4 style="color: var(--primary); margin-bottom: 15px;">Admin Notu</h4>
+                            <div style="background: #fff3cd; padding: 20px; border-radius: 10px; border-left: 4px solid var(--warning);">
+                                ${report.adminNot}
+                            </div>
                         </div>
+                        ` : ''}
                     </div>
-                    ` : ''}
                     
-                    <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 30px;">
+                    <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 30px; flex-wrap: wrap;">
                         <button class="btn btn-secondary" onclick="closeModal()">
                             <i class="fas fa-times"></i> Kapat
                         </button>
@@ -1123,10 +1849,45 @@
                             <i class="fas fa-flag-checkered"></i> Tamamlandı
                         </button>
                         ` : ''}
+                        <button class="btn btn-info" onclick="showOnMap('${report.id}')">
+                            <i class="fas fa-map-marker-alt"></i> Haritada Göster
+                        </button>
                     </div>
                 `;
                 
                 document.getElementById('reportModal').classList.add('active');
+            }
+        }
+
+        // Haritada göster
+        function showOnMap(id) {
+            const report = window.database.getReport(id);
+            if (report && report.koordinat && map) {
+                showTab('harita');
+                map.setView([report.koordinat.lat, report.koordinat.lng], 15);
+                closeModal();
+                
+                // Marker ekle
+                const markerColor = report.oncelik === 'high' ? 'red' : 
+                                  report.oncelik === 'medium' ? 'orange' : 'green';
+                
+                const icon = L.divIcon({
+                    className: 'custom-marker',
+                    html: `<div style="background-color: ${markerColor}; width: 35px; height: 35px; border-radius: 50%; border: 4px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.3);"></div>`,
+                    iconSize: [35, 35],
+                    iconAnchor: [17, 35]
+                });
+                
+                L.marker([report.koordinat.lat, report.koordinat.lng], { icon: icon })
+                    .addTo(map)
+                    .bindPopup(`
+                        <strong>${report.il} - ${report.ilce}</strong><br>
+                        ${report.mahalle} ${report.sokak}<br>
+                        <strong>Problem:</strong> ${report.problemTipi}<br>
+                        <strong>Durum:</strong> ${report.durum === 'pending' ? 'Bekliyor' : 
+                                                 report.durum === 'approved' ? 'Onaylandı' : 'Tamamlandı'}
+                    `)
+                    .openPopup();
             }
         }
 
@@ -1135,22 +1896,70 @@
             document.getElementById('reportModal').classList.remove('active');
         }
 
-        // Admin verilerini yenile
-        function refreshAdminData() {
-            loadAdminReports();
-            alert('Veriler yenilendi!');
-        }
-
         // Sayfa yüklendiğinde
         document.addEventListener('DOMContentLoaded', function() {
             // İstatistikleri yükle
             updateStats();
             
-            // Sayfa yüklendiğinde bildirimler sekmesini yükle
-            if (window.location.hash === '#bildirimler') {
+            // Haritayı başlat
+            setTimeout(() => {
+                if (document.getElementById('harita-container').classList.contains('active')) {
+                    initMap();
+                }
+            }, 100);
+            
+            // Örnek veri ekle (test için)
+            const reports = window.database.getAllReports();
+            if (reports.length < 3) {
+                const exampleReports = [
+                    {
+                        id: 'DB-' + Date.now().toString().slice(-8),
+                        il: 'Diyarbakır',
+                        ilce: 'Bağlar',
+                        mahalle: 'Kaynartepe',
+                        sokak: '293. Sokak',
+                        sokakDetay: 'No: 15 Apartmanı önü',
+                        problemTipi: 'Yol Bozukluğu',
+                        oncelik: 'high',
+                        aciklama: 'Yolda derin çukur oluşmuş, özellikle gece araçlar için tehlikeli.',
+                        isim: 'Ahmet Yılmaz',
+                        telefon: '0532 123 4567',
+                        tarih: new Date().toLocaleString('tr-TR'),
+                        durum: 'approved',
+                        adminNot: 'Yol bakım ekibine bildirildi.',
+                        koordinat: { lat: 37.9244, lng: 40.1906 }
+                    },
+                    {
+                        id: 'DB-' + (Date.now() + 1).toString().slice(-8),
+                        il: 'Şanlıurfa',
+                        ilce: 'Eyyübiye',
+                        mahalle: 'Merkez Mahallesi',
+                        sokak: 'Atatürk Caddesi',
+                        sokakDetay: 'Belediye karşısı',
+                        problemTipi: 'Aydınlatma',
+                        oncelik: 'medium',
+                        aciklama: 'Cadde aydınlatması 1 haftadır çalışmıyor, güvenlik sorunu oluşturuyor.',
+                        isim: 'Mehmet Demir',
+                        telefon: '0533 234 5678',
+                        tarih: new Date(Date.now() - 86400000).toLocaleString('tr-TR'),
+                        durum: 'pending',
+                        adminNot: '',
+                        koordinat: { lat: 37.1591, lng: 38.7969 }
+                    }
+                ];
+                
+                exampleReports.forEach(report => {
+                    window.database.saveReport(report);
+                });
+                
+                updateStats();
+            }
+            
+            // URL hash kontrolü
+            if (window.location.hash === '#harita') {
+                showTab('harita');
+            } else if (window.location.hash === '#bildirimler') {
                 showTab('bildirimler');
-            } else if (window.location.hash === '#admin') {
-                showTab('admin');
             }
         });
 
