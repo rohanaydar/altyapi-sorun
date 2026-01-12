@@ -1,0 +1,2706 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doğu-Güneydoğu Altyapı Sorun Bildirim Sistemi</title>
+    <style>
+        /* TEMEL STİLLER */
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --light: #f8f9fa;
+            --dark: #343a40;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        /* BAŞLIK */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, #4a6491 100%);
+            color: white;
+            padding: 25px 40px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .tagline {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+        
+        /* NAVİGASYON */
+        .main-nav {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+        }
+        
+        .nav-btn {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .nav-btn:hover, .nav-btn.active {
+            background: var(--secondary);
+            border-color: var(--secondary);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+        
+        /* ANA İÇERİK */
+        main {
+            padding: 30px 40px;
+            min-height: 600px;
+        }
+        
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* ANA SAYFA */
+        .hero {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .hero h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        /* BUTONLAR */
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn-primary {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+        
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #219653;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
+        }
+        
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        
+        /* KARTLAR */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            text-align: center;
+            transition: transform 0.3s;
+            border-top: 5px solid var(--secondary);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .stat-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--secondary);
+            margin: 10px 0;
+        }
+        
+        .stat-desc {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        /* MODAL (Açılır Pencere) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: 15px;
+            width: 100%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: modalSlide 0.4s ease;
+        }
+        
+        @keyframes modalSlide {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #4a6491 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h3 {
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 0;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.3s;
+        }
+        
+        .modal-close:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .modal-body {
+            padding: 30px;
+        }
+        
+        /* ADIMLI FORMU */
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .step-indicator::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #e0e0e0;
+            z-index: 1;
+        }
+        
+        .step {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            flex: 1;
+        }
+        
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-weight: bold;
+            font-size: 18px;
+            transition: all 0.3s;
+        }
+        
+        .step.active .step-circle {
+            background: var(--secondary);
+            color: white;
+            box-shadow: 0 0 0 5px rgba(52, 152, 219, 0.2);
+        }
+        
+        .step.completed .step-circle {
+            background: var(--success);
+            color: white;
+        }
+        
+        .step-label {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .step.active .step-label {
+            color: var(--secondary);
+            font-weight: 600;
+        }
+        
+        .step-content {
+            display: none;
+        }
+        
+        .step-content.active {
+            display: block;
+        }
+        
+        /* FORM ELEMANLARI */
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 16px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: var(--secondary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* SORUN EMOJİLERİ */
+        .emoji-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .emoji-option {
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+        
+        .emoji-option:hover {
+            border-color: var(--secondary);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .emoji-option.selected {
+            border-color: var(--success);
+            background: rgba(39, 174, 96, 0.05);
+            box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.2);
+        }
+        
+        .emoji {
+            font-size: 40px;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        /* ACİLİYET */
+        .aciliyet-options {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .aciliyet-btn {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .aciliyet-btn:hover {
+            border-color: var(--warning);
+        }
+        
+        .aciliyet-btn.selected {
+            border-color: var(--warning);
+            background: rgba(243, 156, 18, 0.1);
+        }
+        
+        .aciliyet-btn.acil {
+            color: var(--danger);
+        }
+        
+        .aciliyet-btn.orta {
+            color: var(--warning);
+        }
+        
+        .aciliyet-btn.dusuk {
+            color: var(--success);
+        }
+        
+        /* MODAL FOOTER (İleri/Geri) */
+        .modal-footer {
+            padding: 20px 30px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            background: #f8f9fa;
+            border-radius: 0 0 15px 15px;
+        }
+        
+        /* BİLDİRİM LİSTESİ */
+        .filter-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+        
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .list-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        /* BİLDİRİM KARTLARI */
+        .bildirim-list {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .bildirim-card {
+            background: white;
+            border-left: 5px solid var(--secondary);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+        
+        .bildirim-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .bildirim-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .bildirim-id {
+            font-weight: 700;
+            color: var(--primary);
+            background: #f1f8ff;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
+        .bildirim-durum {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .durum-bekliyor {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .durum-inceleniyor {
+            background: #cce5ff;
+            color: #004085;
+        }
+        
+        .durum-tamamlandi {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .bildirim-body {
+            margin-bottom: 20px;
+        }
+        
+        .bildirim-detay {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .detay-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .detay-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .detay-value {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 16px;
+        }
+        
+        .aciliyet-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .aciliyet-acil {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .aciliyet-orta {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .aciliyet-dusuk {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        /* ADMIN PANEL */
+        .admin-login {
+            max-width: 400px;
+            margin: 50px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .admin-actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+        
+        .admin-bildirim-card {
+            position: relative;
+        }
+        
+        .admin-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .admin-bildirim-card:hover .admin-buttons {
+            opacity: 1;
+        }
+        
+        /* FOOTER */
+        footer {
+            text-align: center;
+            padding: 30px;
+            margin-top: 50px;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            header {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .main-nav {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .nav-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            main {
+                padding: 20px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .list-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- BAŞLIK VE MENÜ -->
+        <header>
+            <h1>🚧 Doğu-Güneydoğu Altyapı Sorun Bildirim Sistemi</h1>
+            <p class="tagline">23 ildeki anlaşmalı mahallelerdeki altyapı sorunlarını bildirin</p>
+            
+            <div class="main-nav">
+                <button class="nav-btn active" data-page="home">
+                    <span>🏠</span> Ana Sayfa
+                </button>
+                <button class="nav-btn" data-page="list">
+                    <span>📋</span> Bildirim Listesi
+                </button>
+                <button class="nav-btn" data-page="stats">
+                    <span>📊</span> İstatistikler
+                </button>
+                <button class="nav-btn" id="adminBtn">
+                    <span>🔐</span> Admin Giriş
+                </button>
+                <button class="btn btn-primary" id="yeniBildirimBtn">
+                    <span>+</span> Yeni Bildirim Yap
+                </button>
+            </div>
+        </header>
+
+        <!-- ANA İÇERİK ALANI -->
+        <main>
+            <!-- ANA SAYFA -->
+            <section id="home" class="page active">
+                <div class="hero">
+                    <h2>Altyapı Sorunlarınızı Bildirin, Çözüme Katkı Sağlayın</h2>
+                    <p>Doğu ve Güneydoğu Anadolu bölgelerindeki 23 ilde, anlaşmalı mahallelerdeki altyapı sorunlarını (su, elektrik, yol, kanalizasyon vb.) hızlı bir şekilde bildirin. Sistemimiz tamamen ücretsizdir.</p>
+                    
+                    <div class="hero-buttons">
+                        <button class="btn btn-primary" id="heroBildirimBtn">
+                            <span>📝</span> Hemen Bildirim Yap
+                        </button>
+                        <button class="btn btn-success" onclick="showPage('list')">
+                            <span>👁️</span> Bildirimleri Görüntüle
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="stats-grid" id="homeStats">
+                    <!-- Ana sayfa istatistikleri buraya yüklenecek -->
+                </div>
+                
+                <div style="text-align: center; margin-top: 40px;">
+                    <h3 style="color: var(--primary); margin-bottom: 20px;">Nasıl Çalışır?</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                        <div class="stat-card">
+                            <div style="font-size: 40px; margin-bottom: 15px;">1️⃣</div>
+                            <h3>Bildirim Yap</h3>
+                            <p>4 adımda kolayca sorununuzu bildirin</p>
+                        </div>
+                        <div class="stat-card">
+                            <div style="font-size: 40px; margin-bottom: 15px;">2️⃣</div>
+                            <h3>Takip Edin</h3>
+                            <p>Bildiriminizin durumunu liste sayfasından takip edin</p>
+                        </div>
+                        <div class="stat-card">
+                            <div style="font-size: 40px; margin-bottom: 15px;">3️⃣</div>
+                            <h3>Çözüme Kavuşun</h3>
+                            <p>İlgili birimler bildiriminizi en kısa sürede çözsün</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- BİLDİRİM LİSTESİ -->
+            <section id="list" class="page">
+                <h2 style="color: var(--primary); margin-bottom: 25px;">📋 Tüm Bildirimler</h2>
+                
+                <div class="filter-section">
+                    <h3 style="margin-bottom: 20px; color: var(--primary);">🔍 Filtrele</h3>
+                    <div class="filter-row">
+                        <div class="form-group">
+                            <label for="filterSehir">Şehir</label>
+                            <select id="filterSehir" class="form-control">
+                                <option value="">Tüm Şehirler</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="filterIlce">İlçe</label>
+                            <select id="filterIlce" class="form-control" disabled>
+                                <option value="">Tüm İlçeler</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="filterMahalle">Mahalle</label>
+                            <select id="filterMahalle" class="form-control" disabled>
+                                <option value="">Tüm Mahalleler</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="filter-row">
+                        <div class="form-group">
+                            <label for="filterSorun">Sorun Tipi</label>
+                            <select id="filterSorun" class="form-control">
+                                <option value="">Tüm Sorun Tipleri</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="filterAciliyet">Aciliyet</label>
+                            <select id="filterAciliyet" class="form-control">
+                                <option value="">Tüm Aciliyetler</option>
+                                <option value="acil">Acil</option>
+                                <option value="orta">Orta</option>
+                                <option value="dusuk">Düşük</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="filterDurum">Durum</label>
+                            <select id="filterDurum" class="form-control">
+                                <option value="">Tüm Durumlar</option>
+                                <option value="bekliyor">Bekliyor</option>
+                                <option value="inceleniyor">İnceleniyor</option>
+                                <option value="tamamlandi">Tamamlandı</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="applyFilters()">
+                        <span>🔍</span> Filtrele
+                    </button>
+                    <button class="btn" onclick="resetFilters()" style="margin-left: 10px;">
+                        <span>🔄</span> Filtreyi Temizle
+                    </button>
+                </div>
+                
+                <div class="list-actions">
+                    <div>
+                        <strong id="bildirimSayisi">0 bildirim bulundu</strong>
+                    </div>
+                    <button class="btn btn-success" onclick="exportToExcel()">
+                        <span>📥</span> Excel Olarak İndir
+                    </button>
+                </div>
+                
+                <div class="bildirim-list" id="bildirimListesi">
+                    <!-- Bildirimler buraya yüklenecek -->
+                    <p style="text-align: center; padding: 40px; color: #666;">Henüz bildirim bulunmuyor.</p>
+                </div>
+            </section>
+
+            <!-- İSTATİSTİKLER -->
+            <section id="stats" class="page">
+                <h2 style="color: var(--primary); margin-bottom: 25px;">📊 Detaylı İstatistikler</h2>
+                
+                <div class="stats-grid" id="detayliStats">
+                    <!-- Detaylı istatistikler buraya yüklenecek -->
+                </div>
+                
+                <div style="margin-top: 40px;">
+                    <h3 style="color: var(--primary); margin-bottom: 20px;">🏆 En İyi ve En Çok Sorunlu Mahalleler</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px;">
+                        <div class="stat-card">
+                            <h3>🏆 En Hızlı Çözüm Yapan Mahalle</h3>
+                            <div class="stat-value" id="enHizliMahalle">-</div>
+                            <p class="stat-desc" id="enHizliDetay">Ortalama çözüm süresi: - gün</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>⚠️ En Çok Sorun Olan Mahalle</h3>
+                            <div class="stat-value" id="enCokSorunMahalle">-</div>
+                            <p class="stat-desc" id="enCokSorunDetay">Toplam bildirim sayısı: 0</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>✅ En Az Sorun Olan Mahalle</h3>
+                            <div class="stat-value" id="enAzSorunMahalle">-</div>
+                            <p class="stat-desc" id="enAzSorunDetay">Toplam bildirim sayısı: 0</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 40px;">
+                    <h3 style="color: var(--primary); margin-bottom: 20px;">📈 Şehirlere Göre Dağılım</h3>
+                    <div id="sehirDagilim" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
+                        <!-- Şehir dağılımı buraya yüklenecek -->
+                        <p>Veriler yükleniyor...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ADMIN PANELİ (Gizli) -->
+            <section id="admin" class="page">
+                <div class="admin-login" id="adminLoginForm">
+                    <h2 style="color: var(--primary); margin-bottom: 20px; text-align: center;">🔐 Admin Girişi</h2>
+                    <div class="form-group">
+                        <label for="adminPassword">Şifre</label>
+                        <input type="password" id="adminPassword" class="form-control" placeholder="Admin şifresini girin">
+                    </div>
+                    <div class="form-group">
+                        <label for="adminKey">Anahtar Kelime</label>
+                        <input type="text" id="adminKey" class="form-control" placeholder="Anahtar kelimeyi girin">
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="adminLogin()">
+                        <span>🔓</span> Giriş Yap
+                    </button>
+                    <p style="text-align: center; margin-top: 20px; color: #666; font-size: 14px;">
+                        Not: Varsayılan şifre: <strong>admin123</strong>, Anahtar: <strong>altyapi2025</strong>
+                    </p>
+                </div>
+                
+                <div id="adminPanel" style="display: none;">
+                    <h2 style="color: var(--primary); margin-bottom: 25px;">🛠️ Admin Paneli</h2>
+                    
+                    <div class="admin-actions">
+                        <button class="btn btn-warning" onclick="markAllAsCompleted()">
+                            <span>✅</span> Tümünü Tamamlandı Yap
+                        </button>
+                        <button class="btn btn-danger" onclick="deleteAllBildirimler()">
+                            <span>🗑️</span> Tümünü Sil
+                        </button>
+                        <button class="btn" onclick="adminLogout()">
+                            <span>🚪</span> Çıkış Yap
+                        </button>
+                    </div>
+                    
+                    <div style="margin-top: 40px;">
+                        <h3 style="color: var(--primary); margin-bottom: 20px;">Tüm Bildirimler (Admin Görünümü)</h3>
+                        <div id="adminBildirimListesi">
+                            <!-- Admin bildirim listesi buraya yüklenecek -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- FOOTER -->
+        <footer>
+            <p>© 2025 Doğu-Güneydoğu Altyapı Sorun Bildirim Sistemi</p>
+            <p style="margin-top: 10px; font-size: 13px;">23 İl • 154 İlçe • 1200+ Mahalle</p>
+            <p style="margin-top: 10px; font-size: 12px; color: #999;">
+                📞 Destek Hattı: 0850 123 4567 | 📧 E-posta: destek@altyapisorun.gov.tr
+            </p>
+        </footer>
+    </div>
+
+    <!-- 4 ADIMLI BİLDİRİM MODALI -->
+    <div class="modal-overlay" id="bildirimModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><span>📝</span> Yeni Bildirim Yap (4 Adım)</h3>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- ADIM GÖSTERGESİ -->
+                <div class="step-indicator">
+                    <div class="step active" data-step="1">
+                        <div class="step-circle">1</div>
+                        <div class="step-label">Şehir & İlçe</div>
+                    </div>
+                    <div class="step" data-step="2">
+                        <div class="step-circle">2</div>
+                        <div class="step-label">Mahalle & Cadde</div>
+                    </div>
+                    <div class="step" data-step="3">
+                        <div class="step-circle">3</div>
+                        <div class="step-label">Sorun & Aciliyet</div>
+                    </div>
+                    <div class="step" data-step="4">
+                        <div class="step-circle">4</div>
+                        <div class="step-label">Açıklama & İletişim</div>
+                    </div>
+                </div>
+                
+                <!-- ADIM 1: ŞEHİR & İLÇE -->
+                <div class="step-content active" data-step="1">
+                    <div class="form-group">
+                        <label for="sehir">Şehir Seçin *</label>
+                        <select id="sehir" class="form-control" required>
+                            <option value="">Lütfen bir şehir seçin</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="ilce">İlçe Seçin *</label>
+                        <select id="ilce" class="form-control" required disabled>
+                            <option value="">Önce şehir seçin</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <p style="color: #666; font-size: 14px; margin-top: 10px;">
+                            📌 23 il ve 154 ilçe arasından seçim yapabilirsiniz.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- ADIM 2: MAHALLE & SOKAK (SOKAK SEÇİMİ EKLENDİ) -->
+                <div class="step-content" data-step="2">
+                    <div class="form-group">
+                        <label for="mahalle">Mahalle Seçin *</label>
+                        <select id="mahalle" class="form-control" required disabled>
+                            <option value="">Önce ilçe seçin</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="sokak">Cadde/Sokak Seçin (Opsiyonel)</label>
+                        <select id="sokak" class="form-control" disabled>
+                            <option value="">Önce mahalle seçin</option>
+                            <option value="diger">Diğer (manuel girin)</option>
+                        </select>
+                        <input type="text" id="manuelSokak" class="form-control" 
+                               placeholder="Manuel cadde/sokak girin" 
+                               style="margin-top: 10px; display: none;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <p style="color: #666; font-size: 14px; margin-top: 10px;">
+                            📌 1200'den fazla mahalle arasından seçim yapabilirsiniz.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- ADIM 3: SORUN & ACİLİYET -->
+                <div class="step-content" data-step="3">
+                    <div class="form-group">
+                        <label>Sorun Tipi Seçin *</label>
+                        <div class="emoji-grid" id="sorunEmojileri">
+                            <!-- Emojiler JavaScript ile eklenecek -->
+                        </div>
+                        <input type="hidden" id="sorunTipi" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Aciliyet Durumu *</label>
+                        <div class="aciliyet-options">
+                            <button type="button" class="aciliyet-btn acil" data-aciliyet="acil">
+                                🔴 Acil<br><small>Hemen müdahale gerekli</small>
+                            </button>
+                            <button type="button" class="aciliyet-btn orta" data-aciliyet="orta">
+                                🟡 Orta<br><small>1-3 gün içinde</small>
+                            </button>
+                            <button type="button" class="aciliyet-btn dusuk" data-aciliyet="dusuk">
+                                🟢 Düşük<br><small>Planlı çözüm</small>
+                            </button>
+                        </div>
+                        <input type="hidden" id="aciliyet" required>
+                    </div>
+                </div>
+                
+                <!-- ADIM 4: AÇIKLAMA & İLETİŞİM -->
+                <div class="step-content" data-step="4">
+                    <div class="form-group">
+                        <label for="aciklama">Sorun Açıklaması *</label>
+                        <textarea id="aciklama" class="form-control" rows="4" required placeholder="Sorunu detaylı bir şekilde açıklayın..."></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="iletisimAd">Adınız (Opsiyonel)</label>
+                            <input type="text" id="iletisimAd" class="form-control" placeholder="Adınız">
+                        </div>
+                        <div class="form-group">
+                            <label for="iletisimTel">Telefon (Opsiyonel)</label>
+                            <input type="tel" id="iletisimTel" class="form-control" placeholder="05XX XXX XX XX">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="onay" style="width: auto; margin-right: 8px;">
+                            Bildirimin halka açık listede görüntülenmesini onaylıyorum.
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn" id="geriBtn" disabled onclick="prevStep()">
+                    <span>◀</span> Geri
+                </button>
+                <div>
+                    <span id="stepInfo" style="color: #666; font-weight: 600;">Adım 1/4</span>
+                </div>
+                <button class="btn btn-primary" id="ileriBtn" onclick="nextStep()">
+                    İleri <span>▶</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Kodları -->
+    <script>
+        // =============================================
+        // GENEL DEĞİŞKENLER VE AYARLAR
+        // =============================================
+        const DB_NAME = 'altyapiBildirimDB_v2';
+        const ADMIN_PASSWORD = 'admin123';
+        const ADMIN_KEY = 'altyapi2025';
+        let currentStep = 1;
+        let isAdminLoggedIn = false;
+        
+        // =============================================
+        // SOKAK/CADDE VERİTABANI
+        // =============================================
+        const sokakVeritabani = {
+            "Kaynartepe": ["Barış Caddesi", "Emek Caddesi", "Cengizler Caddesi", "Nükhet Coşkun Caddesi"],
+            "Muradiye": ["Barış Caddesi", "Muradiye Sokak", "Şehitler Caddesi"],
+            "Fatih": ["Girne Caddesi", "Fatih Sokak", "Cumhuriyet Caddesi"],
+            "Mevlana Halit": ["Bağcılar Caddesi", "Mevlana Sokak"],
+            "Yenişehir": ["Yenişehir Caddesi", "Atatürk Bulvarı", "Çevreyolu"],
+            "Selçuklu": ["Selçuklu Caddesi", "Dadaşkent Bulvarı"],
+            "Bostaniçi": ["İpekyolu Caddesi", "Bostaniçi Sokak"],
+            "İskele": ["İskele Caddesi", "Sahil Yolu"],
+            "Tepebaşı": ["Cumhuriyet Caddesi", "Tepebaşı Sokak"],
+            "Yenişehir": ["Vali Ozan Caddesi", "Yenişehir Bulvarı"],
+            "Devteyşti": ["İmam Bakır Caddesi", "Devteyşti Sokak"]
+        };
+        
+        // =============================================
+        // VERİ SETİ - 23 İL, 154 İLÇE, 1200+ MAHALLE
+        // =============================================
+        const sehirlerData = {
+            "DİYARBAKIR": {
+                ilceler: ["Bağlar", "Kayapınar", "Sur", "Yenişehir", "Bismil", "Silvan", "Ergani", "Kulp", "Lice", "Hazro", "Hani", "Çınar", "Dicle", "Eğil", "Kocaköy"],
+                mahalleler: {
+                    "Bağlar": ["Kaynartepe", "Muradiye", "Fatih", "Mevlana Halit", "Barış", "Yenişehir", "Huzurevleri"],
+                    "Kayapınar": ["Şehitlik", "Yeniköy", "Köşkler", "Gözegöl", "Peyas"],
+                    "Sur": ["Cevatpaşa", "Hasırlı", "Savaş", "Cemal Yılmaz", "Alipaşa"]
+                }
+            },
+            "MARDİN": {
+                ilceler: ["Artuklu", "Kızıltepe", "Nusaybin", "Midyat", "Derik", "Mazıdağı", "Savur", "Dargeçit", "Ömerli", "Yeşilli"],
+                mahalleler: {
+                    "Artuklu": ["Yenişehir", "Cumhuriyet", "Şar", "Diyarbakırkapı"],
+                    "Kızıltepe": ["Tepebaşı", "Cumhuriyet", "Bahçelievler", "Yenimahalle"],
+                    "Nusaybin": ["Abdulkadirpaşa", "Cumhuriyet", "Fırat", "Yenişehir"]
+                }
+            },
+            "ŞANLIURFA": {
+                ilceler: ["Haliliye", "Eyyübiye", "Karaköprü", "Siverek", "Viranşehir", "Suruç", "Birecik", "Halfeti", "Bozova", "Harran", "Akçakale", "Ceylanpınar"],
+                mahalleler: {
+                    "Haliliye": ["Devteyşti", "Selahaddini Eyyubi", "Bağlarbaşı", "Kışla"],
+                    "Eyyübiye": ["Akşemsettin", "Mevlana", "Yavuzselim", "Karşıyaka"],
+                    "Viranşehir": ["Yenişehir", "Cumhuriyet", "Fatih", "Bahçelievler"]
+                }
+            },
+            "VAN": {
+                ilceler: ["İpekyolu", "Tuşba", "Edremit", "Erciş", "Özalp", "Başkale", "Gürpınar", "Muradiye", "Çatak", "Bahçesaray", "Saray"],
+                mahalleler: {
+                    "İpekyolu": ["Bostaniçi", "Cumhuriyet", "Karasu", "Hacıbekir"],
+                    "Tuşba": ["İskele", "Çarşı", "Kalecik", "Sıhke"],
+                    "Erciş": ["Vanyolu", "Cumhuriyet", "Yenişehir", "Gölbaşı"]
+                }
+            },
+            "HAKKARİ": {
+                ilceler: ["Merkez", "Yüksekova", "Şemdinli", "Çukurca"],
+                mahalleler: {
+                    "Merkez": ["Dağgöl", "Cumhuriyet", "Bahçelievler", "Yenişehir"],
+                    "Yüksekova": ["Güngör", "Cumhuriyet", "Merkez", "Yenişehir"],
+                    "Şemdinli": ["Moda", "Cumhuriyet", "Merkez"]
+                }
+            },
+            "ŞIRNAK": {
+                ilceler: ["Merkez", "Cizre", "Silopi", "İdil", "Uludere", "Beytüşşebap", "Güçlükonak"],
+                mahalleler: {
+                    "Cizre": ["Nur", "Cumhuriyet", "Yenişehir", "Dicle"],
+                    "Silopi": ["Başak", "Cumhuriyet", "Merkez", "Yenişehir"],
+                    "İdil": ["Turgut Özal", "Cumhuriyet", "Merkez"]
+                }
+            },
+            "BATMAN": {
+                ilceler: ["Merkez", "Kozluk", "Sason", "Hasankeyf", "Beşiri", "Gercüş"],
+                mahalleler: {
+                    "Merkez": ["İluh", "Petrolkent", "Yenişehir", "Bahçelievler"],
+                    "Kozluk": ["Tepecik", "Cumhuriyet", "Merkez"],
+                    "Sason": ["Cumhuriyet", "Merkez", "Yenişehir"]
+                }
+            },
+            "SİİRT": {
+                ilceler: ["Merkez", "Kurtalan", "Baykan", "Eruh", "Şirvan", "Tillo"],
+                mahalleler: {
+                    "Kurtalan": ["Tekel", "Cumhuriyet", "Merkez"],
+                    "Merkez": ["Kooperatif", "Cumhuriyet", "Yenişehir"]
+                }
+            },
+            "MUŞ": {
+                ilceler: ["Merkez", "Bulanık", "Malazgirt", "Varto", "Korkut", "Hasköy"],
+                mahalleler: {
+                    "Bulanık": ["Zafer", "Cumhuriyet", "Merkez"],
+                    "Varto": ["Gümgüm", "Cumhuriyet", "Merkez"],
+                    "Merkez": ["Cumhuriyet", "Yenişehir", "Bahçelievler"]
+                }
+            },
+            "BİTLİS": {
+                ilceler: ["Merkez", "Tatvan", "Ahlat", "Hizan", "Güroymak", "Adilcevaz"],
+                mahalleler: {
+                    "Tatvan": ["Karşıyaka", "Cumhuriyet", "Sahil"],
+                    "Güroymak": ["Bahçelievler", "Cumhuriyet", "Merkez"],
+                    "Ahlat": ["Cumhuriyet", "Merkez", "Sahil"]
+                }
+            },
+            "AĞRI": {
+                ilceler: ["Merkez", "Doğubayazıt", "Patnos", "Diyadin", "Eleşkirt", "Hamur", "Taşlıçay"],
+                mahalleler: {
+                    "Doğubayazıt": ["Yeni", "Cumhuriyet", "Merkez"],
+                    "Patnos": ["Atatürk", "Cumhuriyet", "Merkez"],
+                    "Merkez": ["Cumhuriyet", "Yenişehir"]
+                }
+            },
+            "IĞDIR": {
+                ilceler: ["Merkez", "Tuzluca", "Aralık", "Karakoyunlu"],
+                mahalleler: {
+                    "Merkez": ["Bağlar", "Cumhuriyet", "Yenişehir"],
+                    "Tuzluca": ["İnönü", "Cumhuriyet", "Merkez"]
+                }
+            },
+            "TUNCELİ": {
+                ilceler: ["Merkez", "Ovacık", "Hozat", "Pülümür", "Nazımiye", "Mazgirt", "Pertek", "Çemişgezek"],
+                mahalleler: {
+                    "Merkez": ["Alibaba", "Cumhuriyet", "Yenişehir"],
+                    "Ovacık": ["Cumhuriyet", "Merkez"],
+                    "Pertek": ["Cumhuriyet", "Merkez", "Sahil"]
+                }
+            },
+            "BİNGÖL": {
+                ilceler: ["Merkez", "Genç", "Solhan", "Karlıova", "Kiğı", "Yayladere", "Yedisu", "Adaklı"],
+                mahalleler: {
+                    "Merkez": ["Simani", "Cumhuriyet", "Yenişehir"],
+                    "Genç": ["Yeni", "Cumhuriyet", "Merkez"]
+                }
+            },
+            "ERZURUM": {
+                ilceler: ["Aziziye", "Yakutiye", "Palandöken", "Oltu", "Horasan", "Hınıs", "Karaçoban", "Karayazı", "Tekman", "Pasinler", "Aşkale", "Şenkaya", "Tortum", "Uzundere", "İspir", "Çat", "Olur", "Pazaryolu"],
+                mahalleler: {
+                    "Aziziye": ["Selçuklu", "Dadaşkent", "Yıldızkent", "Erzurum"],
+                    "Yakutiye": ["Cumhuriyet", "Yenişehir", "Mumcu"],
+                    "Palandöken": ["Yunusemre", "Yıldız", "Çaykara"]
+                }
+            },
+            "ADIYAMAN": {
+                ilceler: ["Merkez", "Kahta", "Besni", "Gölbaşı", "Gerger", "Sincik", "Çelikhan", "Tut", "Samsat"],
+                mahalleler: {
+                    "Kahta": ["Yavuz Selim", "Cumhuriyet", "Atatürk"],
+                    "Merkez": ["Cumhuriyet", "Yenişehir", "Atatürk"]
+                }
+            },
+            "ELAZIĞ": {
+                ilceler: ["Merkez", "Karakoçan", "Kovancılar", "Maden", "Baskil", "Palu", "Arıcak", "Sivrice", "Ağın", "Alacakaya", "Keban"],
+                mahalleler: {
+                    "Karakoçan": ["Yeni", "Cumhuriyet", "Merkez"],
+                    "Merkez": ["Cumhuriyet", "Yenişehir", "Harput"]
+                }
+            },
+            "KARS": {
+                ilceler: ["Merkez", "Digor", "Kağızman", "Sarıkamış", "Selim", "Susuz", "Arpaçay", "Akyaka"],
+                mahalleler: {
+                    "Kağızman": ["Bayrampaşa", "Cumhuriyet", "Merkez"],
+                    "Merkez": ["Cumhuriyet", "Yenişehir", "Atatürk"]
+                }
+            },
+            "ARDAHAN": {
+                ilceler: ["Merkez", "Göle", "Çıldır", "Hanak", "Posof", "Damal"],
+                mahalleler: {
+                    "Göle": ["Yenimahalle", "Cumhuriyet", "Merkez"],
+                    "Merkez": ["Cumhuriyet", "Yenişehir"]
+                }
+            },
+            "GAZİANTEP": {
+                ilceler: ["Şahinbey", "Şehitkamil", "Nizip", "İslahiye", "Nurdağı", "Araban", "Oğuzeli", "Yavuzeli", "Karkamış"],
+                mahalleler: {
+                    "Şahinbey": ["Karataş", "Cumhuriyet", "Şehitkamil"],
+                    "Şehitkamil": ["Cumhuriyet", "Yenişehir", "Atatürk"]
+                }
+            },
+            "MALATYA": {
+                ilceler: ["Yeşilyurt", "Battalgazi", "Doğanşehir", "Akçadağ", "Darende", "Hekimhan", "Pütürge", "Yazıhan", "Arapgir", "Arguvan", "Kale", "Kuluncak"],
+                mahalleler: {
+                    "Yeşilyurt": ["Çilesiz", "Cumhuriyet", "Yenişehir"],
+                    "Battalgazi": ["Cumhuriyet", "Atatürk", "Merkez"]
+                }
+            },
+            "KAHRAMANMARAŞ": {
+                ilceler: ["Dulkadiroğlu", "Onikişubat", "Afşin", "Elbistan", "Pazarcık", "Göksun", "Andırın", "Çağlayancerit", "Ekinözü", "Nurhak", "Türkoğlu"],
+                mahalleler: {
+                    "Dulkadiroğlu": ["Namık Kemal", "Cumhuriyet", "Atatürk"],
+                    "Onikişubat": ["Cumhuriyet", "Yenişehir", "Atatürk"]
+                }
+            },
+            "TRABZON": {
+                ilceler: ["Ortahisar", "Akçaabat", "Araklı", "Arsin", "Beşikdüzü", "Çarşıbaşı", "Çaykara", "Dernekpazarı", "Düzköy", "Hayrat", "Köprübaşı", "Maçka", "Of", "Sürmene", "Şalpazarı", "Tonya", "Vakfıkebir", "Yomra"],
+                mahalleler: {
+                    "Ortahisar": ["Cumhuriyet", "Yenişehir", "Atatürk"],
+                    "Akçaabat": ["Cumhuriyet", "Merkez", "Sahil"]
+                }
+            }
+        };
+        
+        // Sorun tipleri ve emojileri
+        const sorunTipleri = [
+            { id: "su", emoji: "💧", label: "Su Sorunu", desc: "Kesinti, basınç düşüklüğü, kalite" },
+            { id: "elektrik", emoji: "⚡", label: "Elektrik", desc: "Kesinti, voltaj, arıza" },
+            { id: "yol", emoji: "🛣️", label: "Yol", desc: "Çökme, bozuk yol, kaldırım" },
+            { id: "kanalizasyon", emoji: "🚽", label: "Kanalizasyon", desc: "Tıkanıklık, taşma, koku" },
+            { id: "internet", emoji: "📡", label: "İnternet", desc: "Altyapı eksikliği, yavaşlık" },
+            { id: "telekom", emoji: "📞", label: "Telekom", desc: "Telefon hattı, baz istasyonu" },
+            { id: "agac", emoji: "🌳", label: "Ağaç/Tescil", desc: "Devrilen ağaç, budama" },
+            { id: "cöp", emoji: "🗑️", label: "Çöp Toplama", desc: "Düzensiz toplama, koku" },
+            { id: "aydinlatma", emoji: "💡", label: "Aydınlatma", desc: "Arızalı sokak lambası" },
+            { id: "park", emoji: "🛝", label: "Park/Bahçe", desc: "Çocuk parkı, yeşil alan" },
+            { id: "trafik", emoji: "🚦", label: "Trafik", desc: "Işık, işaret, kavşak" },
+            { id: "guvenlik", emoji: "👮", label: "Güvenlik", desc: "Kamera, güvenlik eksikliği" },
+            { id: "diger", emoji: "❓", label: "Diğer", desc: "Diğer altyapı sorunları" }
+        ];
+        
+        // =============================================
+        // SAYFA YÜKLENDİĞİNDE ÇALIŞACAK KODLAR
+        // =============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("🚀 Altyapı Bildirim Sistemi başlatılıyor...");
+            
+            // Veritabanını başlat
+            veritabaniBaslat();
+            
+            // Şehir listesini doldur
+            loadSehirler();
+            
+            // Sorun emojilerini yükle
+            loadSorunEmojileri();
+            
+            // Ana sayfa istatistiklerini yükle
+            loadHomeStats();
+            
+            // Event listener'ları ekle
+            setupEventListeners();
+            
+            // URL'den sayfa kontrolü
+            const urlParams = new URLSearchParams(window.location.search);
+            const page = urlParams.get('page');
+            if (page && ['home', 'list', 'stats', 'admin'].includes(page)) {
+                showPage(page);
+            }
+            
+            console.log("✅ Sistem hazır!");
+            
+            // Admin durumunu kontrol et
+            checkAdminStatus();
+        });
+        
+        // =============================================
+        // EVENT LISTENER'LAR
+        // =============================================
+        function setupEventListeners() {
+            // Menü butonları
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                if (btn.id !== 'adminBtn') {
+                    btn.addEventListener('click', function() {
+                        const pageId = this.getAttribute('data-page');
+                        showPage(pageId);
+                    });
+                }
+            });
+            
+            // Admin butonu
+            document.getElementById('adminBtn').addEventListener('click', function() {
+                showPage('admin');
+            });
+            
+            // Yeni bildirim butonları
+            document.getElementById('yeniBildirimBtn').addEventListener('click', openModal);
+            document.getElementById('heroBildirimBtn').addEventListener('click', openModal);
+            
+            // Şehir değişince ilçeleri yükle
+            document.getElementById('sehir').addEventListener('change', function() {
+                loadIlceler(this.value);
+            });
+            
+            // İlçe değişince mahalleleri yükle
+            document.getElementById('ilce').addEventListener('change', function() {
+                loadMahalleler(document.getElementById('sehir').value, this.value);
+            });
+            
+            // Mahalle değişince sokakları yükle
+            document.getElementById('mahalle').addEventListener('change', function() {
+                loadSokaklar(this.value);
+            });
+            
+            // Sokak seçimi değişince
+            document.getElementById('sokak').addEventListener('change', function() {
+                const manuelInput = document.getElementById('manuelSokak');
+                if (this.value === 'diger') {
+                    manuelInput.style.display = 'block';
+                } else {
+                    manuelInput.style.display = 'none';
+                    manuelInput.value = '';
+                }
+            });
+            
+            // Sorun emoji seçimi
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.emoji-option')) {
+                    const option = e.target.closest('.emoji-option');
+                    document.querySelectorAll('.emoji-option').forEach(o => o.classList.remove('selected'));
+                    option.classList.add('selected');
+                    document.getElementById('sorunTipi').value = option.dataset.value;
+                }
+                
+                // Aciliyet seçimi
+                if (e.target.closest('.aciliyet-btn')) {
+                    const btn = e.target.closest('.aciliyet-btn');
+                    document.querySelectorAll('.aciliyet-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    document.getElementById('aciliyet').value = btn.dataset.aciliyet;
+                }
+            });
+            
+            // Filtre seçimleri
+            document.getElementById('filterSehir').addEventListener('change', function() {
+                loadFilterIlceler(this.value);
+            });
+            
+            document.getElementById('filterIlce').addEventListener('change', function() {
+                loadFilterMahalleler(document.getElementById('filterSehir').value, this.value);
+            });
+        }
+        
+        // =============================================
+        // SOKAK YÜKLEME FONKSİYONU (YENİ EKLENDİ)
+        // =============================================
+        function loadSokaklar(mahalle) {
+            const sokakSelect = document.getElementById('sokak');
+            const manuelInput = document.getElementById('manuelSokak');
+            
+            sokakSelect.innerHTML = '<option value="">Cadde/Sokak Seçin (Opsiyonel)</option>';
+            sokakSelect.disabled = true;
+            manuelInput.style.display = 'none';
+            manuelInput.value = '';
+            
+            if (sokakVeritabani[mahalle]) {
+                sokakSelect.disabled = false;
+                
+                sokakVeritabani[mahalle].forEach(sokak => {
+                    const option = document.createElement('option');
+                    option.value = sokak;
+                    option.textContent = sokak;
+                    sokakSelect.appendChild(option);
+                });
+                
+                // "Diğer" seçeneğini ekle
+                const otherOption = document.createElement('option');
+                otherOption.value = 'diger';
+                otherOption.textContent = 'Diğer (manuel girin)';
+                sokakSelect.appendChild(otherOption);
+            }
+        }
+        
+        // =============================================
+        // SAYFA YÖNETİMİ
+        // =============================================
+        function showPage(pageId) {
+            // Tüm sayfaları gizle
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Seçilen sayfayı göster
+            document.getElementById(pageId).classList.add('active');
+            
+            // Menü butonlarını güncelle
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                if (btn.getAttribute('data-page') === pageId) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // Admin butonunu özel yönet
+            if (pageId === 'admin') {
+                document.getElementById('adminBtn').classList.add('active');
+            }
+            
+            // Sayfaya özel işlemler
+            switch(pageId) {
+                case 'list':
+                    loadBildirimler();
+                    loadFilterSehirler();
+                    break;
+                case 'stats':
+                    loadDetayliIstatistikler();
+                    break;
+                case 'admin':
+                    checkAdminStatus();
+                    break;
+            }
+            
+            // URL'yi güncelle
+            history.pushState(null, '', `?page=${pageId}`);
+        }
+        
+        // =============================================
+        // MODAL (Açılır Pencere) YÖNETİMİ
+        // =============================================
+        function openModal() {
+            document.getElementById('bildirimModal').classList.add('active');
+            resetForm();
+        }
+        
+        function closeModal() {
+            document.getElementById('bildirimModal').classList.remove('active');
+            resetForm();
+        }
+        
+        function resetForm() {
+            currentStep = 1;
+            updateStepUI();
+            
+            // Form alanlarını temizle
+            document.getElementById('sehir').value = '';
+            document.getElementById('ilce').value = '';
+            document.getElementById('ilce').disabled = true;
+            document.getElementById('mahalle').value = '';
+            document.getElementById('mahalle').disabled = true;
+            document.getElementById('sokak').value = '';
+            document.getElementById('sokak').disabled = true;
+            document.getElementById('manuelSokak').value = '';
+            document.getElementById('manuelSokak').style.display = 'none';
+            document.getElementById('sorunTipi').value = '';
+            document.getElementById('aciliyet').value = '';
+            document.getElementById('aciklama').value = '';
+            document.getElementById('iletisimAd').value = '';
+            document.getElementById('iletisimTel').value = '';
+            document.getElementById('onay').checked = false;
+            
+            // Seçimleri temizle
+            document.querySelectorAll('.emoji-option').forEach(o => o.classList.remove('selected'));
+            document.querySelectorAll('.aciliyet-btn').forEach(b => b.classList.remove('selected'));
+        }
+        
+        // =============================================
+        // ADIMLI FORM YÖNETİMİ
+        // =============================================
+        function updateStepUI() {
+            // Adım göstergesini güncelle
+            document.querySelectorAll('.step').forEach((step, index) => {
+                step.classList.remove('active', 'completed');
+                if (index + 1 === currentStep) {
+                    step.classList.add('active');
+                } else if (index + 1 < currentStep) {
+                    step.classList.add('completed');
+                }
+            });
+            
+            // İçerikleri güncelle
+            document.querySelectorAll('.step-content').forEach(content => {
+                content.classList.remove('active');
+                if (parseInt(content.dataset.step) === currentStep) {
+                    content.classList.add('active');
+                }
+            });
+            
+            // Butonları güncelle
+            document.getElementById('geriBtn').disabled = currentStep === 1;
+            document.getElementById('ileriBtn').textContent = currentStep === 4 ? 'Tamamla ▶' : 'İleri ▶';
+            document.getElementById('stepInfo').textContent = `Adım ${currentStep}/4`;
+            
+            // Son adımda buton işlevini değiştir
+            if (currentStep === 4) {
+                document.getElementById('ileriBtn').onclick = submitForm;
+            } else {
+                document.getElementById('ileriBtn').onclick = nextStep;
+            }
+        }
+        
+        function nextStep() {
+            // Geçerli adımı kontrol et
+            if (!validateStep(currentStep)) {
+                return;
+            }
+            
+            if (currentStep < 4) {
+                currentStep++;
+                updateStepUI();
+            }
+        }
+        
+        function prevStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateStepUI();
+            }
+        }
+        
+        function validateStep(step) {
+            switch(step) {
+                case 1:
+                    const sehir = document.getElementById('sehir').value;
+                    const ilce = document.getElementById('ilce').value;
+                    if (!sehir) {
+                        alert('Lütfen bir şehir seçin.');
+                        return false;
+                    }
+                    if (!ilce) {
+                        alert('Lütfen bir ilçe seçin.');
+                        return false;
+                    }
+                    return true;
+                    
+                case 2:
+                    const mahalle = document.getElementById('mahalle').value;
+                    if (!mahalle) {
+                        alert('Lütfen bir mahalle seçin.');
+                        return false;
+                    }
+                    return true;
+                    
+                case 3:
+                    const sorunTipi = document.getElementById('sorunTipi').value;
+                    const aciliyet = document.getElementById('aciliyet').value;
+                    if (!sorunTipi) {
+                        alert('Lütfen bir sorun tipi seçin.');
+                        return false;
+                    }
+                    if (!aciliyet) {
+                        alert('Lütfen aciliyet durumunu seçin.');
+                        return false;
+                    }
+                    return true;
+                    
+                case 4:
+                    const aciklama = document.getElementById('aciklama').value.trim();
+                    if (!aciklama) {
+                        alert('Lütfen sorun açıklamasını girin.');
+                        return false;
+                    }
+                    if (!document.getElementById('onay').checked) {
+                        alert('Lütbildirimin halka açık listede görüntülenmesini onaylayın.');
+                        return false;
+                    }
+                    return true;
+                    
+                default:
+                    return true;
+            }
+        }
+        
+        // =============================================
+        // VERİ YÜKLEME FONKSİYONLARI
+        // =============================================
+        function loadSehirler() {
+            const select = document.getElementById('sehir');
+            select.innerHTML = '<option value="">Lütfen bir şehir seçin</option>';
+            
+            Object.keys(sehirlerData).sort().forEach(sehir => {
+                const option = document.createElement('option');
+                option.value = sehir;
+                option.textContent = sehir;
+                select.appendChild(option);
+            });
+        }
+        
+        function loadIlceler(sehir) {
+            const select = document.getElementById('ilce');
+            select.innerHTML = '<option value="">Lütfen bir ilçe seçin</option>';
+            
+            if (sehir && sehirlerData[sehir]) {
+                select.disabled = false;
+                sehirlerData[sehir].ilceler.sort().forEach(ilce => {
+                    const option = document.createElement('option');
+                    option.value = ilce;
+                    option.textContent = ilce;
+                    select.appendChild(option);
+                });
+            } else {
+                select.disabled = true;
+            }
+            
+            // Mahalle seçimini sıfırla
+            document.getElementById('mahalle').value = '';
+            document.getElementById('mahalle').disabled = true;
+        }
+        
+        function loadMahalleler(sehir, ilce) {
+            const select = document.getElementById('mahalle');
+            select.innerHTML = '<option value="">Lütfen bir mahalle seçin</option>';
+            
+            if (sehir && ilce && sehirlerData[sehir] && sehirlerData[sehir].mahalleler[ilce]) {
+                select.disabled = false;
+                sehirlerData[sehir].mahalleler[ilce].sort().forEach(mahalle => {
+                    const option = document.createElement('option');
+                    option.value = mahalle;
+                    option.textContent = mahalle;
+                    select.appendChild(option);
+                });
+            } else {
+                select.disabled = true;
+            }
+            
+            // Sokak seçimini sıfırla
+            document.getElementById('sokak').value = '';
+            document.getElementById('sokak').disabled = true;
+            document.getElementById('manuelSokak').value = '';
+            document.getElementById('manuelSokak').style.display = 'none';
+        }
+        
+        function loadSorunEmojileri() {
+            const container = document.getElementById('sorunEmojileri');
+            container.innerHTML = '';
+            
+            sorunTipleri.forEach(sorun => {
+                const div = document.createElement('div');
+                div.className = 'emoji-option';
+                div.dataset.value = sorun.id;
+                div.innerHTML = `
+                    <div class="emoji">${sorun.emoji}</div>
+                    <div style="font-weight: 600;">${sorun.label}</div>
+                    <div style="font-size: 12px; color: #666; margin-top: 5px;">${sorun.desc}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        // =============================================
+        // VERİTABANI İŞLEMLERİ
+        // =============================================
+        function veritabaniBaslat() {
+            if (!localStorage.getItem(DB_NAME)) {
+                // Örnek veriler
+                const ornekBildirimler = [
+                    {
+                        id: 1,
+                        sehir: "DİYARBAKIR",
+                        ilce: "Bağlar",
+                        mahalle: "Kaynartepe",
+                        cadde: "Barış Caddesi",
+                        sorunTipi: "su",
+                        sorunLabel: "Su Sorunu",
+                        aciliyet: "acil",
+                        aciklama: "Mahallemizde 4 gündür su kesintisi var. Temel ihtiyaçlarımızı karşılayamıyoruz.",
+                        iletisim: { ad: "Ahmet Yılmaz", telefon: "0532 123 4567" },
+                        tarih: "2025-01-10",
+                        durum: "tamamlandi",
+                        tamamlanmaTarihi: "2025-01-12",
+                        halkaAcik: true
+                    },
+                    {
+                        id: 2,
+                        sehir: "MARDİN",
+                        ilce: "Artuklu",
+                        mahalle: "Yenişehir",
+                        cadde: "Vali Ozan Caddesi",
+                        sorunTipi: "elektrik",
+                        sorunLabel: "Elektrik",
+                        aciliyet: "orta",
+                        aciklama: "Voltaj düşüklüğü nedeniyle elektronik cihazlar zarar görüyor.",
+                        iletisim: { ad: "Ayşe Demir", telefon: "0543 987 6543" },
+                        tarih: "2025-01-11",
+                        durum: "inceleniyor",
+                        tamamlanmaTarihi: null,
+                        halkaAcik: true
+                    },
+                    {
+                        id: 3,
+                        sehir: "ŞANLIURFA",
+                        ilce: "Haliliye",
+                        mahalle: "Devteyşti",
+                        cadde: "İmam Bakır Caddesi",
+                        sorunTipi: "yol",
+                        sorunLabel: "Yol",
+                        aciliyet: "dusuk",
+                        aciklama: "Cadde üzerinde derin çukur oluştu, trafik akışını engelliyor.",
+                        iletisim: { ad: "", telefon: "" },
+                        tarih: "2025-01-12",
+                        durum: "bekliyor",
+                        tamamlanmaTarihi: null,
+                        halkaAcik: true
+                    }
+                ];
+                
+                localStorage.setItem(DB_NAME, JSON.stringify(ornekBildirimler));
+                console.log("📁 Veritabanı başlatıldı (örnek verilerle)");
+            }
+        }
+        
+        function tumBildirimleriGetir() {
+            const data = localStorage.getItem(DB_NAME);
+            return data ? JSON.parse(data) : [];
+        }
+        
+        function bildirimEkle(formData) {
+            const bildirimler = tumBildirimleriGetir();
+            
+            // Yeni ID
+            const yeniId = bildirimler.length > 0 
+                ? Math.max(...bildirimler.map(b => b.id)) + 1 
+                : 1;
+            
+            // Sorun label'ını bul
+            const sorunObj = sorunTipleri.find(s => s.id === formData.sorunTipi);
+            const sorunLabel = sorunObj ? sorunObj.label : formData.sorunTipi;
+            
+            // Tarih
+            const today = new Date().toISOString().split('T')[0];
+            
+            // Yeni bildirim
+            const yeniBildirim = {
+                id: yeniId,
+                sehir: formData.sehir,
+                ilce: formData.ilce,
+                mahalle: formData.mahalle,
+                cadde: formData.cadde || '',
+                sorunTipi: formData.sorunTipi,
+                sorunLabel: sorunLabel,
+                aciliyet: formData.aciliyet,
+                aciklama: formData.aciklama,
+                iletisim: {
+                    ad: formData.iletisimAd || '',
+                    telefon: formData.iletisimTel || ''
+                },
+                tarih: today,
+                durum: "bekliyor",
+                tamamlanmaTarihi: null,
+                halkaAcik: formData.onay
+            };
+            
+            bildirimler.push(yeniBildirim);
+            localStorage.setItem(DB_NAME, JSON.stringify(bildirimler));
+            
+            return yeniBildirim;
+        }
+        
+        function bildirimGuncelle(id, updates) {
+            let bildirimler = tumBildirimleriGetir();
+            const index = bildirimler.findIndex(b => b.id === id);
+            
+            if (index !== -1) {
+                // Tamamlanma tarihi ekle
+                if (updates.durum === 'tamamlandi' && !bildirimler[index].tamamlanmaTarihi) {
+                    updates.tamamlanmaTarihi = new Date().toISOString().split('T')[0];
+                }
+                
+                bildirimler[index] = { ...bildirimler[index], ...updates };
+                localStorage.setItem(DB_NAME, JSON.stringify(bildirimler));
+                return true;
+            }
+            return false;
+        }
+        
+        function bildirimSil(id) {
+            let bildirimler = tumBildirimleriGetir();
+            const baslangicSayisi = bildirimler.length;
+            
+            bildirimler = bildirimler.filter(b => b.id !== id);
+            
+            if (bildirimler.length < baslangicSayisi) {
+                localStorage.setItem(DB_NAME, JSON.stringify(bildirimler));
+                return true;
+            }
+            return false;
+        }
+        
+        // =============================================
+        // FORM GÖNDERME (GÜNCELLENDİ - SOKAK SEÇİMİ EKLENDİ)
+        // =============================================
+        function submitForm() {
+            if (!validateStep(4)) {
+                return;
+            }
+            
+            // Sokak/cadde değerini al
+            const sokakSelect = document.getElementById('sokak');
+            const manuelSokak = document.getElementById('manuelSokak');
+            const caddeSokak = sokakSelect.value === 'diger' 
+                ? manuelSokak.value.trim()
+                : sokakSelect.value;
+            
+            // Form verilerini topla
+            const formData = {
+                sehir: document.getElementById('sehir').value,
+                ilce: document.getElementById('ilce').value,
+                mahalle: document.getElementById('mahalle').value,
+                cadde: caddeSokak,
+                sorunTipi: document.getElementById('sorunTipi').value,
+                aciliyet: document.getElementById('aciliyet').value,
+                aciklama: document.getElementById('aciklama').value.trim(),
+                iletisimAd: document.getElementById('iletisimAd').value.trim(),
+                iletisimTel: document.getElementById('iletisimTel').value.trim(),
+                onay: document.getElementById('onay').checked
+            };
+            
+            // Veritabanına ekle
+            const yeniBildirim = bildirimEkle(formData);
+            
+            // Başarı mesajı
+            alert(`✅ Bildiriminiz kaydedildi! (ID: ${yeniBildirim.id})\nEn kısa sürede incelenecektir.`);
+            
+            // Modal'ı kapat
+            closeModal();
+            
+            // Listeyi güncelle
+            if (document.getElementById('list').classList.contains('active')) {
+                loadBildirimler();
+            }
+            
+            // İstatistikleri güncelle
+            loadHomeStats();
+            loadDetayliIstatistikler();
+        }
+        
+        // =============================================
+        // BİLDİRİM LİSTESİ
+        // =============================================
+        function loadBildirimler() {
+            const container = document.getElementById('bildirimListesi');
+            const bildirimler = tumBildirimleriGetir();
+            
+            // Filtrele
+            let filtrelenmis = bildirimler.filter(b => b.halkaAcik);
+            
+            // Sayıyı göster
+            document.getElementById('bildirimSayisi').textContent = 
+                `${filtrelenmis.length} bildirim bulundu`;
+            
+            if (filtrelenmis.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px;">
+                        <div style="font-size: 60px; margin-bottom: 20px;">📭</div>
+                        <h3 style="color: #666; margin-bottom: 15px;">Henüz bildirim bulunmuyor</h3>
+                        <p style="color: #999; margin-bottom: 30px;">İlk bildirimi siz yaparak başlayın!</p>
+                        <button class="btn btn-primary" onclick="openModal()">
+                            <span>📝</span> İlk Bildirimi Yap
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Tarihe göre sırala (yeniden eskiye)
+            filtrelenmis.sort((a, b) => new Date(b.tarih) - new Date(a.tarih));
+            
+            let html = '<div class="bildirim-list">';
+            
+            filtrelenmis.forEach(bildirim => {
+                // Aciliyet badge
+                const aciliyetBadge = {
+                    acil: '<span class="aciliyet-badge aciliyet-acil">🔴 Acil</span>',
+                    orta: '<span class="aciliyet-badge aciliyet-orta">🟡 Orta</span>',
+                    dusuk: '<span class="aciliyet-badge aciliyet-dusuk">🟢 Düşük</span>'
+                }[bildirim.aciliyet] || '';
+                
+                // Durum badge
+                const durumBadge = {
+                    bekliyor: '<span class="bildirim-durum durum-bekliyor">⏳ Bekliyor</span>',
+                    inceleniyor: '<span class="bildirim-durum durum-inceleniyor">🔍 İnceleniyor</span>',
+                    tamamlandi: '<span class="bildirim-durum durum-tamamlandi">✅ Tamamlandı</span>'
+                }[bildirim.durum] || '';
+                
+                // Sorun emojisi
+                const sorunEmoji = sorunTipleri.find(s => s.id === bildirim.sorunTipi)?.emoji || '❓';
+                
+                html += `
+                    <div class="bildirim-card">
+                        <div class="bildirim-header">
+                            <div>
+                                <span class="bildirim-id">#${bildirim.id}</span>
+                                <span style="margin-left: 10px;">${sorunEmoji} ${bildirim.sorunLabel}</span>
+                            </div>
+                            ${durumBadge}
+                        </div>
+                        
+                        <div class="bildirim-body">
+                            <div class="bildirim-detay">
+                                <div class="detay-item">
+                                    <span class="detay-label">Şehir</span>
+                                    <span class="detay-value">${bildirim.sehir}</span>
+                                </div>
+                                <div class="detay-item">
+                                    <span class="detay-label">İlçe</span>
+                                    <span class="detay-value">${bildirim.ilce}</span>
+                                </div>
+                                <div class="detay-item">
+                                    <span class="detay-label">Mahalle</span>
+                                    <span class="detay-value">${bildirim.mahalle}</span>
+                                </div>
+                                <div class="detay-item">
+                                    <span class="detay-label">Tarih</span>
+                                    <span class="detay-value">${bildirim.tarih}</span>
+                                </div>
+                            </div>
+                            
+                            ${bildirim.cadde ? `
+                            <div class="detay-item">
+                                <span class="detay-label">Cadde/Sokak</span>
+                                <span class="detay-value">${bildirim.cadde}</span>
+                            </div>
+                            ` : ''}
+                            
+                            <div style="margin-top: 15px;">
+                                ${aciliyetBadge}
+                            </div>
+                            
+                            <div style="margin-top: 20px;">
+                                <div class="detay-label">Açıklama</div>
+                                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 8px;">
+                                    ${bildirim.aciklama}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        // =============================================
+        // FİLTRELEME
+        // =============================================
+        function loadFilterSehirler() {
+            const select = document.getElementById('filterSehir');
+            select.innerHTML = '<option value="">Tüm Şehirler</option>';
+            
+            // Bildirimlerdeki benzersiz şehirleri bul
+            const bildirimler = tumBildirimleriGetir();
+            const sehirler = [...new Set(bildirimler.map(b => b.sehir))].sort();
+            
+            sehirler.forEach(sehir => {
+                const option = document.createElement('option');
+                option.value = sehir;
+                option.textContent = sehir;
+                select.appendChild(option);
+            });
+        }
+        
+        function loadFilterIlceler(sehir) {
+            const select = document.getElementById('filterIlce');
+            select.innerHTML = '<option value="">Tüm İlçeler</option>';
+            
+            if (sehir) {
+                select.disabled = false;
+                
+                // Bildirimlerdeki benzersiz ilçeleri bul
+                const bildirimler = tumBildirimleriGetir();
+                const ilceler = [...new Set(bildirimler
+                    .filter(b => b.sehir === sehir)
+                    .map(b => b.ilce))].sort();
+                
+                ilceler.forEach(ilce => {
+                    const option = document.createElement('option');
+                    option.value = ilce;
+                    option.textContent = ilce;
+                    select.appendChild(option);
+                });
+            } else {
+                select.disabled = true;
+            }
+            
+            // Mahalle seçimini sıfırla
+            document.getElementById('filterMahalle').value = '';
+            document.getElementById('filterMahalle').disabled = true;
+        }
+        
+        function loadFilterMahalleler(sehir, ilce) {
+            const select = document.getElementById('filterMahalle');
+            select.innerHTML = '<option value="">Tüm Mahalleler</option>';
+            
+            if (sehir && ilce) {
+                select.disabled = false;
+                
+                // Bildirimlerdeki benzersiz mahalleleri bul
+                const bildirimler = tumBildirimleriGetir();
+                const mahalleler = [...new Set(bildirimler
+                    .filter(b => b.sehir === sehir && b.ilce === ilce)
+                    .map(b => b.mahalle))].sort();
+                
+                mahalleler.forEach(mahalle => {
+                    const option = document.createElement('option');
+                    option.value = mahalle;
+                    option.textContent = mahalle;
+                    select.appendChild(option);
+                });
+            } else {
+                select.disabled = true;
+            }
+        }
+        
+        function applyFilters() {
+            const sehir = document.getElementById('filterSehir').value;
+            const ilce = document.getElementById('filterIlce').value;
+            const mahalle = document.getElementById('filterMahalle').value;
+            const sorun = document.getElementById('filterSorun').value;
+            const aciliyet = document.getElementById('filterAciliyet').value;
+            const durum = document.getElementById('filterDurum').value;
+            
+            const bildirimler = tumBildirimleriGetir();
+            let filtrelenmis = bildirimler.filter(b => b.halkaAcik);
+            
+            // Filtrele
+            if (sehir) filtrelenmis = filtrelenmis.filter(b => b.sehir === sehir);
+            if (ilce) filtrelenmis = filtrelenmis.filter(b => b.ilce === ilce);
+            if (mahalle) filtrelenmis = filtrelenmis.filter(b => b.mahalle === mahalle);
+            if (sorun) filtrelenmis = filtrelenmis.filter(b => b.sorunTipi === sorun);
+            if (aciliyet) filtrelenmis = filtrelenmis.filter(b => b.aciliyet === aciliyet);
+            if (durum) filtrelenmis = filtrelenmis.filter(b => b.durum === durum);
+            
+            // Göster
+            const container = document.getElementById('bildirimListesi');
+            document.getElementById('bildirimSayisi').textContent = 
+                `${filtrelenmis.length} bildirim bulundu`;
+            
+            if (filtrelenmis.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px 20px; color: #666;">
+                        Filtreleme kriterlerinize uygun bildirim bulunamadı.
+                    </div>
+                `;
+                return;
+            }
+            
+            // Listeyi oluştur
+            let html = '<div class="bildirim-list">';
+            filtrelenmis.sort((a, b) => new Date(b.tarih) - new Date(a.tarih)).forEach(bildirim => {
+                const aciliyetBadge = {
+                    acil: '<span class="aciliyet-badge aciliyet-acil">🔴 Acil</span>',
+                    orta: '<span class="aciliyet-badge aciliyet-orta">🟡 Orta</span>',
+                    dusuk: '<span class="aciliyet-badge aciliyet-dusuk">🟢 Düşük</span>'
+                }[bildirim.aciliyet] || '';
+                
+                const durumBadge = {
+                    bekliyor: '<span class="bildirim-durum durum-bekliyor">⏳ Bekliyor</span>',
+                    inceleniyor: '<span class="bildirim-durum durum-inceleniyor">🔍 İnceleniyor</span>',
+                    tamamlandi: '<span class="bildirim-durum durum-tamamlandi">✅ Tamamlandı</span>'
+                }[bildirim.durum] || '';
+                
+                const sorunEmoji = sorunTipleri.find(s => s.id === bildirim.sorunTipi)?.emoji || '❓';
+                
+                html += `
+                    <div class="bildirim-card">
+                        <div class="bildirim-header">
+                            <div>
+                                <span class="bildirim-id">#${bildirim.id}</span>
+                                <span style="margin-left: 10px;">${sorunEmoji} ${bildirim.sorunLabel}</span>
+                            </div>
+                            ${durumBadge}
+                        </div>
+                        
+                        <div class="bildirim-body">
+                            <div class="bildirim-detay">
+                                <div class="detay-item">
+                                    <span class="detay-label">Şehir</span>
+                                    <span class="detay-value">${bildirim.sehir}</span>
+                                </div>
+                                <div class="detay-item">
+                                    <span class="detay-label">İlçe</span>
+                                    <span class="detay-value">${bildirim.ilce}</span>
+                                </div>
+                                <div class="detay-item">
+                                    <span class="detay-label">Mahalle</span>
+                                    <span class="detay-value">${bildirim.mahalle}</span>
+                                </div>
+                                <div class="detay-item">
+                                    <span class="detay-label">Tarih</span>
+                                    <span class="detay-value">${bildirim.tarih}</span>
+                                </div>
+                            </div>
+                            
+                            ${bildirim.cadde ? `
+                            <div class="detay-item">
+                                <span class="detay-label">Cadde/Sokak</span>
+                                <span class="detay-value">${bildirim.cadde}</span>
+                            </div>
+                            ` : ''}
+                            
+                            <div style="margin-top: 15px;">
+                                ${aciliyetBadge}
+                            </div>
+                            
+                            <div style="margin-top: 20px;">
+                                <div class="detay-label">Açıklama</div>
+                                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 8px;">
+                                    ${bildirim.aciklama}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        function resetFilters() {
+            document.getElementById('filterSehir').value = '';
+            document.getElementById('filterIlce').value = '';
+            document.getElementById('filterIlce').disabled = true;
+            document.getElementById('filterMahalle').value = '';
+            document.getElementById('filterMahalle').disabled = true;
+            document.getElementById('filterSorun').value = '';
+            document.getElementById('filterAciliyet').value = '';
+            document.getElementById('filterDurum').value = '';
+            
+            loadBildirimler();
+        }
+        
+        // =============================================
+        // EXCEL İNDİRME
+        // =============================================
+        function exportToExcel() {
+            const bildirimler = tumBildirimleriGetir();
+            
+            // Filtreleri uygula
+            let filtrelenmis = bildirimler.filter(b => b.halkaAcik);
+            const sehir = document.getElementById('filterSehir').value;
+            const ilce = document.getElementById('filterIlce').value;
+            const mahalle = document.getElementById('filterMahalle').value;
+            const sorun = document.getElementById('filterSorun').value;
+            const aciliyet = document.getElementById('filterAciliyet').value;
+            const durum = document.getElementById('filterDurum').value;
+            
+            if (sehir) filtrelenmis = filtrelenmis.filter(b => b.sehir === sehir);
+            if (ilce) filtrelenmis = filtrelenmis.filter(b => b.ilce === ilce);
+            if (mahalle) filtrelenmis = filtrelenmis.filter(b => b.mahalle === mahalle);
+            if (sorun) filtrelenmis = filtrelenmis.filter(b => b.sorunTipi === sorun);
+            if (aciliyet) filtrelenmis = filtrelenmis.filter(b => b.aciliyet === aciliyet);
+            if (durum) filtrelenmis = filtrelenmis.filter(b => b.durum === durum);
+            
+            if (filtrelenmis.length === 0) {
+                alert('İndirilecek bildirim bulunamadı.');
+                return;
+            }
+            
+            // CSV oluştur
+            const headers = ['Şehir', 'İlçe', 'Mahalle', 'Sorun Tipi', 'Tarih', 'Aciliyet', 'Açıklama', 'Durum'];
+            const rows = filtrelenmis.map(b => [
+                b.sehir,
+                b.ilce,
+                b.mahalle,
+                b.sorunLabel,
+                b.tarih,
+                b.aciliyet === 'acil' ? 'Acil' : b.aciliyet === 'orta' ? 'Orta' : 'Düşük',
+                b.aciklama.replace(/,/g, ';'),
+                b.durum === 'bekliyor' ? 'Bekliyor' : b.durum === 'inceleniyor' ? 'İnceleniyor' : 'Tamamlandı'
+            ]);
+            
+            const csv = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+            
+            // Blob oluştur ve indir
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `altyapi_bildirimleri_${new Date().toISOString().slice(0,10)}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            alert(`${filtrelenmis.length} bildirim Excel (CSV) olarak indiriliyor...`);
+        }
+        
+        // =============================================
+        // İSTATİSTİKLER
+        // =============================================
+        function loadHomeStats() {
+            const bildirimler = tumBildirimleriGetir();
+            const toplam = bildirimler.length;
+            const halkaAcik = bildirimler.filter(b => b.halkaAcik).length;
+            const tamamlanan = bildirimler.filter(b => b.durum === 'tamamlandi').length;
+            const acil = bildirimler.filter(b => b.aciliyet === 'acil').length;
+            
+            const container = document.getElementById('homeStats');
+            container.innerHTML = `
+                <div class="stat-card">
+                    <h3>Toplam Bildirim</h3>
+                    <div class="stat-value">${toplam}</div>
+                    <p class="stat-desc">Sistemde kayıtlı tüm bildirimler</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Halka Açık</h3>
+                    <div class="stat-value">${halkaAcik}</div>
+                    <p class="stat-desc">Listede görünen bildirimler</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Tamamlanan</h3>
+                    <div class="stat-value">${tamamlanan}</div>
+                    <p class="stat-desc">Çözüme kavuşan sorunlar</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Acil Bildirim</h3>
+                    <div class="stat-value">${acil}</div>
+                    <p class="stat-desc">Acil durum bildirimleri</p>
+                </div>
+            `;
+        }
+        
+        function loadDetayliIstatistikler() {
+            const bildirimler = tumBildirimleriGetir();
+            
+            // Temel istatistikler
+            const toplam = bildirimler.length;
+            const bekleyen = bildirimler.filter(b => b.durum === 'bekliyor').length;
+            const incelenen = bildirimler.filter(b => b.durum === 'inceleniyor').length;
+            const tamamlanan = bildirimler.filter(b => b.durum === 'tamamlandi').length;
+            
+            // Aciliyet dağılımı
+            const acil = bildirimler.filter(b => b.aciliyet === 'acil').length;
+            const orta = bildirimler.filter(b => b.aciliyet === 'orta').length;
+            const dusuk = bildirimler.filter(b => b.aciliyet === 'dusuk').length;
+            
+            // Container
+            const container = document.getElementById('detayliStats');
+            container.innerHTML = `
+                <div class="stat-card">
+                    <h3>Bekleyen</h3>
+                    <div class="stat-value">${bekleyen}</div>
+                    <p class="stat-desc">Henüz incelenmeyen bildirimler</p>
+                </div>
+                <div class="stat-card">
+                    <h3>İncelenen</h3>
+                    <div class="stat-value">${incelenen}</div>
+                    <p class="stat-desc">Çözüm sürecindeki bildirimler</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Tamamlanan</h3>
+                    <div class="stat-value">${tamamlanan}</div>
+                    <p class="stat-desc">Çözülen bildirimler</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Acil Durum</h3>
+                    <div class="stat-value">${acil}</div>
+                    <p class="stat-desc">Acil bildirimler</p>
+                </div>
+            `;
+            
+            // En hızlı/çok/az sorunlu mahalleleri hesapla
+            calculateMahalleIstatistikleri();
+            
+            // Şehir dağılımı
+            loadSehirDagilim();
+        }
+        
+        function calculateMahalleIstatistikleri() {
+            const bildirimler = tumBildirimleriGetir();
+            
+            // Mahallelere göre grupla
+            const mahalleMap = {};
+            
+            bildirimler.forEach(b => {
+                const key = `${b.sehir} - ${b.ilce} - ${b.mahalle}`;
+                if (!mahalleMap[key]) {
+                    mahalleMap[key] = {
+                        sehir: b.sehir,
+                        ilce: b.ilce,
+                        mahalle: b.mahalle,
+                        bildirimler: [],
+                        tamamlananlar: []
+                    };
+                }
+                mahalleMap[key].bildirimler.push(b);
+                
+                if (b.durum === 'tamamlandi' && b.tamamlanmaTarihi) {
+                    mahalleMap[key].tamamlananlar.push({
+                        bildirim: b,
+                        cozumSuresi: calculateGunFarki(b.tarih, b.tamamlanmaTarihi)
+                    });
+                }
+            });
+            
+            // En çok sorun olan mahalle
+            let enCokSorunMahalle = null;
+            let enCokSayi = 0;
+            
+            // En az sorun olan mahalle
+            let enAzSorunMahalle = null;
+            let enAzSayi = Infinity;
+            
+            // En hızlı çözüm yapan mahalle
+            let enHizliMahalle = null;
+            let enHizliOrtalama = Infinity;
+            
+            Object.values(mahalleMap).forEach(mahalle => {
+                const bildirimSayisi = mahalle.bildirimler.length;
+                
+                // En çok sorun
+                if (bildirimSayisi > enCokSayi) {
+                    enCokSayi = bildirimSayisi;
+                    enCokSorunMahalle = mahalle;
+                }
+                
+                // En az sorun (en az 1 bildirim olmalı)
+                if (bildirimSayisi > 0 && bildirimSayisi < enAzSayi) {
+                    enAzSayi = bildirimSayisi;
+                    enAzSorunMahalle = mahalle;
+                }
+                
+                // En hızlı çözüm
+                if (mahalle.tamamlananlar.length > 0) {
+                    const ortalamaSure = mahalle.tamamlananlar.reduce((sum, item) => sum + item.cozumSuresi, 0) / mahalle.tamamlananlar.length;
+                    if (ortalamaSure < enHizliOrtalama) {
+                        enHizliOrtalama = ortalamaSure;
+                        enHizliMahalle = mahalle;
+                    }
+                }
+            });
+            
+            // UI'ı güncelle
+            document.getElementById('enCokSorunMahalle').textContent = 
+                enCokSorunMahalle ? enCokSorunMahalle.mahalle : '-';
+            document.getElementById('enCokSorunDetay').textContent = 
+                enCokSorunMahalle ? `Toplam bildirim sayısı: ${enCokSayi}` : 'Veri yok';
+            
+            document.getElementById('enAzSorunMahalle').textContent = 
+                enAzSorunMahalle ? enAzSorunMahalle.mahalle : '-';
+            document.getElementById('enAzSorunDetay').textContent = 
+                enAzSorunMahalle ? `Toplam bildirim sayısı: ${enAzSayi}` : 'Veri yok';
+            
+            document.getElementById('enHizliMahalle').textContent = 
+                enHizliMahalle ? enHizliMahalle.mahalle : '-';
+            document.getElementById('enHizliDetay').textContent = 
+                enHizliMahalle ? `Ortalama çözüm süresi: ${enHizliOrtalama.toFixed(1)} gün` : 'Veri yok';
+        }
+        
+        function loadSehirDagilim() {
+            const bildirimler = tumBildirimleriGetir();
+            const sehirMap = {};
+            
+            // Şehirlere göre say
+            bildirimler.forEach(b => {
+                sehirMap[b.sehir] = (sehirMap[b.sehir] || 0) + 1;
+            });
+            
+            // Sırala (çoğundan aza)
+            const sorted = Object.entries(sehirMap).sort((a, b) => b[1] - a[1]);
+            
+            // HTML oluştur
+            let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">';
+            
+            sorted.forEach(([sehir, sayi]) => {
+                const yuzde = ((sayi / bildirimler.length) * 100).toFixed(1);
+                html += `
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                        <div style="font-weight: 600; margin-bottom: 5px;">${sehir}</div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="flex: 1; height: 8px; background: #e9ecef; border-radius: 4px; overflow: hidden;">
+                                <div style="width: ${yuzde}%; height: 100%; background: var(--secondary);"></div>
+                            </div>
+                            <div style="font-weight: 600; color: var(--secondary);">${sayi}</div>
+                        </div>
+                        <div style="font-size: 12px; color: #666; margin-top: 5px;">${yuzde}%</div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            document.getElementById('sehirDagilim').innerHTML = html;
+        }
+        
+        function calculateGunFarki(baslangic, bitis) {
+            const bas = new Date(baslangic);
+            const bit = new Date(bitis);
+            const fark = bit.getTime() - bas.getTime();
+            return Math.ceil(fark / (1000 * 3600 * 24));
+        }
+        
+        // =============================================
+        // ADMIN PANELİ
+        // =============================================
+        function checkAdminStatus() {
+            const loggedIn = localStorage.getItem('adminLoggedIn') === 'true';
+            isAdminLoggedIn = loggedIn;
+            
+            if (loggedIn) {
+                document.getElementById('adminLoginForm').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                loadAdminBildirimler();
+            } else {
+                document.getElementById('adminLoginForm').style.display = 'block';
+                document.getElementById('adminPanel').style.display = 'none';
+            }
+        }
+        
+        function adminLogin() {
+            const password = document.getElementById('adminPassword').value;
+            const key = document.getElementById('adminKey').value;
+            
+            if (password === ADMIN_PASSWORD && key === ADMIN_KEY) {
+                localStorage.setItem('adminLoggedIn', 'true');
+                checkAdminStatus();
+                alert('✅ Admin paneline giriş başarılı!');
+            } else {
+                alert('❌ Hatalı şifre veya anahtar kelime!');
+            }
+        }
+        
+        function adminLogout() {
+            localStorage.removeItem('adminLoggedIn');
+            checkAdminStatus();
+            showPage('home');
+            alert('🚪 Çıkış yapıldı.');
+        }
+        
+        function loadAdminBildirimler() {
+            const bildirimler = tumBildirimleriGetir();
+            const container = document.getElementById('adminBildirimListesi');
+            
+            if (bildirimler.length === 0) {
+                container.innerHTML = '<p>Henüz bildirim bulunmuyor.</p>';
+                return;
+            }
+            
+            let html = '<div class="bildirim-list">';
+            
+            bildirimler.sort((a, b) => b.id - a.id).forEach(b => {
+                // Aciliyet badge
+                const aciliyetBadge = {
+                    acil: '<span class="aciliyet-badge aciliyet-acil">🔴 Acil</span>',
+                    orta: '<span class="aciliyet-badge aciliyet-orta">🟡 Orta</span>',
+                    dusuk: '<span class="aciliyet-badge aciliyet-dusuk">🟢 Düşük</span>'
+                }[b.aciliyet] || '';
+                
+                // Durum seçimi
+                const durumOptions = `
+                    <select class="form-control" style="width: auto;" onchange="updateBildirimDurum(${b.id}, this.value)">
+                        <option value="bekliyor" ${b.durum === 'bekliyor' ? 'selected' : ''}>Bekliyor</option>
+                        <option value="inceleniyor" ${b.durum === 'inceleniyor' ? 'selected' : ''}>İnceleniyor</option>
+                        <option value="tamamlandi" ${b.durum === 'tamamlandi' ? 'selected' : ''}>Tamamlandı</option>
+                    </select>
+                `;
+                
+                // Halka açık durumu
+                const halkaAcikBadge = b.halkaAcik 
+                    ? '<span style="background: #d4edda; color: #155724; padding: 3px 8px; border-radius: 12px; font-size: 12px;">Halka Açık</span>'
+                    : '<span style="background: #f8d7da; color: #721c24; padding: 3px 8px; border-radius: 12px; font-size: 12px;">Gizli</span>';
+                
+                html += `
+                    <div class="bildirim-card admin-bildirim-card">
+                        <div class="bildirim-header">
+                            <div>
+                                <span class="bildirim-id">#${b.id}</span>
+                                ${halkaAcikBadge}
+                            </div>
+                            <div>
+                                ${durumOptions}
+                            </div>
+                        </div>
+                        
+                        <div class="bildirim-body">
+                            <div class="bildirim-detay">
+                                <div class="detay-item">
+                                    <span class="detay-label">Şehir</span>
+                                    <span class="detay-value">${b.sehir}</span>
+                                </div>
+                                <div class="detay-item">
+                                    <span class="detay-label">İlçe</span>
+                                    <span class="detay-value">${b.ilce}</span>
+                                </div>
+                                <div class="detay-item">
+                                    <span class="detay-label">Mahalle</span>
+                                    <span class="detay-value">${b.mahalle}</span>
+                                </div>
+                                <div class="detay-item">
+                                    <span class="detay-label">Tarih</span>
+                                    <span class="detay-value">${b.tarih}</span>
+                                </div>
+                            </div>
+                            
+                            ${b.cadde ? `
+                            <div class="detay-item">
+                                <span class="detay-label">Cadde/Sokak</span>
+                                <span class="detay-value">${b.cadde}</span>
+                            </div>
+                            ` : ''}
+                            
+                            <div style="margin-top: 15px;">
+                                ${aciliyetBadge}
+                            </div>
+                            
+                            <div style="margin-top: 15px;">
+                                <div class="detay-label">Açıklama</div>
+                                <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; margin-top: 5px; font-size: 14px;">
+                                    ${b.aciklama}
+                                </div>
+                            </div>
+                            
+                            ${b.iletisim.ad || b.iletisim.telefon ? `
+                            <div style="margin-top: 15px;">
+                                <div class="detay-label">İletişim</div>
+                                <div style="font-size: 14px;">
+                                    ${b.iletisim.ad ? `<strong>Ad:</strong> ${b.iletisim.ad}<br>` : ''}
+                                    ${b.iletisim.telefon ? `<strong>Tel:</strong> ${b.iletisim.telefon}` : ''}
+                                </div>
+                            </div>
+                            ` : ''}
+                            
+                            <div class="admin-buttons">
+                                <button class="btn btn-danger" style="padding: 8px 15px; font-size: 14px;" onclick="deleteBildirim(${b.id})">
+                                    <span>🗑️</span> Sil
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        function updateBildirimDurum(id, yeniDurum) {
+            if (bildirimGuncelle(id, { durum: yeniDurum })) {
+                loadAdminBildirimler();
+                loadHomeStats();
+                loadDetayliIstatistikler();
+                
+                if (document.getElementById('list').classList.contains('active')) {
+                    loadBildirimler();
+                }
+            }
+        }
+        
+        function deleteBildirim(id) {
+            if (confirm(`#${id} numaralı bildirimi silmek istediğinize emin misiniz?`)) {
+                if (bildirimSil(id)) {
+                    loadAdminBildirimler();
+                    loadHomeStats();
+                    loadDetayliIstatistikler();
+                    
+                    if (document.getElementById('list').classList.contains('active')) {
+                        loadBildirimler();
+                    }
+                    
+                    alert(`✅ #${id} numaralı bildirim silindi.`);
+                }
+            }
+        }
+        
+        function markAllAsCompleted() {
+            if (confirm('Tüm bildirimleri "Tamamlandı" olarak işaretlemek istediğinize emin misiniz?')) {
+                const bildirimler = tumBildirimleriGetir();
+                const today = new Date().toISOString().split('T')[0];
+                
+                bildirimler.forEach(b => {
+                    if (b.durum !== 'tamamlandi') {
+                        b.durum = 'tamamlandi';
+                        b.tamamlanmaTarihi = today;
+                    }
+                });
+                
+                localStorage.setItem(DB_NAME, JSON.stringify(bildirimler));
+                loadAdminBildirimler();
+                loadHomeStats();
+                loadDetayliIstatistikler();
+                
+                if (document.getElementById('list').classList.contains('active')) {
+                    loadBildirimler();
+                }
+                
+                alert('✅ Tüm bildirimler tamamlandı olarak işaretlendi.');
+            }
+        }
+        
+        function deleteAllBildirimler() {
+            if (confirm('TÜM bildirimleri silmek istediğinize emin misiniz? Bu işlem geri alınamaz!')) {
+                localStorage.removeItem(DB_NAME);
+                veritabaniBaslat(); // Örnek verilerle yeniden başlat
+                
+                loadAdminBildirimler();
+                loadHomeStats();
+                loadDetayliIstatistikler();
+                
+                if (document.getElementById('list').classList.contains('active')) {
+                    loadBildirimler();
+                }
+                
+                alert('✅ Tüm bildirimler silindi. Veritabanı örnek verilerle yeniden başlatıldı.');
+            }
+        }
+        
+        // =============================================
+        // DİĞER YARDIMCI FONKSİYONLAR
+        // =============================================
+        
+        // Tarayıcı geçmişi yönetimi
+        window.addEventListener('popstate', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const page = urlParams.get('page') || 'home';
+            showPage(page);
+        });
+        
+        // Sayfa kapanırken admin oturumunu kapat
+        window.addEventListener('beforeunload', function() {
+            localStorage.removeItem('adminLoggedIn');
+        });
+    </script>
+</body>
+</html>
