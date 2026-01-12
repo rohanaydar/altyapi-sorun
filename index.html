@@ -716,7 +716,7 @@
     <div class="container">
         <!-- BAŞLIK VE MENÜ -->
         <header>
-            <h1>🚧 Doğu-Güneydoğu Altyapı Sorun Bildirim Sistemi</h1>
+            <h1>🚧 Anlaşmalı Mahalleler Altyapı Sorun Bildirim Sistemi</h1>
             <p class="tagline">23 ildeki anlaşmalı mahallelerdeki altyapı sorunlarını bildirin</p>
             
             <div class="main-nav">
@@ -744,7 +744,7 @@
             <section id="home" class="page active">
                 <div class="hero">
                     <h2>Altyapı Sorunlarınızı Bildirin, Çözüme Katkı Sağlayın</h2>
-                    <p>Doğu ve Güneydoğu Anadolu bölgelerindeki 23 ilde, anlaşmalı mahallelerdeki altyapı sorunlarını (su, elektrik, yol, kanalizasyon vb.) hızlı bir şekilde bildirin. Sistemimiz tamamen ücretsizdir.</p>
+                    <p>23 ilde, anlaşmalı mahallelerdeki altyapı sorunlarını (su, elektrik, yol, kanalizasyon vb.) hızlı bir şekilde bildirin. Sistemimiz tamamen ücretsizdir.</p>
                     
                     <div class="hero-buttons">
                         <button class="btn btn-primary" id="heroBildirimBtn">
@@ -910,9 +910,6 @@
                     <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="adminLogin()">
                         <span>🔓</span> Giriş Yap
                     </button>
-                    <p style="text-align: center; margin-top: 20px; color: #666; font-size: 14px;">
-                        Not: Varsayılan şifre: <strong>admin123</strong>, Anahtar: <strong>altyapi2025</strong>
-                    </p>
                 </div>
                 
                 <div id="adminPanel" style="display: none;">
@@ -942,10 +939,10 @@
 
         <!-- FOOTER -->
         <footer>
-            <p>© 2025 Doğu-Güneydoğu Altyapı Sorun Bildirim Sistemi</p>
+            <p>Ömer Seyfettin AYDAR © 2026 Anlaşmalı Mahalleler Altyapı Sorun Bildirim Sistemi</p>
             <p style="margin-top: 10px; font-size: 13px;">23 İl • 154 İlçe • 1200+ Mahalle</p>
             <p style="margin-top: 10px; font-size: 12px; color: #999;">
-                📞 Destek Hattı: 0850 123 4567 | 📧 E-posta: destek@altyapisorun.gov.tr
+                📞 Destek Hattı: 0(535) 870 91 89 | 📧 E-posta: rohanaydar@gmail.com
             </p>
         </footer>
     </div>
@@ -1103,8 +1100,8 @@
         // GENEL DEĞİŞKENLER VE AYARLAR
         // =============================================
         const DB_NAME = 'altyapiBildirimDB_v2';
-        const ADMIN_PASSWORD = 'admin123';
-        const ADMIN_KEY = 'altyapi2025';
+        const ADMIN_PASSWORD = 'deryasara';
+        const ADMIN_KEY = 'altyapi2026';
         let currentStep = 1;
         let isAdminLoggedIn = false;
         
@@ -1112,7 +1109,9 @@
         // SOKAK/CADDE VERİTABANI
         // =============================================
         const sokakVeritabani = {
-            "Kaynartepe": ["Barış Caddesi", "Emek Caddesi", "Cengizler Caddesi", "Nükhet Coşkun Caddesi"],
+            "Kaynartepe": [
+                "195. Sokak", "196. Sokak", "197. Sokak", "198. Sokak", "199. Sokak", "200. Sokak", "201. Sokak", "202. Sokak", "202/1. Çıkmaz Sokak", "202/2. Çıkmaz Sokak", "202/3. Çıkmaz Sokak", "202/4. Çıkmaz Sokak", "203. Sokak", "204. Sokak", "205. Sokak", "206. Sokak", "207. Sokak", "208. Sokak", "209. Sokak", "210. Sokak", "211. Sokak", "212. Sokak", "213. Sokak", "214. Sokak", "215. Sokak", "216. Sokak", "217. Sokak", "218. Sokak", "219. Sokak", "220. Sokak", "221. Sokak", "222. Sokak", "222/1. Çıkmaz Sokak", "223. Sokak", "224. Sokak", "225. Sokak", "226. Sokak", "227. Sokak", "228. Sokak", "229. Sokak", "230. Sokak", "231. Sokak", "231. Çıkmaz Sokak", "231/1. Çıkmaz Sokak", "231/2. Çıkmaz Sokak", "232. Sokak", "232/1. Sokak", "233. Sokak","234. Sokak", "234/3. Çıkmaz Sokak", "234/6. Çıkmaz Sokak", "235. Sokak", "235/1. Çıkmaz Sokak", "235/2. Çıkmaz Sokak", "236. Sokak","237. Sokak", "238. Sokak", "239. Sokak", "240. Sokak", "241. Sokak", "242. Sokak", "243. Sokak", "244. Sokak", "245. Sokak", "246. Sokak", "247. Sokak", "248. Sokak", "249. Sokak", "250. Sokak", "250/1. Çıkmaz Sokak", "251. Sokak", "251/1. Çıkmaz Sokak", "251/2. Çıkmaz Sokak", "252. Sokak", "253. Sokak", "254. Sokak", "255. Sokak", "256. Sokak", "257. Sokak", "258. Sokak", "258/1. Çıkmaz Sokak", "258/2. Çıkmaz Sokak", "258/3. Çıkmaz Sokak", "258/4. Çıkmaz Sokak", "258/5. Çıkmaz Sokak", "258-6. Çıkmaz Sokak", "259. Sokak", "260. Sokak", "261. Sokak", "262. Sokak", "263. Sokak", 264. Sokak", "265. Sokak", "266. Sokak", "266/1. Çıkmaz Sokak", "267. Sokak", "268. Sokak", "269. Sokak", "270. Sokak", "271. Sokak", "272. Sokak", "273. Sokak", "274. Sokak", "275. Sokak", "276. Sokak", "277. Sokak", "278. Sokak", "279. Sokak", "280. Sokak", "281. Sokak", "281-1. Çıkmaz Sokak", "281/2. Çıkmaz Sokak", "281/3. Çıkmaz Sokak", "282. Sokak", "282/1. Çıkmaz Sokak", "283. Sokak", "284. Sokak", "284-2. Çıkmaz Sokak", "284.9. Çıkmaz Sokak", "284.10. Çıkmaz Sokak", "284/1. Çıkmaz Sokak", "285. Sokak", "286. Sokak", "287. Sokak", "288. Sokak", "289. Sokak", "290. Sokak", "290-1. Çıkmaz Sokak", "291. Sokak", "292. Sokak", "293. Sokak", "294. Sokak", "295. Sokak", "296. Sokak", "297. Sokak", "298. Sokak", "299. Sokak", "300. Sokak", "301. Sokak", "302. Sokak", "302-1. Çıkmaz Sokak", "302-3. Çıkmaz Sokak", "302-4. Çıkmaz Sokak", "302/2. Çıkmaz Sokak", "303. Sokak", "304. Sokak", "305. Sokak", "306. Sokak", "307. Sokak", "308. Sokak", "309. Sokak", "310. Sokak", "Cemiloğlu Cadde", "Gürsel Cadde", "Nükhet Coşkun Cadde", "Sunay Cadde"
+              ],
             "Muradiye": ["Barış Caddesi", "Muradiye Sokak", "Şehitler Caddesi"],
             "Fatih": ["Girne Caddesi", "Fatih Sokak", "Cumhuriyet Caddesi"],
             "Mevlana Halit": ["Bağcılar Caddesi", "Mevlana Sokak"],
