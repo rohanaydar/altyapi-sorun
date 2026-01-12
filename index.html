@@ -716,7 +716,7 @@
     <div class="container">
         <!-- BAŞLIK VE MENÜ -->
         <header>
-            <h1>🚧 Doğu-Güneydoğu Altyapı Sorun Bildirim Sistemi</h1>
+            <h1>🚧 Anlaşmalı Mahalleler Altyapı Sorun Bildirim Sistemi</h1>
             <p class="tagline">23 ildeki anlaşmalı mahallelerdeki altyapı sorunlarını bildirin</p>
             
             <div class="main-nav">
@@ -744,7 +744,7 @@
             <section id="home" class="page active">
                 <div class="hero">
                     <h2>Altyapı Sorunlarınızı Bildirin, Çözüme Katkı Sağlayın</h2>
-                    <p>Doğu ve Güneydoğu Anadolu bölgelerindeki 23 ilde, anlaşmalı mahallelerdeki altyapı sorunlarını (su, elektrik, yol, kanalizasyon vb.) hızlı bir şekilde bildirin. Sistemimiz tamamen ücretsizdir.</p>
+                    <p>23 ilde, anlaşmalı mahallelerdeki altyapı sorunlarını (su, elektrik, yol, kanalizasyon vb.) hızlı bir şekilde bildirin. Sistemimiz tamamen ücretsizdir.</p>
                     
                     <div class="hero-buttons">
                         <button class="btn btn-primary" id="heroBildirimBtn">
@@ -910,9 +910,6 @@
                     <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="adminLogin()">
                         <span>🔓</span> Giriş Yap
                     </button>
-                    <p style="text-align: center; margin-top: 20px; color: #666; font-size: 14px;">
-                        Not: Varsayılan şifre: <strong>admin123</strong>, Anahtar: <strong>altyapi2025</strong>
-                    </p>
                 </div>
                 
                 <div id="adminPanel" style="display: none;">
@@ -942,10 +939,10 @@
 
         <!-- FOOTER -->
         <footer>
-            <p>© 2025 Doğu-Güneydoğu Altyapı Sorun Bildirim Sistemi</p>
+            <p>© 2025 Anlaşmalı Mahalleler Altyapı Sorun Bildirim Sistemi</p>
             <p style="margin-top: 10px; font-size: 13px;">23 İl • 154 İlçe • 1200+ Mahalle</p>
             <p style="margin-top: 10px; font-size: 12px; color: #999;">
-                📞 Destek Hattı: 0850 123 4567 | 📧 E-posta: destek@altyapisorun.gov.tr
+                📞 Destek Hattı: 0(535) 870 9189 | 📧 E-posta: rohanaydar@gmail.com
             </p>
         </footer>
     </div>
@@ -1012,14 +1009,14 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="cadde">Cadde/Sokak (Opsiyonel)</label>
-                        <input type="text" id="cadde" class="form-control" placeholder="Örn: Barış Caddesi, Cumhuriyet Sokak">
-                    </div>
-                    
-                    <div class="form-group">
-                        <p style="color: #666; font-size: 14px; margin-top: 10px;">
-                            📌 1200'den fazla mahalle arasından seçim yapabilirsiniz.
-                        </p>
+                        <label for="sokak">Cadde/Sokak Seçin (Opsiyonel)</label>
+                        <select id="sokak" class="form-control" disabled>
+                            <option value="">Önce mahalle seçin</option>
+                            <option value="diger">Diğer (manuel girin)</option>
+                        </select>
+                        <input type="text" id="manuelSokak" class="form-control" 
+                               placeholder="Manuel cadde/sokak girin" 
+                               style="margin-top: 10px; display: none;">
                     </div>
                 </div>
                 
@@ -1112,6 +1109,9 @@
                     "Bağlar": ["Kaynartepe", "Muradiye", "Fatih", "Mevlana Halit", "Barış", "Yenişehir", "Huzurevleri"],
                     "Kayapınar": ["Şehitlik", "Yeniköy", "Köşkler", "Gözegöl", "Peyas"],
                     "Sur": ["Cevatpaşa", "Hasırlı", "Savaş", "Cemal Yılmaz", "Alipaşa"]
+                }
+                caddeler: {
+                    "Kaynartepe": ["258. Sokak", "277. Sokak", "280. Sokak"]
                 }
             },
             "MARDİN": {
@@ -2007,6 +2007,57 @@
                 select.disabled = true;
             }
         }
+        // BU FONKSİYONU JavaScript kodunun herhangi bir yerine ekleyin (örneğin loadMahalleler fonksiyonundan sonra)
+        function loadSokaklar(mahalle) {
+            const sokakSelect = document.getElementById('sokak');
+            const manuelInput = document.getElementById('manuelSokak');
+            
+            sokakSelect.innerHTML = '<option value="">Cadde/Sokak Seçin (Opsiyonel)</option>';
+            sokakSelect.disabled = true;
+            manuelInput.style.display = 'none';
+            manuelInput.value = '';
+            
+            // Sokak veritabanı (sadece örnek - siz genişletebilirsiniz)
+            const sokakVeritabani = {
+                "Kaynartepe": ["Barış Caddesi", "Emek Caddesi", "Cengizler Caddesi", "Nükhet Coşkun Caddesi"],
+                "Muradiye": ["Barış Caddesi", "Muradiye Sokak", "Şehitler Caddesi"],
+                "Fatih": ["Girne Caddesi", "Fatih Sokak", "Cumhuriyet Caddesi"],
+                "Yenişehir": ["Yenişehir Caddesi", "Atatürk Bulvarı", "Çevreyolu"],
+                "Selçuklu": ["Selçuklu Caddesi", "Dadaşkent Bulvarı"]
+            };
+            
+            if (sokakVeritabani[mahalle]) {
+                sokakSelect.disabled = false;
+                
+                sokakVeritabani[mahalle].forEach(sokak => {
+                    const option = document.createElement('option');
+                    option.value = sokak;
+                    option.textContent = sokak;
+                    sokakSelect.appendChild(option);
+                });
+                
+                // "Diğer" seçeneğini ekle
+                const otherOption = document.createElement('option');
+                otherOption.value = 'diger';
+                otherOption.textContent = 'Diğer (manuel girin)';
+                sokakSelect.appendChild(otherOption);
+            }
+        }
+        
+        // BU EVENT LISTENER'ı setupEventListeners fonksiyonuna ekleyin
+        document.getElementById('mahalle').addEventListener('change', function() {
+            loadSokaklar(this.value);
+        });
+        
+        document.getElementById('sokak').addEventListener('change', function() {
+            const manuelInput = document.getElementById('manuelSokak');
+            if (this.value === 'diger') {
+                manuelInput.style.display = 'block';
+            } else {
+                manuelInput.style.display = 'none';
+                manuelInput.value = '';
+            }
+        });
         
         function applyFilters() {
             const sehir = document.getElementById('filterSehir').value;
