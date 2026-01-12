@@ -1,2540 +1,900 @@
 <!DOCTYPE html>
-<html lang="tr" data-theme="light">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anlaşmalı Mahalleler - Altyapı Sorun Bildirim Sistemi</title>
-<!-- JAVASCRIPT DOSYALARI (BU SIRAYLA!) -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-
-<!-- KENDİ JS DOSYALARIMIZ -->
-    <script src="veriler.js"></script>
-    <script src="database.js"></script>
-    <script src="app.js"></script>
-    
-    <!-- FONTS -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- ICONS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- LEAFLET CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <!-- STYLES -->
-    <link rel="stylesheet" href="style.css">
-    
-    <!-- FAVICON -->
-    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏘️</text></svg>">
-    
-    <!-- META TAGS -->
-    <meta name="description" content="Anlaşmalı mahallelerde altyapı sorunlarını bildirin, takip edin, çözüme ulaştırın.">
-    <meta name="keywords" content="altyapı, bildirim, mahalle, şehir, sorun, tamir, bakım">
-    <meta name="author" content="Anlaşmalı Mahalleler Altyapı Sistemi">
-    
-    <!-- OPEN GRAPH -->
-    <meta property="og:title" content="Anlaşmalı Mahalleler Altyapı Sorun Bildirim Sistemi">
-    <meta property="og:description" content="Mahallenizdeki altyapı sorunlarını kolayca bildirin ve takip edin">
-    <meta property="og:type" content="website">
-    <meta property="og:image" content="https://via.placeholder.com/1200x630/0F2A24/FFFFFF?text=Anla%C5%9Fmal%C4%B1+Mahalleler">
-    
-    <!-- APPLE TOUCH ICON -->
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏘️</text></svg>">
-    
-    <!-- MANIFEST -->
-    <link rel="manifest" href="manifest.json">
-    
-    <!-- THEME COLOR -->
-    <meta name="theme-color" content="#0F2A24">
-    
-    <!-- IOS STATUS BAR -->
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Altyapı Sorun Bildirim Sistemi</title>
+    <style>
+        /* TEMEL STİLLER */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* BAŞLIK VE MENÜ */
+        header {
+            background: linear-gradient(135deg, #2c3e50, #4a6491);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        h1 i {
+            font-size: 32px;
+        }
+        
+        .tagline {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+        
+        nav {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+        
+        .nav-btn.active {
+            background: #3498db;
+            border-color: #2980b9;
+        }
+        
+        /* SAYFA İÇERİKLERİ */
+        .page {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        h2 i {
+            color: #3498db;
+        }
+        
+        /* FORMLAR */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* BUTONLAR */
+        .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn-success {
+            background: #27ae60;
+        }
+        
+        .btn-success:hover {
+            background: #219653;
+            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+        }
+        
+        /* BİLDİRİM LİSTESİ */
+        .bildirim-listesi {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .bildirim-karti {
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 20px;
+            border-radius: 8px;
+            transition: transform 0.3s;
+        }
+        
+        .bildirim-karti:hover {
+            transform: translateX(5px);
+            background: #f1f8ff;
+        }
+        
+        .bildirim-baslik {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 18px;
+        }
+        
+        .bildirim-detay {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .etiket {
+            background: #e3f2fd;
+            color: #1565c0;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .etiket.onemli {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .etiket.tamamlandi {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        /* İSTATİSTİK KARTLARI */
+        .istatistikler {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .istatistik-kart {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        .istatistik-sayi {
+            font-size: 36px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .istatistik-label {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        /* MESAJLAR */
+        .mesaj {
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .mesaj.success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+        
+        .mesaj.error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .mesaj.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+        
+        /* FOOTER */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        /* İKONLAR (Emoji fallback) */
+        .icon { font-style: normal; }
+        .icon-home::before { content: "🏠"; }
+        .icon-report::before { content: "📝"; }
+        .icon-list::before { content: "📋"; }
+        .icon-stats::before { content: "📊"; }
+        .icon-location::before { content: "📍"; }
+        .icon-time::before { content: "🕒"; }
+        .icon-check::before { content: "✅"; }
+        .icon-warning::before { content: "⚠️"; }
+        .icon-phone::before { content: "📞"; }
+        .icon-email::before { content: "✉️"; }
+    </style>
 </head>
 <body>
-    <!-- NOTIFICATION CONTAINER (App.js için) -->
-    <div class="notification-container" id="notificationContainer"></div>
-    
-    <!-- LOADING OVERLAY (App.js için) -->
-    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
-        <div class="loading-spinner">
-            <div class="spinner"></div>
-            <p>Yükleniyor...</p>
-        </div>
-    </div>
-
-    <!-- MAIN HEADER -->
-    <header class="main-header">
-        <div class="container">
-            <div class="header-content">
-                <!-- LOGO -->
-                <div class="header-logo">
-                    <a href="#" data-page="home" class="logo-link">
-                        <div class="logo-icon">
-                            <i class="fas fa-handshake"></i>
-                        </div>
-                        <div class="logo-text">
-                            <h1 class="logo-title">Anlaşmalı Mahalleler</h1>
-                            <p class="logo-subtitle">Altyapı Sorun Bildirim Sistemi</p>
-                        </div>
-                    </a>
-                </div>
-
-                <!-- DESKTOP NAVIGATION -->
-                <nav class="main-nav desktop-nav">
-                    <ul class="nav-list">
-                        <li class="nav-item">
-                            <a href="#" data-page="home" class="nav-link active">
-                                <i class="fas fa-home"></i>
-                                <span>Ana Sayfa</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" data-page="report" class="nav-link">
-                                <i class="fas fa-plus-circle"></i>
-                                <span>Bildirim Yap</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" data-page="map" class="nav-link">
-                                <i class="fas fa-map"></i>
-                                <span>Harita Görünümü</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" data-page="track" class="nav-link">
-                                <i class="fas fa-search"></i>
-                                <span>Bildirim Takip</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <button class="btn btn-icon" id="themeToggle" title="Tema Değiştir">
-                                <i class="fas fa-moon"></i>
-                            </button>
-                        </li>
-                        <li class="nav-item">
-                            <button class="btn btn-admin" id="adminBtn">
-                                <i class="fas fa-user-shield"></i>
-                                <span>Admin</span>
-                            </button>
-                        </li>
-                    </ul>
-                </nav>
-
-                <!-- MOBILE MENU TOGGLE -->
-                <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Menüyü aç/kapat">
-                    <i class="fas fa-bars"></i>
-                </button>
-            </div>
-        </div>
+    <!-- BAŞLIK VE MENÜ -->
+    <header>
+        <h1><span class="icon icon-warning"></span> Altyapı Sorun Bildirim Sistemi</h1>
+        <p class="tagline">Doğu ve Güneydoğu bölgelerindeki anlaşmalı mahallelerdeki altyapı sorunlarını bildirin</p>
+        
+        <nav>
+            <button class="nav-btn active" data-page="home">
+                <span class="icon icon-home"></span> Ana Sayfa
+            </button>
+            <button class="nav-btn" data-page="report">
+                <span class="icon icon-report"></span> Bildirim Yap
+            </button>
+            <button class="nav-btn" data-page="list">
+                <span class="icon icon-list"></span> Bildirim Listesi
+            </button>
+            <button class="nav-btn" data-page="stats">
+                <span class="icon icon-stats"></span> İstatistikler
+            </button>
+        </nav>
     </header>
 
-    <!-- MOBILE MENU -->
-    <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
-    <div class="mobile-menu" id="mobileMenu">
-        <div class="mobile-menu-header">
-            <div class="mobile-menu-logo">
-                <i class="fas fa-handshake"></i>
-                <div>
-                    <h3>Anlaşmalı Mahalleler</h3>
-                    <p>Altyapı Sorun Bildirim Sistemi</p>
-                </div>
+    <!-- ANA SAYFA -->
+    <section id="home" class="page active">
+        <h2><span class="icon icon-home"></span> Hoş Geldiniz</h2>
+        
+        <div class="mesaj info">
+            <span class="icon icon-check"></span>
+            <div>
+                <strong>Sistem hazır.</strong> Altyapı sorunlarınızı bildirebilir, mevcut bildirimleri görüntüleyebilir ve istatistiklere ulaşabilirsiniz.
             </div>
-            <button class="mobile-menu-close" id="mobileMenuClose">
-                <i class="fas fa-times"></i>
+        </div>
+        
+        <div class="istatistikler" id="ana-sayfa-istatistik">
+            <!-- İstatistikler JavaScript ile yüklenecek -->
+        </div>
+        
+        <h3>Hızlı İşlemler</h3>
+        <div style="display: flex; gap: 15px; margin-top: 20px; flex-wrap: wrap;">
+            <button class="btn" onclick="showPage('report')">
+                <span class="icon icon-report"></span> Yeni Bildirim Yap
+            </button>
+            <button class="btn" onclick="loadBildirimler()">
+                <span class="icon icon-list"></span> Bildirimleri Göster
             </button>
         </div>
-        <div class="mobile-menu-body">
-            <nav class="mobile-menu-nav">
-                <a href="#" data-page="home" class="mobile-nav-link active">
-                    <i class="fas fa-home"></i>
-                    <span>Ana Sayfa</span>
-                </a>
-                <a href="#" data-page="report" class="mobile-nav-link">
-                    <i class="fas fa-plus-circle"></i>
-                    <span>Bildirim Yap</span>
-                </a>
-                <a href="#" data-page="map" class="mobile-nav-link">
-                    <i class="fas fa-map"></i>
-                    <span>Harita Görünümü</span>
-                </a>
-                <a href="#" data-page="track" class="mobile-nav-link">
-                    <i class="fas fa-search"></i>
-                    <span>Bildirim Takip</span>
-                </a>
-                <a href="#" class="mobile-nav-link" id="mobileAdminBtn">
-                    <i class="fas fa-user-shield"></i>
-                    <span>Admin Paneli</span>
-                </a>
-            </nav>
+        
+        <h3 style="margin-top: 30px;">Sistem Hakkında</h3>
+        <p>Bu sistem, Doğu ve Güneydoğu Anadolu bölgelerindeki anlaşmalı mahallelerde yaşanan altyapı sorunlarının (su, elektrik, yol, kanalizasyon vb.) hızlı bir şekilde bildirilmesi ve takip edilmesi amacıyla geliştirilmiştir.</p>
+    </section>
+
+    <!-- BİLDİRİM FORMU -->
+    <section id="report" class="page">
+        <h2><span class="icon icon-report"></span> Yeni Bildirim</h2>
+        
+        <form id="bildirimForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="isim">Ad Soyad *</label>
+                    <input type="text" id="isim" required placeholder="Adınız ve soyadınız">
+                </div>
+                
+                <div class="form-group">
+                    <label for="telefon">Telefon *</label>
+                    <input type="tel" id="telefon" required placeholder="05XX XXX XX XX">
+                </div>
+            </div>
             
-            <div class="mobile-menu-actions">
-                <button class="btn btn-icon btn-block" id="mobileThemeToggle">
-                    <i class="fas fa-moon"></i>
-                    <span>Tema Değiştir</span>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="mahalle">Mahalle *</label>
+                    <select id="mahalle" required>
+                        <option value="">Mahalle seçin</option>
+                        <option value="Merkez">Merkez</option>
+                        <option value="Yenişehir">Yenişehir</option>
+                        <option value="Kızılay">Kızılay</option>
+                        <option value="Bahçelievler">Bahçelievler</option>
+                        <option value="Şehitler">Şehitler</option>
+                        <option value="Diğer">Diğer</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="sorun-tipi">Sorun Tipi *</label>
+                    <select id="sorun-tipi" required>
+                        <option value="">Sorun tipi seçin</option>
+                        <option value="Su">Su Sorunu (kesinti, basınç düşüklüğü)</option>
+                        <option value="Elektrik">Elektrik Sorunu (kesinti, voltaj düşüklüğü)</option>
+                        <option value="Yol">Yol Sorunu (çökme, bozuk yol)</option>
+                        <option value="Kanalizasyon">Kanalizasyon (tıkanıklık, taşma)</option>
+                        <option value="Internet">İnternet Altyapısı</option>
+                        <option value="Diğer">Diğer</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="aciklama">Açıklama *</label>
+                <textarea id="aciklama" required placeholder="Sorunu detaylı bir şekilde açıklayın..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="adres">Adres (Opsiyonel)</label>
+                <input type="text" id="adres" placeholder="Sorunun olduğu tam adres">
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="acil" style="width: auto; margin-right: 8px;">
+                    Acil durum (hızlı müdahale gerekiyor)
+                </label>
+            </div>
+            
+            <div style="margin-top: 30px;">
+                <button type="submit" class="btn btn-success">
+                    <span class="icon icon-check"></span> Bildirimi Gönder
                 </button>
-                
-                <div class="language-selector">
-                    <button class="btn btn-text btn-sm" data-language="tr">
-                        <span>Türkçe</span>
-                    </button>
-                    <button class="btn btn-text btn-sm" data-language="ku">
-                        <span>Kurdî</span>
-                    </button>
-                </div>
+                <button type="button" class="btn" onclick="showPage('home')" style="margin-left: 15px;">
+                    İptal
+                </button>
             </div>
+        </form>
+    </section>
+
+    <!-- BİLDİRİM LİSTESİ -->
+    <section id="list" class="page">
+        <h2><span class="icon icon-list"></span> Bildirim Listesi</h2>
+        
+        <div style="margin-bottom: 20px; display: flex; gap: 15px;">
+            <button class="btn" onclick="loadBildirimler()">
+                <span class="icon icon-check"></span> Listeyi Yenile
+            </button>
+            <button class="btn" onclick="showPage('report')">
+                <span class="icon icon-report"></span> Yeni Bildirim
+            </button>
         </div>
-    </div>
-
-    <!-- MAIN CONTENT AREA (SPA CONTENT LOADS HERE) -->
-    <main class="main-content" id="mainContent">
-        <!-- HOME PAGE CONTENT (Default) -->
-        <section class="hero-section">
-            <div class="container">
-                <div class="hero-content">
-                    <div class="hero-text">
-                        <h1 class="hero-title">Mahallenizdeki Altyapı Sorunlarını Bildirin</h1>
-                        <p class="hero-description">
-                            Doğu ve Güneydoğu bölgelerindeki anlaşmalı mahallelerdeki altyapı sorunlarını hızlıca bildirin, takip edin, çözüme ulaştırın.
-                        </p>
-                        <div class="hero-actions">
-                            <a href="#" data-page="report" class="btn btn-primary btn-lg">
-                                <i class="fas fa-bell"></i>
-                                <span>Yeni Bildirim Yap</span>
-                            </a>
-                            <a href="#" data-page="map" class="btn btn-secondary btn-lg">
-                                <i class="fas fa-map-marked-alt"></i>
-                                <span>Haritada Görüntüle</span>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="hero-image">
-                        <div class="image-placeholder">
-                            <i class="fas fa-city"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- STATISTICS SECTION -->
-        <section class="stats-section">
-            <div class="container">
-                <h2 class="section-title">Sistem İstatistikleri</h2>
-                <p class="section-description">Anlık verilerle sistemin durumunu takip edin</p>
-                
-                <div class="stats-grid" id="statsGrid">
-                    <!-- JS ile doldurulacak -->
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div class="stat-content">
-                            <div class="stat-value" id="totalReports">0</div>
-                            <div class="stat-label">Toplam Bildirim</div>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-check-double"></i>
-                        </div>
-                        <div class="stat-content">
-                            <div class="stat-value" id="solvedReports">0</div>
-                            <div class="stat-label">Çözülen Bildirim</div>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-city"></i>
-                        </div>
-                        <div class="stat-content">
-                            <div class="stat-value" id="activeCities">19</div>
-                            <div class="stat-label">Anlaşmalı Şehir</div>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <div class="stat-content">
-                            <div class="stat-value" id="activeNeighborhoods">0</div>
-                            <div class="stat-label">Aktif Mahalle</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- HOW IT WORKS SECTION -->
-        <section class="how-it-works-section">
-            <div class="container">
-                <h2 class="section-title">Nasıl Çalışır?</h2>
-                <p class="section-description">4 adımda bildiriminizi tamamlayın</p>
-                
-                <div class="steps-grid">
-                    <div class="step-card">
-                        <div class="step-number">1</div>
-                        <div class="step-icon">
-                            <i class="fas fa-map-marker-alt"></i>
-                        </div>
-                        <h3 class="step-title">Konum Seç</h3>
-                        <p class="step-description">Şehir, ilçe, mahalle ve sokağınızı seçin</p>
-                    </div>
-                    
-                    <div class="step-card">
-                        <div class="step-number">2</div>
-                        <div class="step-icon">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </div>
-                        <h3 class="step-title">Problem Belirt</h3>
-                        <p class="step-description">Problem tipini ve önceliğini seçin</p>
-                    </div>
-                    
-                    <div class="step-card">
-                        <div class="step-number">3</div>
-                        <div class="step-icon">
-                            <i class="fas fa-camera"></i>
-                        </div>
-                        <h3 class="step-title">Fotoğraf Ekle</h3>
-                        <p class="step-description">İsteğe bağlı fotoğraf ve iletişim ekleyin</p>
-                    </div>
-                    
-                    <div class="step-card">
-                        <div class="step-number">4</div>
-                        <div class="step-icon">
-                            <i class="fas fa-paper-plane"></i>
-                        </div>
-                        <h3 class="step-title">Gönder ve Takip Et</h3>
-                        <p class="step-description">Bildirimi gönderin ve takip kodunuzla takip edin</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- PROBLEM TYPES SECTION -->
-        <section class="problem-types-section">
-            <div class="container">
-                <div class="section-header">
-                    <div>
-                        <h2 class="section-title">Bildirebileceğiniz Problemler</h2>
-                        <p class="section-description">11 farklı altyapı sorununu bildirebilirsiniz</p>
-                    </div>
-                    <a href="#" data-page="report" class="btn btn-outline">
-                        <i class="fas fa-plus"></i>
-                        <span>Tümünü Gör</span>
-                    </a>
-                </div>
-                
-                <div class="problems-grid" id="problemsGrid">
-                    <!-- JS ile doldurulacak -->
-                </div>
-            </div>
-        </section>
-
-        <!-- RECENT REPORTS SECTION -->
-        <section class="recent-reports-section">
-            <div class="container">
-                <div class="section-header">
-                    <div>
-                        <h2 class="section-title">Son Bildirimler</h2>
-                        <p class="section-description">En son yapılan bildirimler</p>
-                    </div>
-                    <a href="#" data-page="map" class="btn-link">
-                        <span>Tümünü Gör</span>
-                        <i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
-                
-                <div class="reports-container">
-                    <div class="reports-grid" id="recentReportsGrid">
-                        <!-- JS ile doldurulacak -->
-                    </div>
-                    
-                    <div class="reports-map" id="reportsMapContainer">
-                        <div class="map-header">
-                            <h3 class="map-title">Bildirimler Haritası</h3>
-                            <div class="map-actions">
-                                <button class="btn btn-icon btn-sm" id="refreshMapBtn" title="Haritayı yenile">
-                                    <i class="fas fa-sync-alt"></i>
-                                </button>
-                                <button class="btn btn-icon btn-sm" id="fullscreenMapBtn" title="Tam ekran">
-                                    <i class="fas fa-expand"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="map-wrapper">
-                            <div id="reportsMap" class="reports-map-view"></div>
-                            <div class="map-legend">
-                                <div class="legend-item">
-                                    <span class="legend-color" style="background-color: #EF4444;"></span>
-                                    <span class="legend-label">Acil</span>
-                                </div>
-                                <div class="legend-item">
-                                    <span class="legend-color" style="background-color: #F59E0B;"></span>
-                                    <span class="legend-label">Yüksek</span>
-                                </div>
-                                <div class="legend-item">
-                                    <span class="legend-color" style="background-color: #10B981;"></span>
-                                    <span class="legend-label">Orta/Düşük</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- CTA SECTION -->
-        <section class="cta-section">
-            <div class="container">
-                <div class="cta-content">
-                    <div class="cta-text">
-                        <h2 class="cta-title">Mahallenizde Sorun mu Var?</h2>
-                        <p class="cta-description">
-                            Hemen bildirim yapın, takip kodunuzla süreci takip edin. 
-                            Ortalama 24 saat içinde ilgili birimlere iletiliyor.
-                        </p>
-                    </div>
-                    <div class="cta-actions">
-                        <a href="#" data-page="report" class="btn btn-primary btn-lg">
-                            <i class="fas fa-bell"></i>
-                            <span>Hemen Bildirim Yap</span>
-                        </a>
-                        <a href="#" data-page="track" class="btn btn-secondary btn-lg">
-                            <i class="fas fa-search"></i>
-                            <span>Bildirim Takip</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- TRACKING SECTION -->
-        <section class="tracking-section">
-            <div class="container">
-                <div class="tracking-card">
-                    <div class="tracking-icon">
-                        <i class="fas fa-qrcode"></i>
-                    </div>
-                    <div class="tracking-content">
-                        <h3 class="tracking-title">Bildiriminizi Takip Edin</h3>
-                        <p class="tracking-description">
-                            Bildirim sonrası size verilen takip kodu ile bildiriminizin durumunu 
-                            anlık olarak takip edebilirsiniz.
-                        </p>
-                        <div class="tracking-form">
-                            <div class="form-group">
-                                <input type="text" 
-                                       id="trackingCodeInput" 
-                                       class="form-control" 
-                                       placeholder="Takip kodunuzu girin (Örnek: DB-20240315-001)">
-                                <button class="btn btn-primary" id="trackingSubmitBtn">
-                                    <i class="fas fa-search"></i>
-                                    <span>Takip Et</span>
-                                </button>
-                            </div>
-                            <div class="form-hint">
-                                <i class="fas fa-info-circle"></i>
-                                <span>Takip kodu bildirim sonrasında size verilir</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- CITIES SECTION -->
-        <section class="cities-section">
-            <div class="container">
-                <h2 class="section-title">Anlaşmalı Şehirler</h2>
-                <p class="section-description">19 şehirde hizmet veriyoruz</p>
-                
-                <div class="cities-grid" id="citiesGrid">
-                    <!-- JS ile doldurulacak -->
-                </div>
-                
-                <div class="cities-map-container">
-                    <div class="map-header">
-                        <h3 class="map-title">Şehirler Haritası</h3>
-                        <div class="map-stats">
-                            <span class="map-stat">
-                                <i class="fas fa-city"></i>
-                                <span>19 Şehir</span>
-                            </span>
-                            <span class="map-stat">
-                                <i class="fas fa-map-marker-alt"></i>
-                                <span id="activeMarkersCount">0</span>
-                                <span>Aktif Bildirim</span>
-                            </span>
-                        </div>
-                    </div>
-                    <div id="citiesMap" class="cities-map"></div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- MAIN FOOTER -->
-    <footer class="main-footer">
-        <div class="container">
-            <div class="footer-content">
-                <!-- LOGO & DESCRIPTION -->
-                <div class="footer-section">
-                    <div class="footer-logo">
-                        <i class="fas fa-handshake"></i>
-                        <div>
-                            <h3 class="footer-title">Anlaşmalı Mahalleler</h3>
-                            <p class="footer-subtitle">Altyapı Sorun Bildirim Sistemi</p>
-                        </div>
-                    </div>
-                    <p class="footer-description">
-                        Doğu ve Güneydoğu bölgelerindeki mahallelerde altyapı sorunlarının 
-                        hızlı çözümü için geliştirilmiş resmi bildirim sistemidir.
-                    </p>
-                    <div class="footer-social">
-                        <a href="#" class="social-link" aria-label="Twitter">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                        <a href="#" class="social-link" aria-label="Facebook">
-                            <i class="fab fa-facebook-f"></i>
-                        </a>
-                        <a href="#" class="social-link" aria-label="Instagram">
-                            <i class="fab fa-instagram"></i>
-                        </a>
-                        <a href="#" class="social-link" aria-label="YouTube">
-                            <i class="fab fa-youtube"></i>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- QUICK LINKS -->
-                <div class="footer-section">
-                    <h4 class="footer-heading">Hızlı Bağlantılar</h4>
-                    <ul class="footer-links">
-                        <li><a href="#" data-page="home">Ana Sayfa</a></li>
-                        <li><a href="#" data-page="report">Bildirim Yap</a></li>
-                        <li><a href="#" data-page="map">Harita Görünümü</a></li>
-                        <li><a href="#" data-page="track">Bildirim Takip</a></li>
-                        <li><a href="#" id="footerAdminBtn">Admin Paneli</a></li>
-                    </ul>
-                </div>
-
-                <!-- CONTACT INFO -->
-                <div class="footer-section">
-                    <h4 class="footer-heading">İletişim</h4>
-                    <ul class="contact-info">
-                        <li>
-                            <i class="fas fa-phone"></i>
-                            <span>0412 123 45 67</span>
-                        </li>
-                        <li>
-                            <i class="fas fa-envelope"></i>
-                            <span>altyapi@anlasmalimahalleler.gov.tr</span>
-                        </li>
-                        <li>
-                            <i class="fas fa-map-marker-alt"></i>
-                            <span>Doğu ve Güneydoğu Bölge Koordinasyon Merkezi</span>
-                        </li>
-                        <li>
-                            <i class="fas fa-clock"></i>
-                            <span>Pazartesi - Cuma: 08:30 - 17:30</span>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- REGION CITIES -->
-                <div class="footer-section">
-                    <h4 class="footer-heading">Bölge Şehirleri</h4>
-                    <div class="cities-list">
-                        <span class="city-tag">Diyarbakır</span>
-                        <span class="city-tag">Şanlıurfa</span>
-                        <span class="city-tag">Gaziantep</span>
-                        <span class="city-tag">Mardin</span>
-                        <span class="city-tag">Batman</span>
-                        <span class="city-tag">Siirt</span>
-                        <span class="city-tag">Şırnak</span>
-                        <span class="city-tag">Hakkari</span>
-                        <span class="city-tag">Van</span>
-                        <span class="city-tag">Muş</span>
-                        <span class="city-tag">Bitlis</span>
-                        <span class="city-tag">Bingöl</span>
-                        <span class="city-tag">Tunceli</span>
-                        <span class="city-tag">Elazığ</span>
-                        <span class="city-tag">Malatya</span>
-                        <span class="city-tag">Adıyaman</span>
-                        <span class="city-tag">Kilis</span>
-                        <span class="city-tag">Osmaniye</span>
-                        <span class="city-tag">Hatay</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- FOOTER BOTTOM -->
-            <div class="footer-bottom">
-                <div class="footer-bottom-content">
-                    <p class="copyright">
-                        © 2024 Anlaşmalı Mahalleler Altyapı Sorun Bildirim Sistemi. Tüm hakları saklıdır.
-                    </p>
-                    <div class="footer-bottom-links">
-                        <a href="#" class="footer-link">Gizlilik Politikası</a>
-                        <a href="#" class="footer-link">Kullanım Koşulları</a>
-                        <a href="#" class="footer-link">Çerez Politikası</a>
-                        <a href="#" class="footer-link">KVKK Aydınlatma Metni</a>
-                    </div>
-                </div>
-                <p class="disclaimer">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    Bu sistem sadece bildirim amaçlıdır. Acil durumlarda 112 Acil Çağrı Merkezi'ni arayınız.
-                </p>
-            </div>
+        
+        <div id="bildirimler-container">
+            <p>Bildirimler yükleniyor...</p>
         </div>
+    </section>
+
+    <!-- İSTATİSTİKLER -->
+    <section id="stats" class="page">
+        <h2><span class="icon icon-stats"></span> İstatistikler</h2>
+        
+        <div class="istatistikler" id="istatistik-container">
+            <!-- İstatistikler buraya yüklenecek -->
+        </div>
+        
+        <h3>Dağılımlar</h3>
+        <div id="grafikler" style="background: white; padding: 20px; border-radius: 8px; margin-top: 20px;">
+            <p>Grafikler yükleniyor...</p>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>Altyapı Sorun Bildirim Sistemi &copy; 2025</p>
+        <p>Doğu ve Güneydoğu Anadolu Bölgeleri Anlaşmalı Mahalleler</p>
+        <p style="margin-top: 10px; font-size: 12px;">
+            <span class="icon icon-phone"></span> Destek: 0850 XXX XX XX | 
+            <span class="icon icon-email"></span> E-posta: destek@altyapisorun.gov.tr
+        </p>
     </footer>
 
-    <!-- ADMIN LOGIN MODAL -->
-    <div class="modal-overlay" id="adminLoginModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title">Admin Paneli Girişi</h3>
-                <button class="modal-close" id="closeAdminModal">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="login-container">
-                    <div class="login-icon">
-                        <i class="fas fa-user-shield"></i>
-                    </div>
-                    <h4 class="login-title">Yetkili Erişimi</h4>
-                    <p class="login-description">Sadece yetkili personel giriş yapabilir</p>
-                    
-                    <form id="adminLoginForm" class="login-form">
-                        <div class="form-group">
-                            <label for="adminUsername" class="form-label">
-                                <i class="fas fa-user"></i>
-                                <span>Kullanıcı Adı</span>
-                            </label>
-                            <input type="text" 
-                                   id="adminUsername" 
-                                   class="form-control" 
-                                   placeholder="mardinli" 
-                                   required
-                                   autocomplete="username">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="adminPassword" class="form-label">
-                                <i class="fas fa-key"></i>
-                                <span>Şifre</span>
-                            </label>
-                            <div class="password-input">
-                                <input type="password" 
-                                       id="adminPassword" 
-                                       class="form-control" 
-                                       placeholder="••••••••" 
-                                       required
-                                       autocomplete="current-password">
-                                <button type="button" class="btn btn-icon" id="togglePassword">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="form-error" id="loginError" style="display: none;">
-                            <i class="fas fa-exclamation-circle"></i>
-                            <span>Hatalı kullanıcı adı veya şifre!</span>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-primary btn-block">
-                            <i class="fas fa-sign-in-alt"></i>
-                            <span>Giriş Yap</span>
-                        </button>
-                    </form>
-                    
-                    <div class="login-footer">
-                        <p class="login-note">
-                            <i class="fas fa-info-circle"></i>
-                            Unuttuğunuz şifre için sistem yöneticisi ile iletişime geçin.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- SCRIPT LIBRARIES -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-    
-    <!-- APP SCRIPTS -->
-    <script src="veriler.js"></script>
-    <script src="database.js"></script>
-    <script src="app.js"></script>
-    
-    <!-- INITIALIZATION SCRIPT -->
+    <!-- JAVASCRIPT KODLARI -->
     <script>
-        // DOM tamamen yüklendiğinde çalışacak
+        // VERİ DEPOLAMA (LocalStorage kullanıyoruz)
+        const DB_NAME = 'altyapiBildirimDB';
+        
+        // Başlangıç verileri
+        const ornekBildirimler = [
+            {
+                id: 1,
+                isim: "Ahmet Yılmaz",
+                telefon: "0532 123 4567",
+                mahalle: "Merkez",
+                sorunTipi: "Su",
+                aciklama: "Mahallemizde 3 gündür su kesintisi var.",
+                adres: "Merkez Mah. Atatürk Cad. No:15",
+                acil: true,
+                tarih: "2025-01-10",
+                durum: "bekliyor"
+            },
+            {
+                id: 2,
+                isim: "Ayşe Demir",
+                telefon: "0543 987 6543",
+                mahalle: "Yenişehir",
+                sorunTipi: "Elektrik",
+                aciklama: "Voltaj düşüklüğü nedeniyle elektronik cihazlar zarar görüyor.",
+                adres: "",
+                acil: false,
+                tarih: "2025-01-11",
+                durum: "inceleniyor"
+            }
+        ];
+        
+        // UYGULAMA BAŞLATMA
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Anlaşmalı Mahalleler Sistemi başlatılıyor...');
+            console.log("✅ Altyapı Bildirim Sistemi başlatılıyor...");
             
-            // Temel ayarlar
-            const AppConfig = {
-                appName: 'Anlaşmalı Mahalleler Altyapı Sistemi',
-                version: '1.0.0',
-                defaultTheme: 'light',
-                defaultLanguage: 'tr'
-            };
+            // Veritabanını başlat
+            veritabaniBaslat();
             
-            // Tema kontrolü
-            const savedTheme = localStorage.getItem('theme') || AppConfig.defaultTheme;
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            
-            // Tema değiştirme
-            const themeToggle = document.getElementById('themeToggle');
-            const mobileThemeToggle = document.getElementById('mobileThemeToggle');
-            
-            function toggleTheme() {
-                const currentTheme = document.documentElement.getAttribute('data-theme');
-                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-                
-                document.documentElement.setAttribute('data-theme', newTheme);
-                localStorage.setItem('theme', newTheme);
-                
-                // Buton ikonunu güncelle
-                const icon = newTheme === 'light' ? 'fa-moon' : 'fa-sun';
-                themeToggle.innerHTML = `<i class="fas ${icon}"></i>`;
-                mobileThemeToggle.querySelector('i').className = `fas ${icon}`;
-                
-                console.log(`Tema değiştirildi: ${newTheme}`);
-            }
-            
-            if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
-            if (mobileThemeToggle) mobileThemeToggle.addEventListener('click', toggleTheme);
-            
-            // Mobil menü kontrolü
-            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-            const mobileMenuClose = document.getElementById('mobileMenuClose');
-            const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
-            const mobileMenu = document.getElementById('mobileMenu');
-            
-            function openMobileMenu() {
-                mobileMenu.classList.add('active');
-                mobileMenuOverlay.classList.add('active');
-                document.body.style.overflow = 'hidden';
-            }
-            
-            function closeMobileMenu() {
-                mobileMenu.classList.remove('active');
-                mobileMenuOverlay.classList.remove('active');
-                document.body.style.overflow = '';
-            }
-            
-            if (mobileMenuToggle) mobileMenuToggle.addEventListener('click', openMobileMenu);
-            if (mobileMenuClose) mobileMenuClose.addEventListener('click', closeMobileMenu);
-            if (mobileMenuOverlay) mobileMenuOverlay.addEventListener('click', closeMobileMenu);
-            
-            // Admin butonları
-            const adminBtn = document.getElementById('adminBtn');
-            const mobileAdminBtn = document.getElementById('mobileAdminBtn');
-            const footerAdminBtn = document.getElementById('footerAdminBtn');
-            const adminLoginModal = document.getElementById('adminLoginModal');
-            const closeAdminModal = document.getElementById('closeAdminModal');
-            
-            function openAdminLogin(e) {
-                if (e) e.preventDefault();
-                adminLoginModal.style.display = 'flex';
-                closeMobileMenu();
-            }
-            
-            function closeAdminLogin() {
-                adminLoginModal.style.display = 'none';
-                document.getElementById('adminLoginForm').reset();
-                document.getElementById('loginError').style.display = 'none';
-            }
-            
-            if (adminBtn) adminBtn.addEventListener('click', openAdminLogin);
-            if (mobileAdminBtn) mobileAdminBtn.addEventListener('click', openAdminLogin);
-            if (footerAdminBtn) footerAdminBtn.addEventListener('click', openAdminLogin);
-            if (closeAdminModal) closeAdminModal.addEventListener('click', closeAdminLogin);
-            
-            // Şifre göster/gizle
-            const togglePassword = document.getElementById('togglePassword');
-            if (togglePassword) {
-                togglePassword.addEventListener('click', function() {
-                    const passwordInput = document.getElementById('adminPassword');
-                    const icon = this.querySelector('i');
-                    
-                    if (passwordInput.type === 'password') {
-                        passwordInput.type = 'text';
-                        icon.classList.remove('fa-eye');
-                        icon.classList.add('fa-eye-slash');
-                    } else {
-                        passwordInput.type = 'password';
-                        icon.classList.remove('fa-eye-slash');
-                        icon.classList.add('fa-eye');
-                    }
+            // Menü butonlarına tıklama olayını ekle
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const pageId = this.getAttribute('data-page');
+                    showPage(pageId);
                 });
-            }
+            });
             
-            // Admin giriş formu
-            const adminLoginForm = document.getElementById('adminLoginForm');
-            if (adminLoginForm) {
-                adminLoginForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    
-                    const username = document.getElementById('adminUsername').value;
-                    const password = document.getElementById('adminPassword').value;
-                    
-                    // Sabit admin bilgileri
-                    const ADMIN_USERNAME = 'mardinli';
-                    const ADMIN_PASSWORD = 'amed2147';
-                    
-                    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-                        // Giriş başarılı - Admin paneline yönlendir
-                        window.location.href = 'admin-paneli.html';
-                    } else {
-                        // Giriş başarısız
-                        const errorElement = document.getElementById('loginError');
-                        errorElement.style.display = 'flex';
-                        document.getElementById('adminPassword').value = '';
-                        document.getElementById('adminPassword').focus();
-                    }
-                });
-            }
+            // Form gönderme olayını ekle
+            document.getElementById('bildirimForm').addEventListener('submit', bildirimGonder);
             
             // İstatistikleri yükle
-            function loadStatistics() {
-                try {
-                    const stats = Database.istatistikleriGetir();
-                    
-                    // Toplam bildirim
-                    const totalReports = document.getElementById('totalReports');
-                    if (totalReports && stats.toplamBildirim) {
-                        totalReports.textContent = stats.toplamBildirim.toLocaleString('tr-TR');
-                    }
-                    
-                    // Çözülen bildirim
-                    const solvedReports = document.getElementById('solvedReports');
-                    if (solvedReports && stats.durumSayilari && stats.durumSayilari.completed) {
-                        solvedReports.textContent = stats.durumSayilari.completed.toLocaleString('tr-TR');
-                    }
-                    
-                    // Aktif şehirler
-                    const activeCities = document.getElementById('activeCities');
-                    if (activeCities) {
-                        const cities = Object.keys(stats.sehirSayilari || {});
-                        activeCities.textContent = cities.length.toString();
-                    }
-                    
-                    // Aktif mahalleler
-                    const activeNeighborhoods = document.getElementById('activeNeighborhoods');
-                    if (activeNeighborhoods) {
-                        // Basit bir tahmin - gerçek veri yapısına göre güncellenecek
-                        activeNeighborhoods.textContent = Math.floor(stats.toplamBildirim / 10).toString();
-                    }
-                } catch (error) {
-                    console.error('İstatistikler yüklenirken hata:', error);
+            yukleIstatistikler();
+            
+            // Bildirimleri yükle
+            loadBildirimler();
+            
+            console.log("✅ Sistem hazır!");
+            
+            // Hoş geldiniz mesajı
+            setTimeout(() => {
+                mesajGoster("Sisteme hoş geldiniz! Bildiriminizi yapabilirsiniz.", "success");
+            }, 500);
+        });
+        
+        // SAYFA DEĞİŞTİRME
+        function showPage(pageId) {
+            // Tüm sayfaları gizle
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Seçilen sayfayı göster
+            document.getElementById(pageId).classList.add('active');
+            
+            // Menü butonlarını güncelle
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                if (btn.getAttribute('data-page') === pageId) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
                 }
+            });
+            
+            // Sayfaya özel işlemler
+            if (pageId === 'list') {
+                loadBildirimler();
+            } else if (pageId === 'stats') {
+                yukleIstatistikler();
+            }
+        }
+        
+        // VERİTABANI İŞLEMLERİ
+        function veritabaniBaslat() {
+            if (!localStorage.getItem(DB_NAME)) {
+                localStorage.setItem(DB_NAME, JSON.stringify(ornekBildirimler));
+                console.log("📁 Veritabanı başlatıldı (örnek verilerle)");
+            } else {
+                console.log("📁 Veritabanı zaten mevcut");
+            }
+        }
+        
+        function tumBildirimleriGetir() {
+            const data = localStorage.getItem(DB_NAME);
+            return data ? JSON.parse(data) : [];
+        }
+        
+        function bildirimEkle(yeniBildirim) {
+            const bildirimler = tumBildirimleriGetir();
+            
+            // Yeni ID oluştur
+            const yeniId = bildirimler.length > 0 
+                ? Math.max(...bildirimler.map(b => b.id)) + 1 
+                : 1;
+            
+            // Tarih ekle
+            const today = new Date();
+            const tarih = today.toISOString().split('T')[0];
+            
+            // Yeni bildirim nesnesi
+            const tamBildirim = {
+                ...yeniBildirim,
+                id: yeniId,
+                tarih: tarih,
+                durum: "bekliyor"
+            };
+            
+            // Veritabanına ekle
+            bildirimler.push(tamBildirim);
+            localStorage.setItem(DB_NAME, JSON.stringify(bildirimler));
+            
+            return tamBildirim;
+        }
+        
+        function bildirimSil(id) {
+            let bildirimler = tumBildirimleriGetir();
+            const baslangicSayisi = bildirimler.length;
+            
+            bildirimler = bildirimler.filter(bildirim => bildirim.id !== id);
+            
+            if (bildirimler.length < baslangicSayisi) {
+                localStorage.setItem(DB_NAME, JSON.stringify(bildirimler));
+                return true;
+            }
+            return false;
+        }
+        
+        // BİLDİRİM GÖNDERME
+        function bildirimGonder(event) {
+            event.preventDefault();
+            
+            // Form verilerini al
+            const yeniBildirim = {
+                isim: document.getElementById('isim').value,
+                telefon: document.getElementById('telefon').value,
+                mahalle: document.getElementById('mahalle').value,
+                sorunTipi: document.getElementById('sorun-tipi').value,
+                aciklama: document.getElementById('aciklama').value,
+                adres: document.getElementById('adres').value || '',
+                acil: document.getElementById('acil').checked
+            };
+            
+            // Veritabanına ekle
+            const kaydedilenBildirim = bildirimEkle(yeniBildirim);
+            
+            // Başarı mesajı
+            mesajGoster(
+                `Bildiriminiz kaydedildi! (ID: ${kaydedilenBildirim.id})<br>En kısa sürede incelenecektir.`,
+                "success"
+            );
+            
+            // Formu temizle
+            document.getElementById('bildirimForm').reset();
+            
+            // Bildirim listesini güncelle
+            loadBildirimler();
+            
+            // İstatistikleri güncelle
+            yukleIstatistikler();
+            
+            // Ana sayfaya dön
+            setTimeout(() => showPage('home'), 2000);
+        }
+        
+        // BİLDİRİMLERİ LİSTELEME
+        function loadBildirimler() {
+            const container = document.getElementById('bildirimler-container');
+            const bildirimler = tumBildirimleriGetir();
+            
+            if (bildirimler.length === 0) {
+                container.innerHTML = `
+                    <div class="mesaj info">
+                        <span class="icon icon-warning"></span>
+                        <div>Henüz bildirim bulunmuyor. İlk bildirimi siz yapın!</div>
+                    </div>
+                `;
+                return;
             }
             
-            // Problem tiplerini yükle
-            function loadProblemTypes() {
-                try {
-                    const problemsGrid = document.getElementById('problemsGrid');
-                    if (!problemsGrid) return;
-                    
-                    const problems = VeriYoneticisi.problemTipleriniGetir();
-                    const limitedProblems = problems.slice(0, 8); // İlk 8 problemi göster
-                    
-                    problemsGrid.innerHTML = limitedProblems.map(problem => `
-                        <div class="problem-card">
-                            <div class="problem-icon">${problem.emoji}</div>
-                            <h3 class="problem-title">${problem.ad}</h3>
-                            <p class="problem-description">${problem.aciklama}</p>
-                        </div>
-                    `).join('');
-                } catch (error) {
-                    console.error('Problem tipleri yüklenirken hata:', error);
-                }
-            }
+            let html = `<div class="bildirim-listesi">`;
             
-            // Şehirleri yükle
-            function loadCities() {
-                try {
-                    const citiesGrid = document.getElementById('citiesGrid');
-                    if (!citiesGrid) return;
-                    
-                    const cities = VeriYoneticisi.sehirleriGetir();
-                    const limitedCities = cities.slice(0, 12); // İlk 12 şehri göster
-                    
-                    citiesGrid.innerHTML = limitedCities.map(city => `
-                        <div class="city-card">
-                            <div class="city-icon">
-                                <i class="fas fa-city"></i>
-                            </div>
-                            <h3 class="city-name">${city}</h3>
-                            <div class="city-stats">
-                                <span class="city-stat">
-                                    <i class="fas fa-exclamation-circle"></i>
-                                    <span class="stat-value">${Math.floor(Math.random() * 50) + 10}</span>
-                                    <span class="stat-label">Aktif Bildirim</span>
-                                </span>
-                                <span class="city-stat">
-                                    <i class="fas fa-check-circle"></i>
-                                    <span class="stat-value">${Math.floor(Math.random() * 200) + 50}</span>
-                                    <span class="stat-label">Çözülen</span>
-                                </span>
-                            </div>
-                            <a href="#" data-page="map" class="btn btn-text btn-sm" data-city="${city}">
-                                <i class="fas fa-map-marker-alt"></i>
-                                <span>Haritada Gör</span>
-                            </a>
-                        </div>
-                    `).join('');
-                } catch (error) {
-                    console.error('Şehirler yüklenirken hata:', error);
-                }
-            }
+            // Bildirimleri tarihe göre ters sırala (yeniden eskiye)
+            bildirimler.sort((a, b) => new Date(b.tarih) - new Date(a.tarih));
             
-            // Son bildirimleri yükle
-            function loadRecentReports() {
-                try {
-                    const reportsGrid = document.getElementById('recentReportsGrid');
-                    if (!reportsGrid) return;
-                    
-                    const reports = Database.tumBildirimleriGetir();
-                    const recentReports = reports.slice(-6).reverse(); // Son 6 bildirim
-                    
-                    if (recentReports.length === 0) {
-                        reportsGrid.innerHTML = `
-                            <div class="no-reports">
-                                <i class="fas fa-inbox"></i>
-                                <h3>Henüz Bildirim Yok</h3>
-                                <p>İlk bildirimi yapmak için "Bildirim Yap" butonuna tıklayın</p>
-                            </div>
-                        `;
-                        return;
-                    }
-                    
-                    reportsGrid.innerHTML = recentReports.map(report => {
-                        const statusClass = `status-${report.durum}`;
-                        const statusText = getStatusText(report.durum);
-                        const priorityClass = `priority-${report.oncelik ? report.oncelik.toLowerCase() : 'medium'}`;
-                        
-                        return `
-                            <div class="report-card">
-                                <div class="report-header">
-                                    <div class="report-location">
-                                        <h4 class="report-city">${report.il}</h4>
-                                        <p class="report-district">${report.ilce} / ${report.mahalle}</p>
-                                    </div>
-                                    <span class="status-badge ${statusClass}">${statusText}</span>
-                                </div>
-                                <div class="report-body">
-                                    <div class="report-problem">
-                                        <i class="fas fa-exclamation-triangle"></i>
-                                        <span>${report.problemTipi || 'Bildirim'}</span>
-                                    </div>
-                                    <p class="report-description">${report.aciklama || 'Açıklama belirtilmemiş'}</p>
-                                    <div class="report-footer">
-                                        <span class="report-id">
-                                            <i class="fas fa-hashtag"></i>
-                                            ${report.id || 'Bildirim'}
-                                        </span>
-                                        <span class="report-date">
-                                            <i class="fas fa-clock"></i>
-                                            ${formatDate(report.olusturmaTarihi)}
-                                        </span>
-                                        <span class="report-priority ${priorityClass}">
-                                            ${report.oncelik || 'Orta'}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-                } catch (error) {
-                    console.error('Son bildirimler yüklenirken hata:', error);
-                }
-            }
-            
-            // Haritaları başlat
-            function initializeMaps() {
-                // Bildirimler haritası
-                const reportsMapElement = document.getElementById('reportsMap');
-                if (reportsMapElement && typeof L !== 'undefined') {
-                    try {
-                        const reportsMap = L.map('reportsMap').setView([39.9208, 32.8541], 6);
-                        
-                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                            attribution: '© OpenStreetMap contributors',
-                            maxZoom: 18
-                        }).addTo(reportsMap);
-                        
-                        // Örnek marker'lar ekle
-                        const reports = Database.tumBildirimleriGetir();
-                        if (reports.length > 0) {
-                            reports.slice(-10).forEach(report => {
-                                if (report.koordinatlar) {
-                                    const marker = L.marker([report.koordinatlar.lat, report.koordinatlar.lng])
-                                        .addTo(reportsMap)
-                                        .bindPopup(`
-                                            <b>${report.problemTipi || 'Bildirim'}</b><br>
-                                            ${report.il} - ${report.ilce}<br>
-                                            ${report.mahalle}<br>
-                                            <small>${formatDate(report.olusturmaTarihi)}</small>
-                                        `);
-                                }
-                            });
-                        }
-                        
-                        // Aktif marker sayısını güncelle
-                        const activeMarkersCount = document.getElementById('activeMarkersCount');
-                        if (activeMarkersCount) {
-                            activeMarkersCount.textContent = Math.min(reports.length, 10).toString();
-                        }
-                        
-                        // Harita kontrol butonları
-                        const refreshMapBtn = document.getElementById('refreshMapBtn');
-                        const fullscreenMapBtn = document.getElementById('fullscreenMapBtn');
-                        
-                        if (refreshMapBtn) {
-                            refreshMapBtn.addEventListener('click', () => {
-                                reportsMap.invalidateSize();
-                            });
-                        }
-                        
-                        if (fullscreenMapBtn) {
-                            fullscreenMapBtn.addEventListener('click', () => {
-                                const mapContainer = reportsMapElement.parentElement;
-                                if (!document.fullscreenElement) {
-                                    mapContainer.requestFullscreen().catch(err => {
-                                        console.error('Tam ekran hatası:', err);
-                                    });
-                                } else {
-                                    document.exitFullscreen();
-                                }
-                            });
-                        }
-                    } catch (error) {
-                        console.error('Harita başlatılırken hata:', error);
-                    }
+            bildirimler.forEach(bildirim => {
+                // Duruma göre etiket
+                let durumEtiketi = '';
+                if (bildirim.durum === 'tamamlandi') {
+                    durumEtiketi = '<span class="etiket tamamlandi">Tamamlandı</span>';
+                } else if (bildirim.durum === 'inceleniyor') {
+                    durumEtiketi = '<span class="etiket">İnceleniyor</span>';
+                } else {
+                    durumEtiketi = '<span class="etiket">Bekliyor</span>';
                 }
                 
-                // Şehirler haritası
-                const citiesMapElement = document.getElementById('citiesMap');
-                if (citiesMapElement && typeof L !== 'undefined') {
-                    try {
-                        const citiesMap = L.map('citiesMap').setView([39.9208, 32.8541], 6);
-                        
-                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                            attribution: '© OpenStreetMap contributors',
-                            maxZoom: 18
-                        }).addTo(citiesMap);
-                        
-                        // Şehir marker'ları ekle
-                        const cities = VeriYoneticisi.sehirleriGetir();
-                        cities.forEach(city => {
-                            const coordinates = VeriYoneticisi.koordinatGetir(city);
-                            if (coordinates) {
-                                L.marker([coordinates.lat, coordinates.lng])
-                                    .addTo(citiesMap)
-                                    .bindPopup(`<b>${city}</b>`);
-                            }
-                        });
-                    } catch (error) {
-                        console.error('Şehirler haritası başlatılırken hata:', error);
-                    }
+                // Acil durum etiketi
+                const acilEtiketi = bildirim.acil 
+                    ? '<span class="etiket onemli">ACİL</span>' 
+                    : '';
+                
+                html += `
+                    <div class="bildirim-karti">
+                        <div class="bildirim-baslik">
+                            #${bildirim.id} - ${bildirim.sorunTipi} Sorunu
+                            ${acilEtiketi}
+                        </div>
+                        <div class="bildirim-detay">
+                            <span class="icon icon-location"></span> ${bildirim.mahalle}
+                            <span class="icon icon-time"></span> ${bildirim.tarih}
+                            ${durumEtiketi}
+                        </div>
+                        <p><strong>Bildiren:</strong> ${bildirim.isim} (${bildirim.telefon})</p>
+                        <p>${bildirim.aciklama}</p>
+                        ${bildirim.adres ? `<p><strong>Adres:</strong> ${bildirim.adres}</p>` : ''}
+                        <div style="margin-top: 15px;">
+                            <button class="btn" onclick="bildirimDetay(${bildirim.id})" style="padding: 8px 15px; font-size: 14px;">
+                                Detay
+                            </button>
+                            <button class="btn" onclick="bildirimTamamla(${bildirim.id})" style="padding: 8px 15px; font-size: 14px; margin-left: 10px;">
+                                Tamamlandı
+                            </button>
+                            <button class="btn" onclick="bildirimSilUI(${bildirim.id})" style="padding: 8px 15px; font-size: 14px; margin-left: 10px; background: #e74c3c;">
+                                Sil
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+        
+        // BİLDİRİM İŞLEMLERİ
+        function bildirimDetay(id) {
+            const bildirimler = tumBildirimleriGetir();
+            const bildirim = bildirimler.find(b => b.id === id);
+            
+            if (bildirim) {
+                alert(
+                    `BİLDİRİM DETAYI\n` +
+                    `ID: ${bildirim.id}\n` +
+                    `Bildiren: ${bildirim.isim}\n` +
+                    `Telefon: ${bildirim.telefon}\n` +
+                    `Mahalle: ${bildirim.mahalle}\n` +
+                    `Sorun Tipi: ${bildirim.sorunTipi}\n` +
+                    `Açıklama: ${bildirim.aciklama}\n` +
+                    `Tarih: ${bildirim.tarih}\n` +
+                    `Durum: ${bildirim.durum}\n` +
+                    `Acil: ${bildirim.acil ? 'Evet' : 'Hayır'}`
+                );
+            }
+        }
+        
+        function bildirimTamamla(id) {
+            let bildirimler = tumBildirimleriGetir();
+            const index = bildirimler.findIndex(b => b.id === id);
+            
+            if (index !== -1) {
+                bildirimler[index].durum = 'tamamlandi';
+                localStorage.setItem(DB_NAME, JSON.stringify(bildirimler));
+                
+                mesajGoster(`#${id} numaralı bildirim tamamlandı olarak işaretlendi.`, "success");
+                loadBildirimler();
+                yukleIstatistikler();
+            }
+        }
+        
+        function bildirimSilUI(id) {
+            if (confirm(`#${id} numaralı bildirimi silmek istediğinize emin misiniz?`)) {
+                if (bildirimSil(id)) {
+                    mesajGoster(`#${id} numaralı bildirim silindi.`, "success");
+                    loadBildirimler();
+                    yukleIstatistikler();
                 }
             }
+        }
+        
+        // İSTATİSTİKLER
+        function yukleIstatistikler() {
+            const bildirimler = tumBildirimleriGetir();
+            const toplam = bildirimler.length;
+            const acil = bildirimler.filter(b => b.acil).length;
+            const tamamlanan = bildirimler.filter(b => b.durum === 'tamamlandi').length;
+            const incelenen = bildirimler.filter(b => b.durum === 'inceleniyor').length;
             
-            // Yardımcı fonksiyonlar
-            function getStatusText(statusCode) {
-                const statusMap = {
-                    'pending': 'Beklemede',
-                    'approved': 'Onaylandı',
-                    'in_progress': 'Devam Ediyor',
-                    'completed': 'Tamamlandı',
-                    'rejected': 'Reddedildi'
-                };
-                return statusMap[statusCode] || statusCode;
+            // Ana sayfa istatistikleri
+            const anaSayfaStats = document.getElementById('ana-sayfa-istatistik');
+            if (anaSayfaStats) {
+                anaSayfaStats.innerHTML = `
+                    <div class="istatistik-kart">
+                        <div class="istatistik-sayi">${toplam}</div>
+                        <div class="istatistik-label">Toplam Bildirim</div>
+                    </div>
+                    <div class="istatistik-kart">
+                        <div class="istatistik-sayi">${acil}</div>
+                        <div class="istatistik-label">Acil Bildirim</div>
+                    </div>
+                    <div class="istatistik-kart">
+                        <div class="istatistik-sayi">${tamamlanan}</div>
+                        <div class="istatistik-label">Tamamlanan</div>
+                    </div>
+                `;
             }
             
-            function formatDate(dateString) {
-                try {
-                    const date = new Date(dateString);
-                    const day = date.getDate().toString().padStart(2, '0');
-                    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-                    const year = date.getFullYear();
-                    return `${day}.${month}.${year}`;
-                } catch (error) {
-                    return dateString;
-                }
-            }
-            
-            // Takip kodu arama
-            const trackingSubmitBtn = document.getElementById('trackingSubmitBtn');
-            const trackingCodeInput = document.getElementById('trackingCodeInput');
-            
-            if (trackingSubmitBtn && trackingCodeInput) {
-                trackingSubmitBtn.addEventListener('click', function() {
-                    const code = trackingCodeInput.value.trim();
-                    if (!code) {
-                        showNotification('Lütfen takip kodu girin', 'warning');
-                        return;
-                    }
-                    
-                    // Takip kodu arama mantığı buraya gelecek
-                    showNotification(`"${code}" kodu aranıyor...`, 'info');
-                    
-                    // Örnek: 3 saniye sonra bulunamadı mesajı
-                    setTimeout(() => {
-                        showNotification('Takip kodu bulunamadı. Lütfen kodu kontrol edin.', 'error');
-                    }, 3000);
+            // İstatistikler sayfası
+            const statsContainer = document.getElementById('istatistik-container');
+            if (statsContainer) {
+                // Mahallelere göre dağılım
+                const mahalleler = {};
+                bildirimler.forEach(b => {
+                    mahalleler[b.mahalle] = (mahalleler[b.mahalle] || 0) + 1;
                 });
                 
-                // Enter tuşu ile arama
-                trackingCodeInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        trackingSubmitBtn.click();
-                    }
+                // Sorun tiplerine göre dağılım
+                const sorunTipleri = {};
+                bildirimler.forEach(b => {
+                    sorunTipleri[b.sorunTipi] = (sorunTipleri[b.sorunTipi] || 0) + 1;
                 });
-            }
-            
-            // Bildirim gösterici
-            function showNotification(message, type = 'info') {
-                const container = document.getElementById('notificationContainer');
-                if (!container) return;
                 
-                const notificationId = 'notification-' + Date.now();
-                const typeClass = `notification-${type}`;
+                let mahalleListesi = '';
+                for (const [mahalle, sayi] of Object.entries(mahalleler)) {
+                    mahalleListesi += `<div>${mahalle}: <strong>${sayi}</strong></div>`;
+                }
                 
-                const notificationHTML = `
-                    <div id="${notificationId}" class="notification ${typeClass}">
-                        <div class="notification-content">
-                            <i class="fas ${getNotificationIcon(type)}"></i>
-                            <span>${message}</span>
-                        </div>
-                        <button class="notification-close" onclick="this.parentElement.remove()">
-                            <i class="fas fa-times"></i>
-                        </button>
+                let sorunListesi = '';
+                for (const [sorun, sayi] of Object.entries(sorunTipleri)) {
+                    sorunListesi += `<div>${sorun}: <strong>${sayi}</strong></div>`;
+                }
+                
+                statsContainer.innerHTML = `
+                    <div class="istatistik-kart">
+                        <div class="istatistik-sayi">${toplam}</div>
+                        <div class="istatistik-label">Toplam Bildirim</div>
+                    </div>
+                    <div class="istatistik-kart">
+                        <div class="istatistik-sayi">${acil}</div>
+                        <div class="istatistik-label">Acil Bildirim</div>
+                    </div>
+                    <div class="istatistik-kart">
+                        <div class="istatistik-sayi">${tamamlanan}</div>
+                        <div class="istatistik-label">Tamamlanan</div>
+                    </div>
+                    <div class="istatistik-kart">
+                        <div class="istatistik-sayi">${incelenen}</div>
+                        <div class="istatistik-label">İncelenen</div>
                     </div>
                 `;
                 
-                container.insertAdjacentHTML('afterbegin', notificationHTML);
-                
-                // Otomatik kapanma
-                setTimeout(() => {
-                    const notification = document.getElementById(notificationId);
-                    if (notification) {
-                        notification.classList.add('fade-out');
-                        setTimeout(() => notification.remove(), 300);
-                    }
-                }, 5000);
+                // Grafikler bölümü
+                document.getElementById('grafikler').innerHTML = `
+                    <h4>Mahallelere Göre Dağılım</h4>
+                    <div style="margin-bottom: 30px;">${mahalleListesi}</div>
+                    <h4>Sorun Tiplerine Göre Dağılım</h4>
+                    <div>${sorunListesi}</div>
+                `;
+            }
+        }
+        
+        // MESAJ GÖSTERME
+        function mesajGoster(mesaj, tip = 'info') {
+            // Varolan mesajları temizle
+            document.querySelectorAll('.mesaj').forEach(m => {
+                if (m.id === 'gecici-mesaj') m.remove();
+            });
+            
+            const mesajDiv = document.createElement('div');
+            mesajDiv.id = 'gecici-mesaj';
+            mesajDiv.className = `mesaj ${tip}`;
+            mesajDiv.innerHTML = `
+                <span class="icon icon-check"></span>
+                <div>${mesaj}</div>
+            `;
+            
+            // Ana sayfaya veya en üste ekle
+            const homePage = document.getElementById('home');
+            if (homePage) {
+                homePage.prepend(mesajDiv);
+            } else {
+                document.body.prepend(mesajDiv);
             }
             
-            function getNotificationIcon(type) {
-                const icons = {
-                    'success': 'fa-check-circle',
-                    'error': 'fa-exclamation-circle',
-                    'warning': 'fa-exclamation-triangle',
-                    'info': 'fa-info-circle'
-                };
-                return icons[type] || 'fa-info-circle';
-            }
-            
-            // Sayfa yüklendiğinde verileri yükle
+            // 5 saniye sonra kaldır
             setTimeout(() => {
-                loadStatistics();
-                loadProblemTypes();
-                loadCities();
-                loadRecentReports();
-                initializeMaps();
-                
-                console.log('✅ Ana sayfa bileşenleri yüklendi');
-                showNotification('Sistem hazır. Bildiriminizi yapabilirsiniz.', 'success');
-            }, 500);
-            
-            // Sayfa kapatılırken temizlik
-            window.addEventListener('beforeunload', function() {
-                console.log('👋 Sistem kapatılıyor...');
-            });
-            
-            // Online/offline kontrolü
-            window.addEventListener('online', function() {
-                showNotification('İnternet bağlantısı sağlandı', 'success');
-            });
-            
-            window.addEventListener('offline', function() {
-                showNotification('İnternet bağlantısı kesildi', 'warning');
-            });
-            
-            // Servis çalışanı kaydı (PWA için)
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/sw.js').then(() => {
-                    console.log('✅ Service Worker kaydedildi');
-                }).catch(err => {
-                    console.error('Service Worker kaydı başarısız:', err);
-                });
-            }
-            
-            // App başlatma mesajı
-            console.log(`🚀 ${AppConfig.appName} v${AppConfig.version} başlatıldı`);
-            console.log(`🌍 Tema: ${savedTheme}, Dil: ${AppConfig.defaultLanguage}`);
-            console.log(`🗺️ Harita sağlayıcı: OpenStreetMap`);
-            console.log(`💾 Veritabanı: LocalStorage (${Database.tumBildirimleriGetir().length} bildirim)`);
-        });
+                if (mesajDiv.parentNode) {
+                    mesajDiv.remove();
+                }
+            }, 5000);
+        }
     </script>
-
-    <!-- INLINE STYLES FOR HOME PAGE -->
-    <style>
-        /* HERO SECTION */
-        .hero-section {
-            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
-            color: white;
-            padding: var(--space-40) 0 var(--space-48);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%231a3f35' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
-            opacity: 0.3;
-        }
-
-        .hero-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: var(--space-32);
-            align-items: center;
-            position: relative;
-            z-index: 1;
-        }
-
-        @media (max-width: 1024px) {
-            .hero-content {
-                grid-template-columns: 1fr;
-                text-align: center;
-                gap: var(--space-24);
-            }
-        }
-
-        .hero-title {
-            font-size: var(--font-size-4xl);
-            font-weight: var(--font-weight-bold);
-            line-height: 1.2;
-            margin-bottom: var(--space-8);
-            color: white;
-        }
-
-        @media (max-width: 768px) {
-            .hero-title {
-                font-size: var(--font-size-3xl);
-            }
-        }
-
-        .hero-description {
-            font-size: var(--font-size-xl);
-            line-height: var(--line-height-relaxed);
-            margin-bottom: var(--space-16);
-            opacity: 0.9;
-            max-width: 600px;
-        }
-
-        .hero-actions {
-            display: flex;
-            gap: var(--space-12);
-            flex-wrap: wrap;
-        }
-
-        .hero-actions .btn {
-            min-width: 200px;
-        }
-
-        @media (max-width: 768px) {
-            .hero-actions {
-                justify-content: center;
-            }
-            
-            .hero-actions .btn {
-                min-width: auto;
-                width: 100%;
-                max-width: 300px;
-            }
-        }
-
-        .hero-image {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .image-placeholder {
-            width: 400px;
-            height: 300px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: var(--radius-lg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px dashed rgba(255, 255, 255, 0.2);
-        }
-
-        .image-placeholder i {
-            font-size: var(--font-size-4xl);
-            color: rgba(255, 255, 255, 0.3);
-        }
-
-        @media (max-width: 1024px) {
-            .image-placeholder {
-                width: 100%;
-                max-width: 400px;
-                height: 200px;
-                margin: 0 auto;
-            }
-        }
-
-        /* STATS SECTION */
-        .stats-section {
-            padding: var(--space-48) 0;
-            background-color: var(--color-neutral-50);
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: var(--space-16);
-            margin-top: var(--space-24);
-        }
-
-        .stat-card {
-            background-color: var(--color-surface);
-            border-radius: var(--radius-lg);
-            padding: var(--space-24);
-            display: flex;
-            align-items: center;
-            gap: var(--space-16);
-            box-shadow: var(--shadow-sm);
-            transition: transform var(--transition-normal), box-shadow var(--transition-normal);
-        }
-
-        .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .stat-icon {
-            width: 64px;
-            height: 64px;
-            background-color: var(--color-primary);
-            color: white;
-            border-radius: var(--radius-md);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: var(--font-size-2xl);
-            flex-shrink: 0;
-        }
-
-        .stat-content {
-            flex: 1;
-        }
-
-        .stat-value {
-            font-size: var(--font-size-3xl);
-            font-weight: var(--font-weight-bold);
-            color: var(--color-text-primary);
-            line-height: 1;
-            margin-bottom: var(--space-4);
-        }
-
-        .stat-label {
-            font-size: var(--font-size-sm);
-            color: var(--color-text-tertiary);
-            font-weight: var(--font-weight-medium);
-        }
-
-        /* HOW IT WORKS */
-        .how-it-works-section {
-            padding: var(--space-48) 0;
-            background-color: var(--color-background);
-        }
-
-        .steps-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: var(--space-24);
-            margin-top: var(--space-32);
-        }
-
-        .step-card {
-            text-align: center;
-            padding: var(--space-24);
-            background-color: var(--color-surface);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-sm);
-            transition: transform var(--transition-normal);
-            position: relative;
-        }
-
-        .step-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .step-number {
-            position: absolute;
-            top: -16px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 32px;
-            height: 32px;
-            background-color: var(--color-primary);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: var(--font-weight-bold);
-            font-size: var(--font-size-sm);
-        }
-
-        .step-icon {
-            width: 64px;
-            height: 64px;
-            background-color: var(--color-neutral-100);
-            color: var(--color-primary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: var(--font-size-2xl);
-            margin: 0 auto var(--space-12);
-        }
-
-        .step-title {
-            font-size: var(--font-size-lg);
-            font-weight: var(--font-weight-semibold);
-            color: var(--color-text-primary);
-            margin-bottom: var(--space-8);
-        }
-
-        .step-description {
-            font-size: var(--font-size-sm);
-            color: var(--color-text-secondary);
-            line-height: var(--line-height-relaxed);
-        }
-
-        /* PROBLEM TYPES */
-        .problem-types-section {
-            padding: var(--space-48) 0;
-            background-color: var(--color-neutral-50);
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: var(--space-32);
-        }
-
-        @media (max-width: 768px) {
-            .section-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: var(--space-16);
-            }
-        }
-
-        .section-title {
-            font-size: var(--font-size-3xl);
-            font-weight: var(--font-weight-semibold);
-            color: var(--color-text-primary);
-            margin-bottom: var(--space-4);
-        }
-
-        .section-description {
-            font-size: var(--font-size-lg);
-            color: var(--color-text-secondary);
-        }
-
-        .problems-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: var(--space-16);
-        }
-
-        .problem-card {
-            background-color: var(--color-surface);
-            border-radius: var(--radius-lg);
-            padding: var(--space-20);
-            text-align: center;
-            box-shadow: var(--shadow-sm);
-            transition: all var(--transition-normal);
-            border: 1px solid var(--color-border);
-        }
-
-        .problem-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-md);
-            border-color: var(--color-primary);
-        }
-
-        .problem-icon {
-            font-size: var(--font-size-3xl);
-            margin-bottom: var(--space-12);
-        }
-
-        .problem-title {
-            font-size: var(--font-size-lg);
-            font-weight: var(--font-weight-semibold);
-            color: var(--color-text-primary);
-            margin-bottom: var(--space-8);
-        }
-
-        .problem-description {
-            font-size: var(--font-size-sm);
-            color: var(--color-text-secondary);
-            line-height: var(--line-height-relaxed);
-        }
-
-        /* RECENT REPORTS */
-        .recent-reports-section {
-            padding: var(--space-48) 0;
-            background-color: var(--color-background);
-        }
-
-        .reports-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: var(--space-32);
-            margin-top: var(--space-24);
-        }
-
-        @media (max-width: 1024px) {
-            .reports-container {
-                grid-template-columns: 1fr;
-                gap: var(--space-24);
-            }
-        }
-
-        .reports-grid {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-16);
-        }
-
-        .report-card {
-            background-color: var(--color-surface);
-            border-radius: var(--radius-lg);
-            padding: var(--space-16);
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--color-border);
-            transition: all var(--transition-normal);
-        }
-
-        .report-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-            border-color: var(--color-primary);
-        }
-
-        .report-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: var(--space-12);
-            padding-bottom: var(--space-12);
-            border-bottom: 1px solid var(--color-divider);
-        }
-
-        .report-city {
-            font-size: var(--font-size-base);
-            font-weight: var(--font-weight-semibold);
-            color: var(--color-text-primary);
-            margin-bottom: var(--space-2);
-        }
-
-        .report-district {
-            font-size: var(--font-size-sm);
-            color: var(--color-text-tertiary);
-        }
-
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: var(--space-2);
-            padding: var(--space-2) var(--space-6);
-            font-size: var(--font-size-xs);
-            font-weight: var(--font-weight-medium);
-            border-radius: var(--radius-sm);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .status-pending {
-            background-color: rgba(107, 114, 128, 0.1);
-            color: var(--color-neutral-600);
-            border: 1px solid var(--color-neutral-300);
-        }
-
-        .status-approved {
-            background-color: rgba(59, 130, 246, 0.1);
-            color: var(--color-primary);
-            border: 1px solid var(--color-primary-lighter);
-        }
-
-        .status-in_progress {
-            background-color: rgba(245, 158, 11, 0.1);
-            color: var(--color-warning);
-            border: 1px solid rgba(196, 162, 74, 0.3);
-        }
-
-        .status-completed {
-            background-color: rgba(16, 185, 129, 0.1);
-            color: var(--color-success);
-            border: 1px solid rgba(31, 122, 77, 0.3);
-        }
-
-        .status-rejected {
-            background-color: rgba(239, 68, 68, 0.1);
-            color: var(--color-error);
-            border: 1px solid rgba(90, 15, 20, 0.3);
-        }
-
-        .report-body {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-8);
-        }
-
-        .report-problem {
-            display: flex;
-            align-items: center;
-            gap: var(--space-8);
-            font-size: var(--font-size-base);
-            font-weight: var(--font-weight-medium);
-            color: var(--color-text-primary);
-        }
-
-        .report-problem i {
-            color: var(--color-warning);
-        }
-
-        .report-description {
-            font-size: var(--font-size-sm);
-            color: var(--color-text-secondary);
-            line-height: var(--line-height-relaxed);
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .report-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: var(--font-size-xs);
-            color: var(--color-text-tertiary);
-            margin-top: var(--space-8);
-            padding-top: var(--space-8);
-            border-top: 1px solid var(--color-divider);
-        }
-
-        .report-id, .report-date {
-            display: flex;
-            align-items: center;
-            gap: var(--space-2);
-        }
-
-        .report-priority {
-            padding: var(--space-1) var(--space-4);
-            border-radius: var(--radius-sm);
-            font-weight: var(--font-weight-medium);
-            font-size: var(--font-size-xs);
-        }
-
-        .priority-urgent {
-            background-color: rgba(90, 15, 20, 0.1);
-            color: var(--color-error);
-        }
-
-        .priority-high {
-            background-color: rgba(239, 68, 68, 0.1);
-            color: var(--color-error);
-        }
-
-        .priority-medium {
-            background-color: rgba(245, 158, 11, 0.1);
-            color: var(--color-warning);
-        }
-
-        .priority-low {
-            background-color: rgba(16, 185, 129, 0.1);
-            color: var(--color-success);
-        }
-
-        /* REPORTS MAP */
-        .reports-map {
-            background-color: var(--color-surface);
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--color-border);
-        }
-
-        .map-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: var(--space-12) var(--space-16);
-            background-color: var(--color-neutral-50);
-            border-bottom: 1px solid var(--color-border);
-        }
-
-        .map-title {
-            font-size: var(--font-size-base);
-            font-weight: var(--font-weight-semibold);
-            color: var(--color-text-primary);
-            margin: 0;
-        }
-
-        .map-wrapper {
-            position: relative;
-            height: 400px;
-        }
-
-        .reports-map-view {
-            width: 100%;
-            height: 100%;
-        }
-
-        .map-legend {
-            position: absolute;
-            bottom: var(--space-12);
-            left: var(--space-12);
-            background-color: rgba(255, 255, 255, 0.9);
-            padding: var(--space-8);
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--color-border);
-            display: flex;
-            gap: var(--space-8);
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: var(--space-4);
-            font-size: var(--font-size-xs);
-            color: var(--color-text-secondary);
-        }
-
-        .legend-color {
-            width: 12px;
-            height: 12px;
-            border-radius: 2px;
-        }
-
-        /* CTA SECTION */
-        .cta-section {
-            padding: var(--space-48) 0;
-            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
-            color: white;
-        }
-
-        .cta-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: var(--space-32);
-        }
-
-        @media (max-width: 768px) {
-            .cta-content {
-                flex-direction: column;
-                text-align: center;
-                gap: var(--space-24);
-            }
-        }
-
-        .cta-title {
-            font-size: var(--font-size-3xl);
-            font-weight: var(--font-weight-bold);
-            margin-bottom: var(--space-8);
-            color: white;
-        }
-
-        .cta-description {
-            font-size: var(--font-size-lg);
-            opacity: 0.9;
-            max-width: 600px;
-        }
-
-        .cta-actions {
-            display: flex;
-            gap: var(--space-12);
-            flex-shrink: 0;
-        }
-
-        @media (max-width: 768px) {
-            .cta-actions {
-                flex-direction: column;
-                width: 100%;
-                max-width: 300px;
-            }
-            
-            .cta-actions .btn {
-                width: 100%;
-            }
-        }
-
-        /* TRACKING SECTION */
-        .tracking-section {
-            padding: var(--space-48) 0;
-            background-color: var(--color-neutral-50);
-        }
-
-        .tracking-card {
-            background-color: var(--color-surface);
-            border-radius: var(--radius-lg);
-            padding: var(--space-32);
-            display: flex;
-            align-items: center;
-            gap: var(--space-32);
-            box-shadow: var(--shadow-md);
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        @media (max-width: 768px) {
-            .tracking-card {
-                flex-direction: column;
-                text-align: center;
-                padding: var(--space-24);
-                gap: var(--space-16);
-            }
-        }
-
-        .tracking-icon {
-            width: 80px;
-            height: 80px;
-            background-color: var(--color-primary);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: var(--font-size-3xl);
-            flex-shrink: 0;
-        }
-
-        @media (max-width: 768px) {
-            .tracking-icon {
-                width: 64px;
-                height: 64px;
-                font-size: var(--font-size-2xl);
-            }
-        }
-
-        .tracking-content {
-            flex: 1;
-        }
-
-        .tracking-title {
-            font-size: var(--font-size-2xl);
-            font-weight: var(--font-weight-semibold);
-            color: var(--color-text-primary);
-            margin-bottom: var(--space-8);
-        }
-
-        .tracking-description {
-            font-size: var(--font-size-base);
-            color: var(--color-text-secondary);
-            margin-bottom: var(--space-16);
-            line-height: var(--line-height-relaxed);
-        }
-
-        .tracking-form {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-8);
-        }
-
-        .tracking-form .form-group {
-            display: flex;
-            gap: var(--space-8);
-        }
-
-        @media (max-width: 768px) {
-            .tracking-form .form-group {
-                flex-direction: column;
-            }
-        }
-
-        .tracking-form .form-control {
-            flex: 1;
-        }
-
-        /* CITIES SECTION */
-        .cities-section {
-            padding: var(--space-48) 0;
-            background-color: var(--color-background);
-        }
-
-        .cities-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: var(--space-16);
-            margin-bottom: var(--space-32);
-        }
-
-        .city-card {
-            background-color: var(--color-surface);
-            border-radius: var(--radius-lg);
-            padding: var(--space-16);
-            text-align: center;
-            box-shadow: var(--shadow-sm);
-            transition: all var(--transition-normal);
-            border: 1px solid var(--color-border);
-        }
-
-        .city-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-md);
-            border-color: var(--color-primary);
-        }
-
-        .city-icon {
-            width: 48px;
-            height: 48px;
-            background-color: var(--color-neutral-100);
-            color: var(--color-primary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: var(--font-size-xl);
-            margin: 0 auto var(--space-12);
-        }
-
-        .city-name {
-            font-size: var(--font-size-lg);
-            font-weight: var(--font-weight-semibold);
-            color: var(--color-text-primary);
-            margin-bottom: var(--space-12);
-        }
-
-        .city-stats {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-8);
-            margin-bottom: var(--space-12);
-        }
-
-        .city-stat {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: var(--space-4);
-            font-size: var(--font-size-xs);
-            color: var(--color-text-tertiary);
-        }
-
-        .stat-value {
-            font-weight: var(--font-weight-semibold);
-            color: var(--color-text-primary);
-        }
-
-        .stat-label {
-            color: var(--color-text-tertiary);
-        }
-
-        /* CITIES MAP */
-        .cities-map-container {
-            background-color: var(--color-surface);
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--color-border);
-        }
-
-        .cities-map-container .map-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: var(--space-16);
-            background-color: var(--color-neutral-50);
-            border-bottom: 1px solid var(--color-border);
-        }
-
-        .map-stats {
-            display: flex;
-            gap: var(--space-16);
-        }
-
-        .map-stat {
-            display: flex;
-            align-items: center;
-            gap: var(--space-4);
-            font-size: var(--font-size-sm);
-            color: var(--color-text-secondary);
-        }
-
-        .cities-map {
-            height: 400px;
-            width: 100%;
-        }
-
-        /* NO REPORTS STATE */
-        .no-reports {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: var(--space-32);
-            background-color: var(--color-neutral-50);
-            border-radius: var(--radius-lg);
-            border: 2px dashed var(--color-border);
-        }
-
-        .no-reports i {
-            font-size: var(--font-size-4xl);
-            color: var(--color-text-tertiary);
-            margin-bottom: var(--space-16);
-        }
-
-        .no-reports h3 {
-            font-size: var(--font-size-xl);
-            font-weight: var(--font-weight-semibold);
-            color: var(--color-text-primary);
-            margin-bottom: var(--space-8);
-        }
-
-        .no-reports p {
-            font-size: var(--font-size-base);
-            color: var(--color-text-secondary);
-            max-width: 400px;
-            margin: 0 auto;
-        }
-
-        /* BUTTON LINK */
-        .btn-link {
-            display: inline-flex;
-            align-items: center;
-            gap: var(--space-4);
-            color: var(--color-primary);
-            font-weight: var(--font-weight-medium);
-            text-decoration: none;
-            transition: color var(--transition-fast);
-        }
-
-        .btn-link:hover {
-            color: var(--color-primary-light);
-            text-decoration: underline;
-        }
-
-        /* LOGIN MODAL STYLES */
-        .login-container {
-            text-align: center;
-            padding: var(--space-8);
-        }
-
-        .login-icon {
-            width: 80px;
-            height: 80px;
-            background-color: var(--color-primary);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: var(--font-size-3xl);
-            margin: 0 auto var(--space-16);
-        }
-
-        .login-title {
-            font-size: var(--font-size-xl);
-            font-weight: var(--font-weight-semibold);
-            color: var(--color-text-primary);
-            margin-bottom: var(--space-8);
-        }
-
-        .login-description {
-            font-size: var(--font-size-base);
-            color: var(--color-text-secondary);
-            margin-bottom: var(--space-24);
-        }
-
-        .login-form {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-16);
-            max-width: 400px;
-            margin: 0 auto;
-        }
-
-        .password-input {
-            position: relative;
-        }
-
-        .password-input .btn-icon {
-            position: absolute;
-            right: var(--space-8);
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: var(--color-text-tertiary);
-            cursor: pointer;
-            padding: var(--space-4);
-        }
-
-        .login-footer {
-            margin-top: var(--space-24);
-            padding-top: var(--space-16);
-            border-top: 1px solid var(--color-divider);
-        }
-
-        .login-note {
-            font-size: var(--font-size-xs);
-            color: var(--color-text-tertiary);
-            display: flex;
-            align-items: center;
-            gap: var(--space-4);
-            justify-content: center;
-        }
-
-        /* FOOTER ENHANCEMENTS */
-        .footer-logo {
-            display: flex;
-            align-items: center;
-            gap: var(--space-8);
-            margin-bottom: var(--space-16);
-        }
-
-        .footer-logo i {
-            font-size: var(--font-size-2xl);
-            color: var(--color-primary);
-        }
-
-        .footer-title {
-            font-size: var(--font-size-lg);
-            font-weight: var(--font-weight-semibold);
-            color: var(--color-text-primary);
-            margin: 0;
-        }
-
-        .footer-subtitle {
-            font-size: var(--font-size-sm);
-            color: var(--color-text-tertiary);
-            margin: 0;
-        }
-
-        .footer-description {
-            font-size: var(--font-size-sm);
-            color: var(--color-text-secondary);
-            line-height: var(--line-height-relaxed);
-            margin-bottom: var(--space-16);
-        }
-
-        .footer-social {
-            display: flex;
-            gap: var(--space-8);
-        }
-
-        .social-link {
-            width: 36px;
-            height: 36px;
-            background-color: var(--color-neutral-100);
-            color: var(--color-text-secondary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all var(--transition-fast);
-        }
-
-        .social-link:hover {
-            background-color: var(--color-primary);
-            color: white;
-            transform: translateY(-2px);
-        }
-
-        .footer-heading {
-            font-size: var(--font-size-base);
-            font-weight: var(--font-weight-semibold);
-            color: var(--color-text-primary);
-            margin-bottom: var(--space-12);
-        }
-
-        .footer-links {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-8);
-        }
-
-        .footer-links li a {
-            font-size: var(--font-size-sm);
-            color: var(--color-text-secondary);
-            transition: color var(--transition-fast);
-        }
-
-        .footer-links li a:hover {
-            color: var(--color-primary);
-            text-decoration: none;
-        }
-
-        .contact-info {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-12);
-        }
-
-        .contact-info li {
-            display: flex;
-            align-items: flex-start;
-            gap: var(--space-8);
-            font-size: var(--font-size-sm);
-            color: var(--color-text-secondary);
-        }
-
-        .contact-info li i {
-            color: var(--color-primary);
-            margin-top: 2px;
-            flex-shrink: 0;
-        }
-
-        .cities-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: var(--space-8);
-        }
-
-        .city-tag {
-            display: inline-block;
-            padding: var(--space-2) var(--space-8);
-            background-color: var(--color-neutral-100);
-            color: var(--color-text-secondary);
-            border-radius: var(--radius-sm);
-            font-size: var(--font-size-xs);
-            transition: all var(--transition-fast);
-        }
-
-        .city-tag:hover {
-            background-color: var(--color-primary);
-            color: white;
-            transform: translateY(-1px);
-        }
-
-        .footer-bottom {
-            margin-top: var(--space-32);
-            padding-top: var(--space-16);
-            border-top: 1px solid var(--color-divider);
-        }
-
-        .footer-bottom-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: var(--space-16);
-        }
-
-        @media (max-width: 768px) {
-            .footer-bottom-content {
-                flex-direction: column;
-                gap: var(--space-16);
-                text-align: center;
-            }
-        }
-
-        .copyright {
-            font-size: var(--font-size-xs);
-            color: var(--color-text-tertiary);
-        }
-
-        .footer-bottom-links {
-            display: flex;
-            gap: var(--space-16);
-        }
-
-        @media (max-width: 768px) {
-            .footer-bottom-links {
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: var(--space-8);
-            }
-        }
-
-        .footer-link {
-            font-size: var(--font-size-xs);
-            color: var(--color-text-tertiary);
-            text-decoration: none;
-            transition: color var(--transition-fast);
-        }
-
-        .footer-link:hover {
-            color: var(--color-primary);
-            text-decoration: underline;
-        }
-
-        .disclaimer {
-            font-size: var(--font-size-xs);
-            color: var(--color-text-tertiary);
-            display: flex;
-            align-items: center;
-            gap: var(--space-4);
-            justify-content: center;
-            padding: var(--space-8);
-            background-color: rgba(245, 158, 11, 0.1);
-            border-radius: var(--radius-md);
-            border: 1px solid rgba(196, 162, 74, 0.3);
-        }
-
-        .disclaimer i {
-            color: var(--color-warning);
-            flex-shrink: 0;
-        }
-
-        /* ADMIN BUTTON */
-        .btn-admin {
-            background-color: var(--color-primary);
-            color: white;
-            border: 1px solid var(--color-primary);
-        }
-
-        .btn-admin:hover {
-            background-color: var(--color-primary-light);
-            border-color: var(--color-primary-light);
-        }
-
-        /* RESPONSIVE ENHANCEMENTS */
-        @media (max-width: 1024px) {
-            .hero-section {
-                padding: var(--space-32) 0;
-            }
-            
-            .stats-section,
-            .how-it-works-section,
-            .problem-types-section,
-            .recent-reports-section,
-            .cta-section,
-            .tracking-section,
-            .cities-section {
-                padding: var(--space-32) 0;
-            }
-            
-            .hero-title {
-                font-size: var(--font-size-3xl);
-            }
-            
-            .hero-description {
-                font-size: var(--font-size-lg);
-            }
-            
-            .section-title {
-                font-size: var(--font-size-2xl);
-            }
-            
-            .section-description {
-                font-size: var(--font-size-base);
-            }
-        }
-
-        @media (max-width: 768px) {
-            .hero-section {
-                padding: var(--space-24) 0;
-            }
-            
-            .stats-section,
-            .how-it-works-section,
-            .problem-types-section,
-            .recent-reports-section,
-            .cta-section,
-            .tracking-section,
-            .cities-section {
-                padding: var(--space-24) 0;
-            }
-            
-            .hero-title {
-                font-size: var(--font-size-2xl);
-            }
-            
-            .hero-description {
-                font-size: var(--font-size-base);
-            }
-            
-            .section-title {
-                font-size: var(--font-size-xl);
-            }
-            
-            .section-description {
-                font-size: var(--font-size-sm);
-            }
-            
-            .stat-card,
-            .step-card,
-            .problem-card,
-            .city-card {
-                padding: var(--space-16);
-            }
-            
-            .stat-value {
-                font-size: var(--font-size-2xl);
-            }
-            
-            .cities-grid {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            }
-        }
-
-        /* DARK THEME ADJUSTMENTS */
-        [data-theme="dark"] .hero-section,
-        [data-theme="dark"] .cta-section {
-            background: linear-gradient(135deg, #1a3f35 0%, #0F2A24 100%);
-        }
-
-        [data-theme="dark"] .stats-section,
-        [data-theme="dark"] .problem-types-section,
-        [data-theme="dark"] .tracking-section {
-            background-color: var(--color-neutral-900);
-        }
-
-        [data-theme="dark"] .stat-card,
-        [data-theme="dark"] .step-card,
-        [data-theme="dark"] .problem-card,
-        [data-theme="dark"] .report-card,
-        [data-theme="dark"] .city-card,
-        [data-theme="dark"] .reports-map,
-        [data-theme="dark"] .cities-map-container,
-        [data-theme="dark"] .tracking-card {
-            background-color: var(--color-surface);
-            border-color: var(--color-border);
-        }
-
-        [data-theme="dark"] .social-link {
-            background-color: var(--color-neutral-800);
-            color: var(--color-neutral-300);
-        }
-
-        [data-theme="dark"] .social-link:hover {
-            background-color: var(--color-primary);
-            color: white;
-        }
-
-        [data-theme="dark"] .city-tag {
-            background-color: var(--color-neutral-800);
-            color: var(--color-neutral-300);
-        }
-
-        [data-theme="dark"] .city-tag:hover {
-            background-color: var(--color-primary);
-            color: white;
-        }
-
-        [data-theme="dark"] .disclaimer {
-            background-color: rgba(196, 162, 74, 0.2);
-            border-color: rgba(196, 162, 74, 0.4);
-        }
-
-        /* ANIMATIONS */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .animate-fade-in-up {
-            animation: fadeInUp 0.6s ease forwards;
-        }
-
-        /* ACCESSIBILITY */
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border: 0;
-        }
-
-        /* PRINT STYLES */
-        @media print {
-            .main-header,
-            .mobile-menu-toggle,
-            .hero-actions,
-            .cta-actions,
-            .tracking-form,
-            .footer-social,
-            .footer-bottom-links,
-            .btn-admin,
-            .admin-login-modal {
-                display: none !important;
-            }
-            
-            body {
-                font-size: 12pt;
-                line-height: 1.4;
-                color: black;
-                background: white;
-            }
-            
-            .container {
-                max-width: 100%;
-                padding: 0;
-            }
-            
-            .hero-section {
-                background: white !important;
-                color: black !important;
-                padding: 20pt 0 !important;
-            }
-            
-            .hero-title {
-                color: black !important;
-            }
-            
-            .stat-card,
-            .step-card,
-            .problem-card,
-            .report-card,
-            .city-card {
-                border: 1px solid #ddd !important;
-                box-shadow: none !important;
-                page-break-inside: avoid;
-            }
-            
-            .main-footer {
-                border-top: 1px solid #ddd;
-            }
-        }
-    </style>
-    <!-- ... sayfa içeriği ... -->
-
-</body>
 </body>
 </html>
