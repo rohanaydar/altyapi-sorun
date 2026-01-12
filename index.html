@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Doğu-Güneydoğu Altyapı Sorun Bildirim Sistemi</title>
+    <title>Anlaşmalı Mahalleler Altyapı Sorun Bildirim Sistemi</title>
     <style>
         /* Footer link butonları için hover efekti */
 .footer-links button:hover {
@@ -731,7 +731,7 @@
     <div class="container">
         <!-- BAŞLIK VE MENÜ -->
         <header>
-            <h1>🚧 Doğu-Güneydoğu Altyapı Sorun Bildirim Sistemi</h1>
+            <h1>🚧 Anlaşmalı Mahalleler Altyapı Sorun Bildirim Sistemi</h1>
             <p class="tagline">23 ildeki anlaşmalı mahallelerdeki altyapı sorunlarını bildirin</p>
             
             <div class="main-nav">
@@ -759,7 +759,7 @@
             <section id="home" class="page active">
                 <div class="hero">
                     <h2>Altyapı Sorunlarınızı Bildirin, Çözüme Katkı Sağlayın</h2>
-                    <p>Doğu ve Güneydoğu Anadolu bölgelerindeki 23 ilde, anlaşmalı mahallelerdeki altyapı sorunlarını (su, elektrik, yol, kanalizasyon vb.) hızlı bir şekilde bildirin. Sistemimiz tamamen ücretsizdir.</p>
+                    <p>23 ilde, anlaşmalı mahallelerdeki altyapı sorunlarını (su, elektrik, yol, kanalizasyon vb.) hızlı bir şekilde bildirin. Sistemimiz tamamen ücretsizdir.</p>
                     
                     <div class="hero-buttons">
                         <button class="btn btn-primary" id="heroBildirimBtn">
@@ -925,9 +925,6 @@
                     <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="adminLogin()">
                         <span>🔓</span> Giriş Yap
                     </button>
-                    <p style="text-align: center; margin-top: 20px; color: #666; font-size: 14px;">
-                        Not: Varsayılan şifre: <strong>admin123</strong>, Anahtar: <strong>altyapi2025</strong>
-                    </p>
                 </div>
                 
                 <div id="adminPanel" style="display: none;">
@@ -957,7 +954,7 @@
 
         <!-- FOOTER -->
         <footer>
-            <p>© 2025 Doğu-Güneydoğu Altyapı Sorun Bildirim Sistemi</p>
+            <p>© 2025 Anlaşmalı Mahalleler Altyapı Sorun Bildirim Sistemi</p>
             
             <!-- YENİ EKLENEN LİNKLER -->
             <div class="footer-links" style="margin: 15px 0; display: flex; justify-content: center; flex-wrap: wrap; gap: 15px;">
@@ -980,7 +977,7 @@
             
             <p style="margin-top: 10px; font-size: 13px;">23 İl • 154 İlçe • 1200+ Mahalle</p>
             <p style="margin-top: 10px; font-size: 12px; color: #999;">
-                📞 Destek Hattı: 0850 123 4567 | 📧 E-posta: destek@altyapisorun.gov.tr
+                📞 Destek Hattı: 0(535) 870 91 89 | 📧 E-posta: rohanaydar@gmail.com
             </p>
         </footer>
     </div>
@@ -2804,7 +2801,7 @@ function closeYasalModal() {
 // İÇERİK METİNLERİ
 // =============================================
 function getKvkkContent() {
-    return `
+    return
         <div style="line-height: 1.8;">
             <h4 style="color: #2c3e50; margin-bottom: 15px;">Kişisel Verilerin İşlenmesine İlişkin Aydınlatma Metni</h4>
             
@@ -2846,11 +2843,11 @@ function getKvkkContent() {
                 </p>
             </div>
         </div>
-    `;
+    ;
 }
 
 function getMuhtarOnayContent() {
-    return `
+    return 
         <div style="line-height: 1.8;">
             <div style="text-align: center; margin-bottom: 20px;">
                 <div style="font-size: 48px;">📜</div>
@@ -2893,11 +2890,11 @@ function getMuhtarOnayContent() {
                 <em>Bu metin, anlaşmalı tüm mahalle muhtarları için geçerlidir.</em>
             </p>
         </div>
-    `;
+    ;
 }
 
 function getMuhtarlarContent() {
-    return `
+    return 
         <div style="line-height: 1.8;">
             <div style="text-align: center; margin-bottom: 20px;">
                 <div style="font-size: 48px;">👥</div>
@@ -2973,7 +2970,7 @@ function getMuhtarlarContent() {
             let html = '<div style="display: grid; gap: 15px;">';
             
             filtered.forEach((muhtar, index) => {
-                html += \`
+                html += \
                     <div class="muhtar-kart" style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #3498db;">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap;">
                             <div>
@@ -2988,7 +2985,7 @@ function getMuhtarlarContent() {
                             </div>
                         </div>
                     </div>
-                \`;
+                \;
             });
             
             html += '</div>';
@@ -3015,15 +3012,15 @@ function getMuhtarlarContent() {
             let html = '<div style="display: grid; gap: 15px;">';
             
             if (filtered.length === 0) {
-                html += \`
+                html += \
                     <div style="text-align: center; padding: 40px; color: #666;">
                         <div style="font-size: 48px; margin-bottom: 15px;">🔍</div>
                         <p>Aramanıza uygun muhtar bulunamadı.</p>
                     </div>
-                \`;
+                \;
             } else {
                 filtered.forEach(muhtar => {
-                    html += \`
+                    html += \
                         <div class="muhtar-kart" style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #3498db;">
                             <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap;">
                                 <div>
@@ -3038,7 +3035,7 @@ function getMuhtarlarContent() {
                                 </div>
                             </div>
                         </div>
-                    \`;
+                    \;
                 });
             }
             
@@ -3061,12 +3058,12 @@ function getMuhtarlarContent() {
                 loadMuhtarlar();
             }
         });
-        </script>
-    `;
+        
+    ;
 }
 
 function getGizlilikContent() {
-    return `
+    return
         <div style="line-height: 1.8;">
             <div style="text-align: center; margin-bottom: 20px;">
                 <div style="font-size: 48px;">🔒</div>
@@ -3148,11 +3145,11 @@ function getGizlilikContent() {
                 <em>Bu gizlilik politikasını kabul ederek siteyi kullanmaya devam edebilirsiniz.</em>
             </p>
         </div>
-    `;
+    ;
 }
 
 function getHakkimizdaContent() {
-    return `
+    return
         <div style="line-height: 1.8;">
             <div style="text-align: center; margin-bottom: 20px;">
                 <div style="font-size: 48px;">ℹ️</div>
@@ -3220,7 +3217,7 @@ function getHakkimizdaContent() {
                 <em>"Daha iyi bir altyapı, daha iyi bir yaşam demektir."</em>
             </p>
         </div>
-    `;
+    ;
 }
 
 // Sayfa yüklendiğinde muhtarları yükleme fonksiyonunu çağır
