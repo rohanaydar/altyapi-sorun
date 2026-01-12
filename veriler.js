@@ -73,7 +73,7 @@ const VERILER = {
                             'Kazım Karabekir Sokak',
                             'Mareşal Fevzi Çakmak Sokak',
                             'Talatpaşa Sokak',
-                            'Şair Nef'i Sokak',
+                            'Şair Nefi Sokak',
                             'Yavuz Sultan Selim Caddesi',
                             'Kanuni Sultan Süleyman Sokak',
                             'Fatih Sultan Mehmet Caddesi',
