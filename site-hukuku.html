@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yasal Bilgiler - Altyapı Sorun Bildirim Sistemi</title>
+    <style>
+        /* ANA SAYFADAN ALINAN STİLLER */
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --light: #f8f9fa;
+            --dark: #343a40;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        
+        /* HEADER */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, #4a6491 100%);
+            color: white;
+            padding: 20px 40px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+            color: white;
+        }
+        
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .home-btn {
+            background: rgba(255,255,255,0.15);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .home-btn:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-2px);
+        }
+        
+        /* YASAL MENÜ */
+        .legal-menu {
+            background: #f8f9fa;
+            padding: 0;
+            border-bottom: 2px solid #e9ecef;
+            position: sticky;
+            top: 84px;
+            z-index: 99;
+        }
+        
+        .menu-scroll {
+            display: flex;
+            overflow-x: auto;
+            padding: 0 20px;
+            gap: 0;
+            scrollbar-width: thin;
+        }
+        
+        .menu-scroll::-webkit-scrollbar {
+            height: 6px;
+        }
+        
+        .menu-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        .menu-scroll::-webkit-scrollbar-thumb {
+            background: #3498db;
+            border-radius: 3px;
+        }
+        
+        .menu-btn {
+            padding: 18px 25px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: #666;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .menu-btn:hover {
+            color: var(--secondary);
+            background: rgba(52, 152, 219, 0.05);
+        }
+        
+        .menu-btn.active {
+            color: var(--secondary);
+            border-bottom-color: var(--secondary);
+            background: rgba(52, 152, 219, 0.1);
+        }
+        
+        /* İÇERİK ALANI */
+        main {
+            padding: 40px;
+            min-height: 800px;
+        }
+        
+        .content-section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .content-section.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        section h2 {
+            color: var(--primary);
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        section h3 {
+            color: var(--primary);
+            margin: 30px 0 15px 0;
+            font-size: 20px;
+        }
+        
+        .content-box {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 5px solid var(--secondary);
+            margin-bottom: 25px;
+        }
+        
+        .content-box ul, .content-box ol {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .content-box li {
+            margin-bottom: 8px;
+        }
+        
+        /* TABLO STİLLERİ */
+        .muhtar-table-container {
+            overflow-x: auto;
+            margin: 30px 0;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .muhtar-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        
+        .muhtar-table th {
+            background: var(--primary);
+            color: white;
+            padding: 18px 15px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        
+        .muhtar-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .muhtar-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .progress-bar {
+            width: 100px;
+            height: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--success);
+            border-radius: 5px;
+        }
+        
+        /* İKON BUTONLARI */
+        .icon-btn {
+            background: none;
+            border: none;
+            color: var(--secondary);
+            cursor: pointer;
+            font-size: 18px;
+            padding: 5px;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .icon-btn:hover {
+            background: rgba(52, 152, 219, 0.1);
+            transform: scale(1.1);
+        }
+        
+        /* BELEDİYE LOGOLARI */
+        .belediye-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .belediye-item {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+        
+        .belediye-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .belediye-logo {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        /* TEŞEKKÜR BÖLÜMÜ */
+        .tesekkur-logos {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+            margin: 40px 0;
+            padding: 30px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+        }
+        
+        .logo-item {
+            text-align: center;
+            flex: 0 0 auto;
+        }
+        
+        .logo-circle {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-size: 32px;
+        }
+        
+        /* FOOTER */
+        footer {
+            text-align: center;
+            padding: 30px;
+            margin-top: 50px;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 14px;
+            background: #f8f9fa;
+        }
+        
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .menu-scroll {
+                padding: 0 10px;
+            }
+            
+            .menu-btn {
+                padding: 15px;
+                font-size: 14px;
+            }
+            
+            main {
+                padding: 20px;
+            }
+            
+            .muhtar-table th,
+            .muhtar-table td {
+                padding: 10px;
+                font-size: 14px;
+            }
+            
+            .belediye-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            header {
+                padding: 15px 20px;
+            }
+            
+            .logo h1 {
+                font-size: 20px;
+            }
+            
+            .menu-btn {
+                padding: 12px 15px;
+                font-size: 13px;
+            }
+            
+            .muhtar-table {
+                font-size: 13px;
+            }
+            
+            .belediye-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <div class="header-content">
+                <div class="logo">
+                    <h1>🚧 Altyapı Sorun Bildirim Sistemi</h1>
+                </div>
+                <a href="index.html" class="home-btn">
+                    <span>🏠</span> Bildirim Sistemi
+                </a>
+            </div>
+        </header>
+
+        <!-- YASAL MENÜ -->
+        <nav class="legal-menu">
+            <div class="menu-scroll">
+                <button class="menu-btn active" data-section="kvkk">
+                    <span>📋</span> KVKK
+                </button>
+                <button class="menu-btn" data-section="hakkimizda">
+                    <span>ℹ️</span> Hakkımızda
+                </button>
+                <button class="menu-btn" data-section="cerezler">
+                    <span>🍪</span> Çerezler
+                </button>
+                <button class="menu-btn" data-section="iletisim">
+                    <span>📞</span> İletişim
+                </button>
+                <button class="menu-btn" data-section="mahalleler">
+                    <span>🏘️</span> Anlaşmalı Mahalleler
+                </button>
+                <button class="menu-btn" data-section="kullanim">
+                    <span>📜</span> Kullanım Şartları
+                </button>
+                <button class="menu-btn" data-section="veri">
+                    <span>💾</span> Veri Saklama
+                </button>
+                <button class="menu-btn" data-section="tesekkur">
+                    <span>🙏</span> Teşekkür
+                </button>
+            </div>
+        </nav>
+
+        <!-- ANA İÇERİK -->
+        <main>
+            <!-- KVKK BÖLÜMÜ -->
+            <section id="kvkk" class="content-section active">
+                <h2><span>📋</span> KVKK (Kişisel Verilerin Korunması) Aydınlatma Metni</h2>
+                
+                <div class="content-box">
+                    <h3>1. Veri Sorumlusu</h3>
+                    <p><strong>Altyapı Sorun Bildirim Sistemi</strong><br>
+                    İletişim: <a href="mailto:kvkk@altyapisorun.gov.tr">kvkk@altyapisorun.gov.tr</a></p>
+                </div>
+                
+                <div class="content-box">
+                    <h3>2. Toplanan Kişisel Veriler</h3>
+                    <ul>
+                        <li><strong>Bildirim Verileri:</strong> Şehir, ilçe, mahalle, cadde/sokak, sorun tipi, açıklama, aciliyet durumu</li>
+                        <li><strong>İletişim Verileri (İsteğe Bağlı):</strong> Adınız, telefon numaranız</li>
+                        <li><strong>Teknik Veriler:</strong> IP adresi, tarayıcı bilgileri, cihaz bilgisi, ziyaret saatleri</li>
+                    </ul>
+                </div>
+                
+                <div class="content-box">
+                    <h3>3. Verilerin İşlenme Amaçları</h3>
+                    <ol>
+                        <li>Altyapı sorunlarını ilgili belediyelere iletmek</li>
+                        <li>Bildirim takibi ve çözüm sürecini yönetmek</li>
+                        <li>İstatistiki analizler ve raporlamalar yapmak</li>
+                        <li>Sistem performansını iyileştirmek</li>
+                        <li>Yasal yükümlülükleri yerine getirmek</li>
+                    </ol>
+                </div>
+                
+                <div class="content-box">
+                    <h3>4. Veri Güvenliği</h3>
+                    <p>Kişisel verileriniz, 6698 sayılı KVKK uyarınca aşağıdaki önlemlerle korunmaktadır:</p>
+                    <ul>
+                        <li>Güvenli sunucu altyapısı ve SSL şifreleme</li>
+                        <li>Düzenli güvenlik denetimleri ve yedekleme</li>
+                        <li>Sınırlı erişim yetkileri ve yetkilendirme sistemi</li>
+                        <li>Veri işleme faaliyetlerinin kayıt altına alınması</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- HAKKIMIZDA BÖLÜMÜ -->
+            <section id="hakkimizda" class="content-section">
+                <h2><span>ℹ️</span> Hakkımızda</h2>
+                
+                <div class="content-box">
+                    <h3>Misyonumuz</h3>
+                    <p>23 ilde, anlaşmalı mahallelerde yaşanan altyapı sorunlarının (su, elektrik, yol, kanalizasyon, internet vb.) hızlı ve etkili bir şekilde çözülmesini sağlamak.</p>
+                </div>
+                
+                <div class="content-box">
+                    <h3>Vizyonumuz</h3>
+                    <p>Bölgemizdeki tüm mahallelerin altyapı sorunlarının dijital platform üzerinden takip edildiği, şeffaf ve etkili bir sistem kurmak.</p>
+                </div>
+                
+                <div class="content-box">
+                    <h3>Değerlerimiz</h3>
+                    <ul>
+                        <li><strong>Şeffaflık:</strong> Tüm süreçlerin takip edilebilir olması</li>
+                        <li><strong>Hızlı Çözüm:</strong> Bildirimlerin 24 saat içinde ilgili birime ulaşması</li>
+                        <li><strong>İşbirliği:</strong> Vatandaş-muhtar-belediye işbirliği</li>
+                        <li><strong>Sürdürülebilirlik:</strong> Kalıcı çözümler üretmek</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- ÇEREZLER BÖLÜMÜ -->
+            <section id="cerezler" class="content-section">
+                <h2><span>🍪</span> Çerez Politikası</h2>
+                
+                <div class="content-box">
+                    <h3>Çerez Nedir?</h3>
+                    <p>Çerezler, web sitesini ziyaret ettiğinizde cihazınıza kaydedilen küçük metin dosyalarıdır.</p>
+                </div>
+                
+                <div class="content-box">
+                    <h3>Kullandığımız Çerez Türleri</h3>
+                    <ul>
+                        <li><strong>Zorunlu Çerezler:</strong> Site fonksiyonlarının çalışması için gereklidir</li>
+                        <li><strong>Performans Çerezleri:</strong> Site kullanım analizi için kullanılır</li>
+                        <li><strong>Fonksiyonel Çerezler:</strong> Tercihlerinizi hatırlamak için kullanılır</li>
+                    </ul>
+                </div>
+                
+                <div class="content-box">
+                    <h3>Çerezleri Yönetme</h3>
+                    <p>Tarayıcınızın ayarlarından çerezleri silebilir veya engelleyebilirsiniz. Ancak bazı çerezlerin engellenmesi sitenin düzgün çalışmamasına neden olabilir.</p>
+                </div>
+            </section>
+
+            <!-- İLETİŞİM BÖLÜMÜ -->
+            <section id="iletisim" class="content-section">
+                <h2><span>📞</span> İletişim</h2>
+                
+                <div class="content-box">
+                    <h3>İletişim Bilgilerimiz</h3>
+                    <p><strong>📧 E-posta:</strong> <a href="mailto:destek@altyapisorun.gov.tr">destek@altyapisorun.gov.tr</a></p>
+                    <p><strong>📞 Telefon:</strong> <a href="tel:+905358709189">+90 535 870 91 89</a> (09:00-18:00)</p>
+                    <p><strong>📍 Adres:</strong> Altyapı Çözüm Merkezi, Diyarbakır</p>
+                </div>
+                
+                <div class="content-box">
+                    <h3>Çalışma Saatleri</h3>
+                    <p><strong>Pazartesi - Cuma:</strong> 09:00 - 18:00</p>
+                    <p><strong>Cumartesi - Pazar:</strong> Kapalı</p>
+                </div>
+                
+                <div class="content-box">
+                    <h3>KVKK İletişim</h3>
+                    <p>KVKK kapsamındaki haklarınız için: <a href="mailto:kvkk@altyapisorun.gov.tr">kvkk@altyapisorun.gov.tr</a></p>
+                </div>
+            </section>
+
+            <!-- ANLAŞMALI MAHALLELER BÖLÜMÜ -->
+            <section id="mahalleler" class="content-section">
+                <h2><span>🏘️</span> Anlaşmalı Mahalleler ve Muhtarlar</h2>
+                
+                <div class="content-box">
+                    <p>Sistemimizle resmi anlaşması bulunan mahalle muhtarları aşağıda listelenmiştir. Bu muhtarlar, mahallelerindeki altyapı sorunlarının takibi ve çözümü konusunda aktif rol almaktadır.</p>
+                </div>
+                
+                <div class="muhtar-table-container">
+                    <table class="muhtar-table">
+                        <thead>
+                            <tr>
+                                <th>Mahalle</th>
+                                <th>Muhtar</th>
+                                <th>İlçe</th>
+                                <th>Şehir</th>
+                                <th>Çözüm Oranı</th>
+                                <th>Harita</th>
+                                <th>İletişim</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Kaynartepe</td>
+                                <td>Mehmet Yılmaz</td>
+                                <td>Bağlar</td>
+                                <td>Diyarbakır</td>
+                                <td>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 92%"></div>
+                                    </div>
+                                    92%
+                                </td>
+                                <td>
+                                    <button class="icon-btn" title="Haritada Göster" onclick="window.open('https://maps.google.com/?q=Kaynartepe+Mahallesi+Bağlar+Diyarbakır', '_blank')">
+                                        📍
+                                    </button>
+                                </td>
+                                <td>
+                                    <button class="icon-btn" title="Telefonla Ara" onclick="window.location.href='tel:+905321112233'">
+                                        📞
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Muradiye</td>
+                                <td>Ahmet Demir</td>
+                                <td>Bağlar</td>
+                                <td>Diyarbakır</td>
+                                <td>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 85%"></div>
+                                    </div>
+                                    85%
+                                </td>
+                                <td>
+                                    <button class="icon-btn" title="Haritada Göster" onclick="window.open('https://maps.google.com/?q=Muradiye+Mahallesi+Bağlar+Diyarbakır', '_blank')">
+                                        📍
+                                    </button>
+                                </td>
+                                <td>
+                                    <button class="icon-btn" title="Telefonla Ara" onclick="window.location.href='tel:+905322223344'">
+                                        📞
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Fatih</td>
+                                <td>Ayşe Kaya</td>
+                                <td>Bağlar</td>
+                                <td>Diyarbakır</td>
+                                <td>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 88%"></div>
+                                    </div>
+                                    88%
+                                </td>
+                                <td>
+                                    <button class="icon-btn" title="Haritada Göster" onclick="window.open('https://maps.google.com/?q=Fatih+Mahallesi+Bağlar+Diyarbakır', '_blank')">
+                                        📍
+                                    </button>
+                                </td>
+                                <td>
+                                    <button class="icon-btn" title="Telefonla Ara" onclick="window.location.href='tel:+905323334455'">
+                                        📞
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Selçuklu</td>
+                                <td>Mustafa Çelik</td>
+                                <td>Aziziye</td>
+                                <td>Erzurum</td>
+                                <td>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 90%"></div>
+                                    </div>
+                                    90%
+                                </td>
+                                <td>
+                                    <button class="icon-btn" title="Haritada Göster" onclick="window.open('https://maps.google.com/?q=Selçuklu+Mahallesi+Aziziye+Erzurum', '_blank')">
+                                        📍
+                                    </button>
+                                </td>
+                                <td>
+                                    <button class="icon-btn" title="Telefonla Ara" onclick="window.location.href='tel:+905324445566'">
+                                        📞
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Bostaniçi</td>
+                                <td>Zeynep Yıldız</td>
+                                <td>İpekyolu</td>
+                                <td>Van</td>
+                                <td>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 82%"></div>
+                                    </div>
+                                    82%
+                                </td>
+                                <td>
+                                    <button class="icon-btn" title="Haritada Göster" onclick="window.open('https://maps.google.com/?q=Bostaniçi+Mahallesi+İpekyolu+Van', '_blank')">
+                                        📍
+                                    </button>
+                                </td>
+                                <td>
+                                    <button class="icon-btn" title="Telefonla Ara" onclick="window.location.href='tel:+905325556677'">
+                                        📞
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="content-box">
+                    <p><strong>Not:</strong> Çözüm oranı, mahallede bildirilen toplam sorunların çözülen sorunlara oranını göstermektedir. Listemiz sürekli güncellenmektedir.</p>
+                </div>
+            </section>
+
+            <!-- KULLANIM ŞARTLARI BÖLÜMÜ -->
+            <section id="kullanim" class="content-section">
+                <h2><span>📜</span> Kullanım Şartları</h2>
+                
+                <div class="content-box">
+                    <h3>1. Kabul ve Onay</h3>
+                    <p>Bu siteyi kullanarak aşağıdaki şartları kabul etmiş sayılırsınız.</p>
+                </div>
+                
+                <div class="content-box">
+                    <h3>2. Kullanıcı Yükümlülükleri</h3>
+                    <ul>
+                        <li>Doğru ve gerçek bilgiler girmek</li>
+                        <li>Sistemi amacı dışında kullanmamak</li>
+                        <li>Diğer kullanıcıların haklarına saygı göstermek</li>
+                        <li>Yasalara aykırı içerik paylaşmamak</li>
+                    </ul>
+                </div>
+                
+                <div class="content-box">
+                    <h3>3. Bildirim Kuralları</h3>
+                    <ul>
+                        <li>Bildirimler altyapı sorunları ile sınırlıdır</li>
+                        <li>Tekrarlayan veya gereksiz bildirimler yapılamaz</li>
+                        <li>Hakaret veya küfür içeren bildirimler silinir</li>
+                    </ul>
+                </div>
+                
+                <div class="content-box">
+                    <h3>4. Değişiklik Hakkı</h3>
+                    <p>Kullanım şartlarını herhangi bir zamanda değiştirme hakkını saklı tutarız. Değişiklikler sitede yayınlandığı anda geçerli olur.</p>
+                </div>
+            </section>
+
+            <!-- VERİ SAKLAMA BÖLÜMÜ -->
+            <section id="veri" class="content-section">
+                <h2><span>💾</span> Veri Saklama ve İmha Politikası</h2>
+                
+                <div class="content-box">
+                    <h3>Veri Saklama Süreleri</h3>
+                    <table class="muhtar-table" style="margin-top: 15px;">
+                        <thead>
+                            <tr>
+                                <th>Veri Türü</th>
+                                <th>Saklama Süresi</th>
+                                <th>İmha Yöntemi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Bildirim verileri</td>
+                                <td>5 yıl</td>
+                                <td>Güvenli silme</td>
+                            </tr>
+                            <tr>
+                                <td>İletişim bilgileri</td>
+                                <td>6 ay</td>
+                                <td>Anonimleştirme</td>
+                            </tr>
+                            <tr>
+                                <td>Teknik veriler</td>
+                                <td>1 yıl</td>
+                                <td>Güvenli silme</td>
+                            </tr>
+                            <tr>
+                                <td>İstatistik verileri</td>
+                                <td>Süresiz</td>
+                                <td>Anonimleştirilmiş</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="content-box">
+                    <h3>Veri İmha Süreci</h3>
+                    <ol>
+                        <li>Veri saklama süresi dolduğunda sistem uyarısı</li>
+                        <li>Veri sorumlusu onayı</li>
+                        <li>Güvenli silme veya anonimleştirme</li>
+                        <li>İmha tutanağı oluşturma</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- TEŞEKKÜR BÖLÜMÜ -->
+            <section id="tesekkur" class="content-section">
+                <h2><span>🙏</span> Teşekkür</h2>
+                
+                <div class="content-box">
+                    <h3>Değerli Destekçilerimize</h3>
+                    <p>Altyapı Sorun Bildirim Sistemi'nin başarısı, aşağıda belirtilen kurum, kuruluş ve açık kaynak topluluklarının değerli katkıları sayesinde mümkün olmuştur. Tüm destekçilerimize içten teşekkürlerimizi sunarız.</p>
+                </div>
+                
+                <div class="belediye-grid">
+                    <div class="belediye-item">
+                        <div class="belediye-logo">DBB</div>
+                        <h4>Diyarbakır Büyükşehir Belediyesi</h4>
+                    </div>
+                    <div class="belediye-item">
+                        <div class="belediye-logo">MBB</div>
+                        <h4>Mardin Büyükşehir Belediyesi</h4>
+                    </div>
+                    <div class="belediye-item">
+                        <div class="belediye-logo">ŞUB</div>
+                        <h4>Şanlıurfa Belediyesi</h4>
+                    </div>
+                    <div class="belediye-item">
+                        <div class="belediye-logo">VBB</div>
+                        <h4>Van Büyükşehir Belediyesi</h4>
+                    </div>
+                    <div class="belediye-item">
+                        <div class="belediye-logo">HBB</div>
+                        <h4>Hakkari Belediyesi</h4>
+                    </div>
+                    <div class="belediye-item">
+                        <div class="belediye-logo">BMM</div>
+                        <h4>Batman Merkez Belediyesi</h4>
+                    </div>
+                    <div class="belediye-item">
+                        <div class="belediye-logo">AMM</div>
+                        <h4>Aziziye Belediyesi</h4>
+                    </div>
+                    <div class="belediye-item">
+                        <div class="belediye-logo">BMM</div>
+                        <h4>Bağlar Belediyesi</h4>
+                    </div>
+                </div>
+                
+                <div class="content-box">
+                    <h3>Açık Kaynak Katkıları</h3>
+                    <p>Sistemimizin geliştirilmesinde aşağıdaki açık kaynak projelerden yararlandık:</p>
+                    <ul>
+                        <li><strong>Bootstrap:</strong> Responsive tasarım framework'ü</li>
+                        <li><strong>Font Awesome:</strong> İkon kütüphanesi</li>
+                        <li><strong>jQuery:</strong> JavaScript kütüphanesi</li>
+                        <li><strong>GitHub Pages:</strong> Ücretsiz hosting servisi</li>
+                    </ul>
+                </div>
+                
+                <div class="tesekkur-logos">
+                    <div class="logo-item">
+                        <div class="logo-circle">🌐</div>
+                        <p>Mahalle Portalı<br><small>mahalleportal.com</small></p>
+                    </div>
+                    <div class="logo-item">
+                        <div class="logo-circle">🚀</div>
+                        <p>GitHub<br><small>Açık Kaynak</small></p>
+                    </div>
+                    <div class="logo-item">
+                        <div class="logo-circle">🎨</div>
+                        <p>Font Awesome<br><small>İkonlar</small></p>
+                    </div>
+                    <div class="logo-item">
+                        <div class="logo-circle">🔧</div>
+                        <p>Bootstrap<br><small>Tasarım</small></p>
+                    </div>
+                </div>
+                
+                <div class="content-box">
+                    <h3>Son Söz</h3>
+                    <p>Bölgemizin altyapı sorunlarının çözümüne katkı sağlayan tüm belediye çalışanlarına, muhtarlarımıza, gönüllülerimize ve sistemimizi kullanan tüm vatandaşlarımıza teşekkür ederiz.</p>
+                    <p style="text-align: center; margin-top: 20px; font-style: italic;">
+                        <strong>"Daha iyi bir altyapı, daha iyi bir yaşam demektir."</strong>
+                    </p>
+                </div>
+            </section>
+        </main>
+
+        <!-- FOOTER -->
+        <footer>
+            <p> Ömer Seyfettin Aydar © 2025 Altyapı Sorun Bildirim Sistemi. Tüm hakları saklıdır.</p>
+            <p style="margin-top: 10px; font-size: 13px;">
+                <a href="index.html" style="color: #666; text-decoration: none;">Ana Sayfa</a> | 
+                <a href="#kvkk" onclick="showSection('kvkk')" style="color: #666; text-decoration: none;">KVKK</a> | 
+                <a href="#iletisim" onclick="showSection('iletisim')" style="color: #666; text-decoration: none;">İletişim</a>
+            </p>
+            <p style="margin-top: 10px; font-size: 12px; color: #999;">
+                Son Güncelleme: 12 Ocak 2026
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // =============================================
+        // SAYFA YÖNETİMİ
+        // =============================================
+        
+        // Sayfa yüklendiğinde
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Yasal Bilgiler Sayfası yükleniyor...");
+            
+            // URL'de hash varsa o bölüme git
+            const hash = window.location.hash.substring(1);
+            if (hash && document.getElementById(hash)) {
+                showSection(hash);
+            }
+            
+            // Menü butonlarına event listener ekle
+            document.querySelectorAll('.menu-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const section = this.getAttribute('data-section');
+                    showSection(section);
+                    
+                    // URL hash'ini güncelle
+                    window.location.hash = section;
+                });
+            });
+        });
+        
+        // Bölüm göster/gizle
+        function showSection(sectionId) {
+            console.log("Bölüm gösteriliyor:", sectionId);
+            
+            // Tüm bölümleri gizle
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Tüm menü butonlarını pasif yap
+            document.querySelectorAll('.menu-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Seçilen bölümü göster
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+                
+                // Menü butonunu aktif yap
+                const menuBtn = document.querySelector(`.menu-btn[data-section="${sectionId}"]`);
+                if (menuBtn) {
+                    menuBtn.classList.add('active');
+                    
+                    // Mobilde menü butonunu görünür yap (scroll)
+                    if (window.innerWidth < 768) {
+                        menuBtn.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'nearest',
+                            inline: 'center'
+                        });
+                    }
+                }
+                
+                // Sayfanın başına scroll yap
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            }
+        }
+        
+        // Hash değişikliğini dinle
+        window.addEventListener('hashchange', function() {
+            const hash = window.location.hash.substring(1);
+            if (hash) {
+                showSection(hash);
+            }
+        });
+        
+        // Responsive menü kontrolü
+        function checkMenuScroll() {
+            const menuScroll = document.querySelector('.menu-scroll');
+            if (menuScroll.scrollWidth > menuScroll.clientWidth) {
+                menuScroll.style.paddingBottom = '10px';
+            } else {
+                menuScroll.style.paddingBottom = '0';
+            }
+        }
+        
+        // Pencere boyutu değişince kontrol et
+        window.addEventListener('resize', checkMenuScroll);
+        
+        // İlk yüklemede kontrol et
+        setTimeout(checkMenuScroll, 100);
+    </script>
+</body>
+</html>
